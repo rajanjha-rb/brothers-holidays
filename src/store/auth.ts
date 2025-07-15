@@ -124,3 +124,10 @@ export const useAuthStore = create<IAuthStore>()(
     }
   )
 );
+
+export const clearAuthState = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('auth');
+    window.location.reload();
+  }
+};

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { FaFacebookSquare, FaInstagram, FaWhatsappSquare, FaHeadset, FaThumbsUp } from "react-icons/fa";
 import { SiViber } from "react-icons/si";
+import { clearAuthState } from "@/store/auth";
 
 const PALETTE = {
   blue: "#0057B7",         // Nav backgrounds, accents
@@ -183,6 +184,29 @@ export default function Footer() {
       <div className="mt-10 text-center text-xs" style={{ color: PALETTE.gray }}>
         &copy; {new Date().getFullYear()} Brothers Holidays. All rights reserved.
       </div>
+      {/* Debug: Clear Auth State Button (only in development) */}
+      {process.env.NODE_ENV === 'development' && (
+        <button
+          onClick={clearAuthState}
+          style={{
+            position: 'fixed',
+            bottom: 10,
+            left: 10,
+            zIndex: 1000,
+            background: '#FFD166',
+            color: '#0057B7',
+            border: 'none',
+            borderRadius: 6,
+            padding: '8px 16px',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+            cursor: 'pointer',
+          }}
+          title="Clear Auth State (Debug)"
+        >
+          Clear Auth State
+        </button>
+      )}
       {/* Floating Chatbot Button (bottom-right) */}
       <button
         className="fixed bottom-4 right-4 z-50 bg-blue-600 text-white p-4 rounded-full shadow-lg flex items-center justify-center text-2xl"
