@@ -31,6 +31,8 @@ interface HeroSectionProps {
 
 export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [pendingIndex, setPendingIndex] = useState<number | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(true);
   const [extraPadding, setExtraPadding] = useState(0);
   const [verticalDots, setVerticalDots] = useState(false);
   const dotsRef = useRef<HTMLDivElement>(null);
@@ -47,10 +49,24 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % slides.length);
+      if (imageLoaded) {
+        setPendingIndex((prev) => {
+          const next = prev === null ? (currentIndex + 1) % slides.length : (prev + 1) % slides.length;
+          return next;
+        });
+        setImageLoaded(false);
+      }
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [currentIndex, imageLoaded]);
+
+  // When pendingIndex changes, update currentIndex only after image loads
+  useEffect(() => {
+    if (pendingIndex !== null && imageLoaded) {
+      setCurrentIndex(pendingIndex);
+      setPendingIndex(null);
+    }
+  }, [pendingIndex, imageLoaded]);
 
   // Helper to measure gap only when horizontal dots are rendered
   useEffect(() => {
@@ -97,14 +113,15 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
         {/* Image with responsive height */}
         <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[24/9] max-h-[90vh]">
           <Image
-            src={slides[currentIndex].img}
-            alt={slides[currentIndex].alt}
+            src={slides[pendingIndex !== null ? pendingIndex : currentIndex].img}
+            alt={slides[pendingIndex !== null ? pendingIndex : currentIndex].alt}
             fill
             sizes="100vw"
             priority={currentIndex === 0}
             quality={100}
             className="object-cover"
             style={{ objectPosition: "center" }}
+            onLoadingComplete={() => setImageLoaded(true)}
           />
           {/* Minimal darkness overlay for better text readability */}
           <div className="absolute inset-0 bg-black/15 z-10 pointer-events-none" />
@@ -116,10 +133,10 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
         >
           <div className="text-center w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 flex flex-col items-center">
             <h1 className="text-base md:text-2xl lg:text-3xl font-extrabold text-blue-700 bg-white/95 border-2 border-yellow-300 rounded-lg shadow-lg px-4 py-3 mx-auto sm:max-w-[90%] md:max-w-[85%] headline-xs">
-              {slides[currentIndex].headline}
+              {slides[pendingIndex !== null ? pendingIndex : currentIndex].headline}
             </h1>
             <p className="hide-below-450 text-xs sm:text-sm md:text-lg lg:text-xl font-bold text-gray-700 bg-yellow-100 rounded-lg shadow px-4 py-2 mx-auto sm:max-w-[85%] md:max-w-[80%]">
-              {slides[currentIndex].subheadline}
+              {slides[pendingIndex !== null ? pendingIndex : currentIndex].subheadline}
             </p>
             {/* Slide indicators just below the text (horizontal) */}
             {!verticalDots && (
