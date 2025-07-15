@@ -48,6 +48,8 @@ function isLocalStorageAvailable() {
   }
 }
 
+const STORAGE_VERSION = 2; // Increment this on breaking changes
+
 export const useAuthStore = create<IAuthStore>()(
   persist(
     immer((set) => ({
@@ -140,6 +142,14 @@ export const useAuthStore = create<IAuthStore>()(
     })),
     {
       name: "auth",
+      version: STORAGE_VERSION,
+      migrate: (persistedState, version) => {
+        if (version !== STORAGE_VERSION) {
+          // Clear state if version mismatch
+          return { session: null, jwt: null, user: null, hydrated: false, loading: false };
+        }
+        return persistedState;
+      },
       onRehydrateStorage() {
         return (state, error) => {
           if (!error) state?.setHydrated();
