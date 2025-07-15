@@ -37,6 +37,17 @@ interface IAuthStore {
   logout(): Promise<void>;
 }
 
+function isLocalStorageAvailable() {
+  try {
+    const testKey = '__test__';
+    window.localStorage.setItem(testKey, '1');
+    window.localStorage.removeItem(testKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const useAuthStore = create<IAuthStore>()(
   persist(
     immer((set) => ({
@@ -51,6 +62,11 @@ export const useAuthStore = create<IAuthStore>()(
       },
 
       async verfiySession() {
+        if (!isLocalStorageAvailable()) {
+          alert('LocalStorage is not available. Please disable privacy mode or use a different browser to login.');
+          set({ session: null, user: null, loading: false });
+          return;
+        }
         set({ loading: true });
         try {
           const session = await account.getSession("current");
@@ -64,6 +80,10 @@ export const useAuthStore = create<IAuthStore>()(
       },
 
       async login(email: string, password: string) {
+        if (!isLocalStorageAvailable()) {
+          alert('LocalStorage is not available. Please disable privacy mode or use a different browser to login.');
+          return { success: false, error: null };
+        }
         try {
           const session = await account.createEmailPasswordSession(
             email,
@@ -91,6 +111,10 @@ export const useAuthStore = create<IAuthStore>()(
       },
 
       async createAccount(name: string, email: string, password: string) {
+        if (!isLocalStorageAvailable()) {
+          alert('LocalStorage is not available. Please disable privacy mode or use a different browser to register.');
+          return { success: false, error: null };
+        }
         try {
           await account.create(ID.unique(), email, password, name);
           return { success: true };
