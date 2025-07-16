@@ -34,6 +34,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   const [verticalDots, setVerticalDots] = useState(false);
   const dotsRef = useRef<HTMLDivElement>(null);
   const lastSwitchRef = useRef(Date.now());
+  const [imgLoaded, setImgLoaded] = useState(false); // New state for image loading
 
   useEffect(() => {
     const handleResize = () => {
@@ -47,6 +48,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % slides.length);
+      setImgLoaded(false); // Reset image loaded state on slide change
     }, 4000);
     return () => clearInterval(interval);
   }, []);
@@ -96,15 +98,20 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
           sizes="100vw"
           priority={currentIndex === 0}
           quality={100}
-          className="object-cover"
+          className={`object-cover transition-opacity duration-700 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
           style={{ objectPosition: "center" }}
+          onLoadingComplete={() => setImgLoaded(true)}
         />
+        {/* Skeleton overlay until image loads */}
+        {!imgLoaded && (
+          <div className="absolute inset-0 bg-gray-200 animate-pulse z-20" />
+        )}
         {/* Minimal darkness overlay for better text readability */}
         <div className="absolute inset-0 bg-black/15 z-10 pointer-events-none" />
       </div>
       {/* Overlay text content */}
       <div
-        className="absolute inset-0 z-20 flex flex-col items-center justify-start pt-8 sm:pt-16 md:pt-24 px-4 py-12 sm:py-16 md:py-20 pb-24 sm:pb-32 md:pb-40"
+        className={`absolute inset-0 z-20 flex flex-col items-center justify-start pt-8 sm:pt-16 md:pt-24 px-4 py-12 sm:py-16 md:py-20 pb-24 sm:pb-32 md:pb-40 transition-opacity duration-700 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
         style={extraPadding ? { paddingBottom: `calc(6rem + ${extraPadding}px)` } : {}}
       >
         <div className="text-center w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 flex flex-col items-center">
@@ -120,7 +127,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
               {slides.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setCurrentIndex(idx)}
+                  onClick={() => { setCurrentIndex(idx); setImgLoaded(false); }}
                   aria-label={`Go to slide ${idx + 1}`}
                   className={`h-1.5 sm:h-2 transition-all duration-300 ${
                     currentIndex === idx
@@ -138,7 +145,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
             {slides.map((_, idx) => (
               <button
                 key={idx}
-                onClick={() => setCurrentIndex(idx)}
+                onClick={() => { setCurrentIndex(idx); setImgLoaded(false); }}
                 aria-label={`Go to slide ${idx + 1}`}
                 className={`transition-all duration-300 rounded-full hover:scale-110 focus:scale-110 outline-none ${
                   currentIndex === idx
