@@ -32,26 +32,44 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [extraPadding, setExtraPadding] = useState(0);
   const [verticalDots, setVerticalDots] = useState(false);
+  const [firstCycleDone, setFirstCycleDone] = useState(false); // Track if first cycle is done
+  const [firstImageLoaded, setFirstImageLoaded] = useState(false); // Track if first image is loaded
   const dotsRef = useRef<HTMLDivElement>(null);
   const lastSwitchRef = useRef(Date.now());
-  const [imgLoaded, setImgLoaded] = useState(false); // New state for image loading
 
+  // Only start auto-transition after first image and text are loaded
   useEffect(() => {
-    const handleResize = () => {
-      // setShowHeroText(window.innerWidth > 500); // This line is removed
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
+    if (!firstImageLoaded) return;
+    if (!firstCycleDone) return; // Wait for first cycle to finish
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % slides.length);
-      setImgLoaded(false); // Reset image loaded state on slide change
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [firstImageLoaded, firstCycleDone]);
+
+  // When the first image is loaded, start a timeout for the first transition
+  useEffect(() => {
+    if (!firstImageLoaded || firstCycleDone) return;
+    const timeout = setTimeout(() => {
+      setCurrentIndex((prev) => {
+        // If already at last slide, mark first cycle done
+        if (prev === slides.length - 1) {
+          setFirstCycleDone(true);
+          return 0;
+        }
+        // Otherwise, go to next slide
+        return prev + 1;
+      });
+    }, 4000);
+    return () => clearTimeout(timeout);
+  }, [firstImageLoaded, firstCycleDone, currentIndex]);
+
+  // When currentIndex wraps around, mark first cycle as done
+  useEffect(() => {
+    if (!firstCycleDone && currentIndex === 0 && firstImageLoaded) {
+      setFirstCycleDone(true);
+    }
+  }, [currentIndex, firstCycleDone, firstImageLoaded]);
 
   // Helper to measure gap only when horizontal dots are rendered
   useEffect(() => {
@@ -98,20 +116,16 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
           sizes="100vw"
           priority={currentIndex === 0}
           quality={100}
-          className={`object-cover transition-opacity duration-700 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+          className="object-cover"
           style={{ objectPosition: "center" }}
-          onLoadingComplete={() => setImgLoaded(true)}
+          onLoadingComplete={() => setFirstImageLoaded(true)}
         />
-        {/* Skeleton overlay until image loads */}
-        {!imgLoaded && (
-          <div className="absolute inset-0 bg-gray-200 animate-pulse z-20" />
-        )}
         {/* Minimal darkness overlay for better text readability */}
         <div className="absolute inset-0 bg-black/15 z-10 pointer-events-none" />
       </div>
       {/* Overlay text content */}
       <div
-        className={`absolute inset-0 z-20 flex flex-col items-center justify-start pt-8 sm:pt-16 md:pt-24 px-4 py-12 sm:py-16 md:py-20 pb-24 sm:pb-32 md:pb-40 transition-opacity duration-700 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+        className="absolute inset-0 z-20 flex flex-col items-center justify-start pt-8 sm:pt-16 md:pt-24 px-4 py-12 sm:py-16 md:py-20 pb-24 sm:pb-32 md:pb-40"
         style={extraPadding ? { paddingBottom: `calc(6rem + ${extraPadding}px)` } : {}}
       >
         <div className="text-center w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 flex flex-col items-center">
@@ -127,7 +141,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
               {slides.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => { setCurrentIndex(idx); setImgLoaded(false); }}
+                  onClick={() => setCurrentIndex(idx)}
                   aria-label={`Go to slide ${idx + 1}`}
                   className={`h-1.5 sm:h-2 transition-all duration-300 ${
                     currentIndex === idx
@@ -145,7 +159,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
             {slides.map((_, idx) => (
               <button
                 key={idx}
-                onClick={() => { setCurrentIndex(idx); setImgLoaded(false); }}
+                onClick={() => setCurrentIndex(idx)}
                 aria-label={`Go to slide ${idx + 1}`}
                 className={`transition-all duration-300 rounded-full hover:scale-110 focus:scale-110 outline-none ${
                   currentIndex === idx
