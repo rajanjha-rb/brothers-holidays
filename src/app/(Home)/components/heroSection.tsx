@@ -6,19 +6,22 @@ import Head from "next/head";
 
 const slides = [
   {
-    img: "/1.avif",
+    img: "/1.webp",
+    blurDataURL: "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // sample, replace with real blur
     headline: "Explore the Hidden Gems of Nepal",
     subheadline: "From Himalayan peaks to ancient temples — discover all.",
     alt: "Beautiful Nepal landscape with mountains and temples",
   },
   {
-    img: "/2.avif",
+    img: "/2.webp",
+    blurDataURL: "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // sample, replace with real blur
     headline: "Journey Through Culture and Nature",
     subheadline: "Nepal offers unforgettable experiences at every turn.",
     alt: "Nepal cultural and natural scenery",
   },
   {
-    img: "/3.avif",
+    img: "/3.webp",
+    blurDataURL: "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // sample, replace with real blur
     headline: "Timeless Nepal Awaits Your Next Escape",
     subheadline: "Nepal welcomes every soul seeking adventure and peace",
     alt: "Serene Nepal destination for adventure and peace",
@@ -122,20 +125,14 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
           href="https://fonts.gstatic.com"
           crossOrigin=""
         />
-        <link rel="preload" as="image" href="/1.avif" />
-        <link rel="preload" as="image" href="/2.avif" />
-        <link rel="preload" as="image" href="/3.avif" />
+        <link rel="preload" as="image" href="/1.webp" />
       </Head>
       <section className="relative w-full bg-[#F8F9FA] overflow-hidden">
         {/* Image with responsive height */}
-        <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[24/9] max-h-[90vh]">
+        <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[24/9] max-h-[90vh]" style={{ background: "#e0e7ef" }}>
           <Image
-            src={
-              slides[pendingIndex !== null ? pendingIndex : currentIndex].img
-            }
-            alt={
-              slides[pendingIndex !== null ? pendingIndex : currentIndex].alt
-            }
+            src={slides[pendingIndex !== null ? pendingIndex : currentIndex].img}
+            alt={slides[pendingIndex !== null ? pendingIndex : currentIndex].alt}
             fill
             sizes="100vw"
             priority={currentIndex === 0}
@@ -144,7 +141,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
             style={{ objectPosition: "center" }}
             onLoadingComplete={() => setImageLoaded(true)}
             placeholder="blur"
-            blurDataURL="data:image/avif;base64,AAAAIGZ0eXBBVklGAAAAAG1pZjFtaWZhdmlmAAACAGF2MDEAAAAAAABDb2xvclNwYWNlAAAAAAABAAEAAQAAAwAABAAAAABkYXRhAAAAAA=="
+            blurDataURL={slides[pendingIndex !== null ? pendingIndex : currentIndex].blurDataURL}
           />
           {/* Minimal darkness overlay for better text readability */}
           <div className="absolute inset-0 bg-black/15 z-10 pointer-events-none" />

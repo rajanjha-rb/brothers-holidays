@@ -14,18 +14,28 @@ const roles = ["Chairperson", "Director", "Manager"];
 
 export default function Team({ team = defaultTeam }: TeamProps) {
   const [idx, setIdx] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
   const member = team[idx];
 
-  // Auto-advance every 5 seconds
+  // Auto-advance every 5 seconds, but only if not loading
   React.useEffect(() => {
+    if (loading) return;
     const interval = setInterval(() => {
+      setLoading(true);
       setIdx((prev) => (prev + 1) % team.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [team.length]);
+  }, [team.length, loading]);
 
   // Find the index of the first team member with the given role
   const getRoleIndex = (role: string) => team.findIndex((m) => m.position.toLowerCase() === role.toLowerCase());
+
+  // Custom blurDataURLs for each member (sample, replace with real blurs)
+  const blurDataURLs = [
+    "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // Chairperson
+    "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // Director
+    "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // Manager
+  ];
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -38,7 +48,10 @@ export default function Team({ team = defaultTeam }: TeamProps) {
             <button
               key={role}
               onClick={() => {
-                if (teamIdx !== -1) setIdx(teamIdx);
+                if (teamIdx !== -1) {
+                  setLoading(true);
+                  setIdx(teamIdx);
+                }
               }}
               className={`px-3 py-1 font-semibold text-base focus:outline-none transition-colors border-0 bg-transparent
                 ${isActive ? "text-black" : "text-gray-500 hover:text-black"}
@@ -67,7 +80,8 @@ export default function Team({ team = defaultTeam }: TeamProps) {
             priority={idx === 0}
             quality={75}
             placeholder="blur"
-            blurDataURL="data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA"
+            blurDataURL={blurDataURLs[idx]}
+            onLoadingComplete={() => setLoading(false)}
           />
         </div>
         {/* Info */}

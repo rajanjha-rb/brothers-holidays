@@ -25,7 +25,21 @@ export default function HomePage() {
           {[1,2,3].map((i) => (
             <div key={i} className="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col hover:scale-105 transition-transform duration-300 border border-yellow-200">
               <div className="relative h-56 w-full">
-                <Image src={`/${i}.webp`} alt={`Destination ${i}`} className="object-cover w-full h-full" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" priority={i === 1} quality={75} placeholder="blur" blurDataURL="data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA" />
+                <Image
+                  src={`/${i}.webp`}
+                  alt={`Destination ${i}`}
+                  className="object-cover w-full h-full"
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  priority={i === 1}
+                  quality={75}
+                  placeholder="blur"
+                  blurDataURL={[
+                    "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // 1
+                    "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // 2
+                    "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA"  // 3
+                  ][i-1]}
+                />
                 <span className="absolute top-4 left-4 bg-yellow-400 text-blue-900 font-bold px-3 py-1 rounded-full text-xs shadow">Premium</span>
               </div>
               <div className="p-6 flex-1 flex flex-col justify-between">
