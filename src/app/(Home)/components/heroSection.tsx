@@ -34,7 +34,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   const [verticalDots, setVerticalDots] = useState(false);
   const dotsRef = useRef<HTMLDivElement>(null);
   const lastSwitchRef = useRef(Date.now());
-  const [imageLoaded, setImageLoaded] = useState(false); // Track image load
+  // Removed imageLoaded, not needed
   const [mounted, setMounted] = useState(false); // Track client mount
   const [firstImageLoaded, setFirstImageLoaded] = useState(false); // Track first image load
 
@@ -42,9 +42,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    setImageLoaded(false); // Reset imageLoaded when slide changes
-  }, [currentIndex]);
+  // Removed imageLoaded effect, not needed
 
   useEffect(() => {
     const handleResize = () => {
@@ -110,7 +108,6 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
           className="object-cover"
           style={{ objectPosition: "center" }}
           onLoadingComplete={() => {
-            setImageLoaded(true);
             if (currentIndex === 0 && !firstImageLoaded) {
               setFirstImageLoaded(true);
             }
