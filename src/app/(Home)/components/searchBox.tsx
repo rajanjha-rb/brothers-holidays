@@ -38,7 +38,7 @@ export default function SearchBox() {
     <div className="w-full px-0 md:px-4 flex justify-start md:justify-center font-sans relative mt-4 md:mt-0 -top-2 z-10 mb-6 md:mb-16 overflow-x-hidden">
       {/* Inner container - white semi-transparent background, rounded, centered */}
       <div
-        className="w-full md:max-w-5xl px-2 sm:px-6 md:px-12 py-6 sm:py-8 md:py-10 flex flex-col gap-2 border border-yellow-300 shadow-2xl rounded-3xl bg-white/90 backdrop-blur-lg hover:shadow-2xl relative"
+        className="w-full md:max-w-5xl px-2 sm:px-6 md:px-12 py-6 sm:py-8 md:py-10 flex flex-col gap-2 border border-yellow-300 shadow-2xl rounded-3xl bg-white/60 backdrop-blur-lg hover:shadow-2xl relative"
         style={{ boxShadow: "0 8px 32px 0 rgba(39, 55, 85, 0.12)" }}
       >
         {/* Packages Heading */}
