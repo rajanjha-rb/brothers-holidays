@@ -5,19 +5,19 @@ import Image from "next/image";
 
 const slides = [
   {
-    img: "/1.avif",
+    img: "/1.webp",
     headline: "Explore the Hidden Gems of Nepal",
     subheadline: "From Himalayan peaks to ancient temples — discover all.",
     alt: "Beautiful Nepal landscape with mountains and temples",
   },
   {
-    img: "/2.avif",
+    img: "/2.webp",
     headline: "Journey Through Culture and Nature",
     subheadline: "Nepal offers unforgettable experiences at every turn.",
     alt: "Nepal cultural and natural scenery",
   },
   {
-    img: "/3.avif",
+    img: "/3.webp",
     headline: "Timeless Nepal Awaits Your Next Escape",
     subheadline: "Nepal welcomes every soul seeking adventure and peace",
     alt: "Serene Nepal destination for adventure and peace",
