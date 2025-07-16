@@ -30,6 +30,7 @@ interface HeroSectionProps {
 
 export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [pendingIndex, setPendingIndex] = useState<number | null>(null); // new state
   const [extraPadding, setExtraPadding] = useState(0);
   const [verticalDots, setVerticalDots] = useState(false);
   const dotsRef = useRef<HTMLDivElement>(null);
@@ -40,34 +41,49 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   // Helper: is current image loaded?
   const isCurrentImageLoaded = imageLoadedArr[currentIndex];
 
-  useEffect(() => {
-    const handleResize = () => {
-      // setShowHeroText(window.innerWidth > 500); // This line is removed
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  // Helper: is pending image loaded?
+  const isPendingImageLoaded = pendingIndex !== null ? imageLoadedArr[pendingIndex] : false;
 
-  // Start auto-advance only after first image is loaded
+  // Slide change handler
+  const requestSlideChange = (idx: number) => {
+    if (idx === currentIndex) return;
+    setPendingIndex(idx);
+    // If image is already loaded, update immediately
+    if (imageLoadedArr[idx]) {
+      setCurrentIndex(idx);
+      setPendingIndex(null);
+    }
+  };
+
+  // Auto-advance logic
   useEffect(() => {
     if (!imageLoadedArr[0]) return;
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % slides.length);
+      const nextIdx = (currentIndex + 1) % slides.length;
+      requestSlideChange(nextIdx);
     }, 4000);
     return () => clearInterval(interval);
-  }, [imageLoadedArr]);
+    // eslint-disable-next-line
+  }, [imageLoadedArr, currentIndex]);
 
-  // When currentIndex changes, if image is not loaded, set it to false (to trigger loading state)
+  // When pendingIndex changes and its image loads, update currentIndex
   useEffect(() => {
-    if (!imageLoadedArr[currentIndex]) {
+    if (pendingIndex !== null && imageLoadedArr[pendingIndex]) {
+      setCurrentIndex(pendingIndex);
+      setPendingIndex(null);
+    }
+  }, [pendingIndex, imageLoadedArr]);
+
+  // When pendingIndex is set, if image is not loaded, set it to false (to trigger loading state)
+  useEffect(() => {
+    if (pendingIndex !== null && !imageLoadedArr[pendingIndex]) {
       setImageLoadedArr((prev) => {
         const arr = [...prev];
-        arr[currentIndex] = false;
+        arr[pendingIndex] = false;
         return arr;
       });
     }
-  }, [currentIndex]);
+  }, [pendingIndex]);
 
   // Helper to measure gap only when horizontal dots are rendered
   useEffect(() => {
@@ -103,6 +119,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
     };
   }, [searchBoxRef, currentIndex, verticalDots]);
 
+  // The image to show is always the currentIndex
   return (
     <section className="relative w-full bg-[#F8F9FA] overflow-hidden">
       {/* Image with responsive height */}
@@ -123,8 +140,34 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
               arr[currentIndex] = true;
               return arr;
             });
+            // If pendingIndex is this image, update currentIndex
+            if (pendingIndex === currentIndex) {
+              setCurrentIndex(currentIndex);
+              setPendingIndex(null);
+            }
           }}
         />
+        {/* Preload pending image invisibly if needed */}
+        {pendingIndex !== null && !imageLoadedArr[pendingIndex] && (
+          <Image
+            src={slides[pendingIndex].img}
+            alt={slides[pendingIndex].alt}
+            fill
+            sizes="100vw"
+            priority={false}
+            quality={100}
+            className="object-cover invisible pointer-events-none"
+            style={{ objectPosition: "center" }}
+            onLoadingComplete={() => {
+              setImageLoadedArr((prev) => {
+                if (prev[pendingIndex]) return prev;
+                const arr = [...prev];
+                arr[pendingIndex] = true;
+                return arr;
+              });
+            }}
+          />
+        )}
         {/* Minimal darkness overlay for better text readability */}
         <div className="absolute inset-0 bg-black/15 z-10 pointer-events-none" />
         {/* Loading spinner overlay for first slide only */}
@@ -152,7 +195,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
               {slides.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setCurrentIndex(idx)}
+                  onClick={() => requestSlideChange(idx)}
                   aria-label={`Go to slide ${idx + 1}`}
                   className={`h-1.5 sm:h-2 transition-all duration-300 ${
                     currentIndex === idx
@@ -170,7 +213,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
             {slides.map((_, idx) => (
               <button
                 key={idx}
-                onClick={() => setCurrentIndex(idx)}
+                onClick={() => requestSlideChange(idx)}
                 aria-label={`Go to slide ${idx + 1}`}
                 className={`transition-all duration-300 rounded-full hover:scale-110 focus:scale-110 outline-none ${
                   currentIndex === idx
