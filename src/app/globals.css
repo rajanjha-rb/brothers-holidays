@@ -217,6 +217,9 @@
   .hide-below-450 {
     display: none !important;
   }
+  .headline-xs {
+    opacity: 0.85;
+  }
 }
 
 @media (max-width: 500px) {

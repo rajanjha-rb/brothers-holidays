@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 
 export type User = {
@@ -10,67 +10,17 @@ export type User = {
   prefs?: { avatar?: string };
 }
 
-function pastelColor(str: string) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 60%, 85%)`;
-}
-
-export function UserAvatar({ user, size = "md" }: { user: User, size?: "sm" | "md" | "lg" }) {
+export function UserAvatar({ user, size: _size = "md" }: { user: User, size?: "sm" | "md" | "lg" }) {
   const router = useRouter();
   if (!user) return null;
   const displayName = user.name || user.email || "User";
-  const initial = (user.name || user.email || "U").charAt(0).toUpperCase();
-  const initialsBg = pastelColor(user.name || user.email || "U");
-  const isValidAvatar = user.prefs?.avatar && /^https?:\/\//.test(user.prefs.avatar);
-  const sizeClasses = {
-    sm: "w-8 h-8 text-base",
-    md: "w-8 h-8 text-base",
-    lg: "w-10 h-10 text-lg"
-  };
-  
-  const handleClick = () => {
-    router.push("/dashboard");
-  };
-  
+  const initials = (user.name || user.email || "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2);
   return (
-    <div 
-      className={
-        `flex items-center gap-2 px-3 py-1.5 rounded-full min-w-0 max-w-[200px] shadow-md cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105`
-      }
-      style={{
-        background: '#0057B7',
-        boxShadow: '0 2px 8px rgba(0, 87, 183, 0.10)',
-      }}
-      onClick={handleClick}
-    >
-      <div className={`${sizeClasses[size]} rounded-full flex items-center justify-center overflow-hidden border flex-shrink-0`}
-        style={{ border: '2px solid #FFD166', background: '#fff' }}
-      >
-        {isValidAvatar ? (
-          <Image
-            src={user.prefs?.avatar || "/default-avatar.png"}
-            alt="avatar"
-            className="w-full h-full object-cover rounded-full"
-            fill
-          />
-        ) : (
-          <span
-            className="w-full h-full flex items-center justify-center font-semibold text-blue-900 rounded-full"
-            style={{ background: initialsBg, fontFamily: 'Poppins, Arial, sans-serif', letterSpacing: '0.03em' }}
-          >
-            {initial}
-          </span>
-        )}
-      </div>
-      <span className={`font-medium text-white tracking-wide font-sans truncate flex-1 min-w-0 ${
-        size === "lg" ? "text-base" : "text-sm"
-      }`} style={{lineHeight: 1.2}}>
-        {displayName}
-      </span>
+    <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/dashboard") }>
+      <Avatar>
+        <AvatarFallback className="bg-[#22223b] text-white font-bold">{initials}</AvatarFallback>
+      </Avatar>
+      <span className="font-medium text-black">{displayName}</span>
     </div>
   );
 }

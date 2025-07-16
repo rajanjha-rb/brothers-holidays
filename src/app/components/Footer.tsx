@@ -185,7 +185,7 @@ export default function Footer() {
         &copy; {new Date().getFullYear()} Brothers Holidays. All rights reserved.
       </div>
       {/* Debug: Clear Auth State Button (only in development) */}
-      {process.env.NODE_ENV === 'development' && (
+      {false && process.env.NODE_ENV === 'development' && (
         <button
           onClick={clearAuthState}
           style={{

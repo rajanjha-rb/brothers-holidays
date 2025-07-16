@@ -1,8 +1,9 @@
 "use client";
 import React, { useRef, useEffect } from "react";
-import NavLinks, { NavLink } from "./NavLinks";
+import NavLinks, { NavLink, MoreModal } from "./NavLinks";
 import AuthButtons from "./AuthButtons";
 import type { User } from "./AuthButtons";
+import { useState } from "react";
 
 interface MobileDrawerProps {
   open: boolean;
@@ -19,6 +20,7 @@ const PALETTE = {
 };
 
 export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated = false, loading = false }: MobileDrawerProps) {
+  const [showMore, setShowMore] = useState(false);
   const drawerRef = useRef<HTMLDivElement | null>(null);
 
   // Focus trap for accessibility
@@ -122,7 +124,7 @@ export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated =
               height="24"
               viewBox="0 0 24 24"
               fill="none"
-              stroke={PALETTE.gold}
+              stroke="red"
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -134,7 +136,7 @@ export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated =
         </div>
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-6 pb-6 mobile-drawer-content" style={{ minHeight: 0 }}>
-          <NavLinks navLinks={navLinks} onLinkClick={() => setOpen(false)} variant="mobile" />
+          <NavLinks navLinks={navLinks} onLinkClick={() => setOpen(false)} variant="mobile" setShowMore={setShowMore} />
         </div>
         {/* Fixed Footer */}
         <div className="flex-shrink-0 px-6 pb-6 space-y-4" style={{ pointerEvents: 'auto', zIndex: 60 }}>
@@ -166,6 +168,10 @@ export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated =
           </div>
         </div>
       </nav>
+      {/* Render More modal at the end so it overlays all drawer content */}
+      {showMore && (
+        <MoreModal navLinks={navLinks} setShowMore={setShowMore} onLinkClick={() => setOpen(false)} />
+      )}
     </div>
   );
 } 

@@ -7,6 +7,8 @@ import AuthButtons from "./navbar/AuthButtons";
 import MobileDrawer from "./navbar/MobileDrawer";
 import MobileActionBar from "./navbar/MobileActionBar";
 import { FaHome, FaSuitcaseRolling, FaRegNewspaper, FaImages, FaEllipsisH, FaPhoneAlt, FaUser } from "react-icons/fa";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
 
 const PALETTE = {
   blue: "#0057B7",
@@ -20,6 +22,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user, hydrated, loading } = useAuthStore();
+  const router = useRouter();
 
   // Don't render auth buttons until hydration is complete and not loading
   const showAuthButtons = hydrated && !loading;
@@ -105,7 +108,15 @@ export default function Navbar() {
               <span className="inline">+977 9741726064</span>
             </a>
             <div className="flex items-center gap-3 ml-4">
-              {showAuthButtons && <AuthButtons user={user} variant="desktop" loading={loading} />}
+              {showAuthButtons && user && (
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/dashboard") }>
+                  <Avatar>
+                    <AvatarFallback className="bg-[#22223b] text-white font-bold">{(user.name || user.email || "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2)}</AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium text-black">{user.name || user.email || "User"}</span>
+                </div>
+              )}
+              {showAuthButtons && !user && <AuthButtons user={user} variant="desktop" loading={loading} />}
             </div>
           </div>
 
