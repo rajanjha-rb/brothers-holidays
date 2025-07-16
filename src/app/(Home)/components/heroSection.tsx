@@ -34,7 +34,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   const [verticalDots, setVerticalDots] = useState(false);
   const dotsRef = useRef<HTMLDivElement>(null);
   const lastSwitchRef = useRef(Date.now());
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [loadedImages, setLoadedImages] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     const handleResize = () => {
@@ -45,14 +45,14 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Start auto-advance only after first image is loaded
+  const isCurrentImageLoaded = !!loadedImages[currentIndex];
   useEffect(() => {
-    if (!imageLoaded) return;
+    if (!isCurrentImageLoaded) return;
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % slides.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, [imageLoaded]);
+  }, [isCurrentImageLoaded]);
 
   // Helper to measure gap only when horizontal dots are rendered
   useEffect(() => {
@@ -102,13 +102,13 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
           className="object-cover"
           style={{ objectPosition: "center" }}
           onLoadingComplete={() => {
-            if (currentIndex === 0 && !imageLoaded) setImageLoaded(true);
+            setLoadedImages((prev) => ({ ...prev, [currentIndex]: true }));
           }}
         />
         {/* Minimal darkness overlay for better text readability */}
         <div className="absolute inset-0 bg-black/15 z-10 pointer-events-none" />
         {/* Loading spinner overlay */}
-        {!imageLoaded && (
+        {!isCurrentImageLoaded && (
           <div className="absolute inset-0 flex items-center justify-center z-30 bg-white/40">
             <span className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></span>
           </div>
@@ -116,7 +116,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
       </div>
       {/* Overlay text content */}
       <div
-        className={`absolute inset-0 z-20 flex flex-col items-center justify-start pt-8 sm:pt-16 md:pt-24 px-4 py-12 sm:py-16 md:py-20 pb-24 sm:pb-32 md:pb-40 transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`absolute inset-0 z-20 flex flex-col items-center justify-start pt-8 sm:pt-16 md:pt-24 px-4 py-12 sm:py-16 md:py-20 pb-24 sm:pb-32 md:pb-40 transition-opacity duration-300 ${isCurrentImageLoaded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         style={extraPadding ? { paddingBottom: `calc(6rem + ${extraPadding}px)` } : {}}
       >
         <div className="text-center w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 flex flex-col items-center">
