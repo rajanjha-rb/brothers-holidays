@@ -204,6 +204,21 @@
   }
 }
 
+/* Fade-in animation for hero section */
+.fade-in {
+  animation: fadeInHero 1.2s ease-in;
+}
+@keyframes fadeInHero {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 550px) {
   .headline-xs {
     font-size: 1rem !important;

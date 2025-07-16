@@ -32,6 +32,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [extraPadding, setExtraPadding] = useState(0);
   const [verticalDots, setVerticalDots] = useState(false);
+  const [isFirstCycle, setIsFirstCycle] = useState(true);
   const dotsRef = useRef<HTMLDivElement>(null);
   const lastSwitchRef = useRef(Date.now());
 
@@ -46,10 +47,13 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % slides.length);
+      setCurrentIndex((prev) => {
+        if (prev === 0 && isFirstCycle) setIsFirstCycle(false);
+        return (prev + 1) % slides.length;
+      });
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isFirstCycle]);
 
   // Helper to measure gap only when horizontal dots are rendered
   useEffect(() => {
@@ -104,7 +108,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
       </div>
       {/* Overlay text content */}
       <div
-        className="absolute inset-0 z-20 flex flex-col items-center justify-start pt-8 sm:pt-16 md:pt-24 px-4 py-12 sm:py-16 md:py-20 pb-24 sm:pb-32 md:pb-40"
+        className={`absolute inset-0 z-20 flex flex-col items-center justify-start pt-8 sm:pt-16 md:pt-24 px-4 py-12 sm:py-16 md:py-20 pb-24 sm:pb-32 md:pb-40${isFirstCycle ? ' fade-in' : ''}`}
         style={extraPadding ? { paddingBottom: `calc(6rem + ${extraPadding}px)` } : {}}
       >
         <div className="text-center w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 flex flex-col items-center">
