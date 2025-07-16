@@ -110,7 +110,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
         {/* Loading spinner overlay */}
         {!imageLoaded && (
           <div className="absolute inset-0 flex items-center justify-center z-30 bg-white/40">
-            <span className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></span>
+            <span className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></span>
           </div>
         )}
       </div>
