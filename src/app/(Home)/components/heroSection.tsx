@@ -41,9 +41,6 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   // Helper: is current image loaded?
   const isCurrentImageLoaded = imageLoadedArr[currentIndex];
 
-  // Helper: is pending image loaded?
-  const isPendingImageLoaded = pendingIndex !== null ? imageLoadedArr[pendingIndex] : false;
-
   // Slide change handler
   const requestSlideChange = (idx: number) => {
     if (idx === currentIndex) return;
@@ -60,10 +57,15 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
     if (!imageLoadedArr[0]) return;
     const interval = setInterval(() => {
       const nextIdx = (currentIndex + 1) % slides.length;
-      requestSlideChange(nextIdx);
+      if (nextIdx === currentIndex) return;
+      setPendingIndex(nextIdx);
+      // If image is already loaded, update immediately
+      if (imageLoadedArr[nextIdx]) {
+        setCurrentIndex(nextIdx);
+        setPendingIndex(null);
+      }
     }, 4000);
     return () => clearInterval(interval);
-    // eslint-disable-next-line
   }, [imageLoadedArr, currentIndex]);
 
   // When pendingIndex changes and its image loads, update currentIndex
