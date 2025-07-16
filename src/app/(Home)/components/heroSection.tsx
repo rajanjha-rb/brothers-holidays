@@ -6,7 +6,7 @@ import Head from "next/head";
 
 const slides = [
   {
-    img: "/1.avif",
+    img: "/1.webp",
     headline: "Explore the Hidden Gems of Nepal",
     subheadline: "From Himalayan peaks to ancient temples — discover all.",
     alt: "Beautiful Nepal landscape with mountains and temples",
