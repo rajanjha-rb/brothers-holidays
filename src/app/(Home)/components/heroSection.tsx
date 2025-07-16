@@ -105,6 +105,8 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   return (
     <>
       <Head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link rel="preload" as="image" href="/1.webp" />
         <link rel="preload" as="image" href="/2.webp" />
         <link rel="preload" as="image" href="/3.webp" />
@@ -118,10 +120,12 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
             fill
             sizes="100vw"
             priority={currentIndex === 0}
-            quality={100}
+            quality={75}
             className="object-cover"
             style={{ objectPosition: "center" }}
             onLoadingComplete={() => setImageLoaded(true)}
+            placeholder="blur"
+            blurDataURL="data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA"
           />
           {/* Minimal darkness overlay for better text readability */}
           <div className="absolute inset-0 bg-black/15 z-10 pointer-events-none" />

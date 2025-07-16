@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
 import { team } from "@/data/team";
+import Head from "next/head";
 
 const roles = ["Chairperson", "Director", "Manager"];
 
@@ -25,6 +26,10 @@ export default function TeamPage() {
 
   return (
     <main className="min-h-screen bg-black flex flex-col justify-center items-center py-20 px-4">
+      <Head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      </Head>
       {/* Tab Navigation */}
       <div className="flex items-center gap-2 bg-white/90 border border-gray-200 rounded-xl px-4 py-2 mb-10 shadow-sm">
         {roles.map((role, i) => {
@@ -61,7 +66,9 @@ export default function TeamPage() {
             className="w-full h-full object-cover object-center select-none"
             draggable={false}
             priority={idx === 0}
-            placeholder="empty"
+            quality={75}
+            placeholder="blur"
+            blurDataURL="data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA"
           />
         </div>
         {/* Info */}

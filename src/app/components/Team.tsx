@@ -65,7 +65,9 @@ export default function Team({ team = defaultTeam }: TeamProps) {
             className="w-full h-full object-cover object-center select-none"
             draggable={false}
             priority={idx === 0}
-            placeholder="empty"
+            quality={75}
+            placeholder="blur"
+            blurDataURL="data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA"
           />
         </div>
         {/* Info */}
