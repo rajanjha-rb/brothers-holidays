@@ -122,9 +122,9 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
           href="https://fonts.gstatic.com"
           crossOrigin=""
         />
-        <link rel="preload" as="image" href="/1.webp" />
-        <link rel="preload" as="image" href="/2.webp" />
-        <link rel="preload" as="image" href="/3.webp" />
+        <link rel="preload" as="image" href="/1.avif" />
+        <link rel="preload" as="image" href="/2.avif" />
+        <link rel="preload" as="image" href="/3.avif" />
       </Head>
       <section className="relative w-full bg-[#F8F9FA] overflow-hidden">
         {/* Image with responsive height */}
@@ -144,7 +144,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
             style={{ objectPosition: "center" }}
             onLoadingComplete={() => setImageLoaded(true)}
             placeholder="blur"
-            blurDataURL="data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA"
+            blurDataURL="data:image/avif;base64,AAAAIGZ0eXBBVklGAAAAAG1pZjFtaWZhdmlmAAACAGF2MDEAAAAAAABDb2xvclNwYWNlAAAAAAABAAEAAQAAAwAABAAAAABkYXRhAAAAAA=="
           />
           {/* Minimal darkness overlay for better text readability */}
           <div className="absolute inset-0 bg-black/15 z-10 pointer-events-none" />
