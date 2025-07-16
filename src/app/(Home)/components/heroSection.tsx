@@ -6,19 +6,19 @@ import Head from "next/head";
 
 const slides = [
   {
-    img: "/1.webp",
+    img: "/1.avif",
     headline: "Explore the Hidden Gems of Nepal",
     subheadline: "From Himalayan peaks to ancient temples — discover all.",
     alt: "Beautiful Nepal landscape with mountains and temples",
   },
   {
-    img: "/2.webp",
+    img: "/2.avif",
     headline: "Journey Through Culture and Nature",
     subheadline: "Nepal offers unforgettable experiences at every turn.",
     alt: "Nepal cultural and natural scenery",
   },
   {
-    img: "/3.webp",
+    img: "/3.avif",
     headline: "Timeless Nepal Awaits Your Next Escape",
     subheadline: "Nepal welcomes every soul seeking adventure and peace",
     alt: "Serene Nepal destination for adventure and peace",
@@ -51,7 +51,10 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
     const interval = setInterval(() => {
       if (imageLoaded) {
         setPendingIndex((prev) => {
-          const next = prev === null ? (currentIndex + 1) % slides.length : (prev + 1) % slides.length;
+          const next =
+            prev === null
+              ? (currentIndex + 1) % slides.length
+              : (prev + 1) % slides.length;
           return next;
         });
         setImageLoaded(false);
@@ -81,10 +84,18 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
       debounceTimeout = setTimeout(() => {
         const now = Date.now();
         // Only switch if lockout period has passed
-        if (!verticalDots && gap < minGap && now - lastSwitchRef.current > 200) {
+        if (
+          !verticalDots &&
+          gap < minGap &&
+          now - lastSwitchRef.current > 200
+        ) {
           setVerticalDots(true);
           lastSwitchRef.current = now;
-        } else if (verticalDots && gap >= minGap && now - lastSwitchRef.current > 200) {
+        } else if (
+          verticalDots &&
+          gap >= minGap &&
+          now - lastSwitchRef.current > 200
+        ) {
           setVerticalDots(false);
           lastSwitchRef.current = now;
         }
@@ -106,7 +117,11 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
     <>
       <Head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin=""
+        />
         <link rel="preload" as="image" href="/1.webp" />
         <link rel="preload" as="image" href="/2.webp" />
         <link rel="preload" as="image" href="/3.webp" />
@@ -115,8 +130,12 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
         {/* Image with responsive height */}
         <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[24/9] max-h-[90vh]">
           <Image
-            src={slides[pendingIndex !== null ? pendingIndex : currentIndex].img}
-            alt={slides[pendingIndex !== null ? pendingIndex : currentIndex].alt}
+            src={
+              slides[pendingIndex !== null ? pendingIndex : currentIndex].img
+            }
+            alt={
+              slides[pendingIndex !== null ? pendingIndex : currentIndex].alt
+            }
             fill
             sizes="100vw"
             priority={currentIndex === 0}
@@ -133,18 +152,31 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
         {/* Overlay text content */}
         <div
           className="absolute inset-0 z-20 flex flex-col items-center justify-start pt-8 sm:pt-16 md:pt-24 px-4 py-12 sm:py-16 md:py-20 pb-24 sm:pb-32 md:pb-40"
-          style={extraPadding ? { paddingBottom: `calc(6rem + ${extraPadding}px)` } : {}}
+          style={
+            extraPadding
+              ? { paddingBottom: `calc(6rem + ${extraPadding}px)` }
+              : {}
+          }
         >
           <div className="text-center w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 flex flex-col items-center">
             <h1 className="text-base md:text-2xl lg:text-3xl font-extrabold text-blue-700 bg-white/95 border-2 border-yellow-300 rounded-lg shadow-lg px-4 py-3 mx-auto sm:max-w-[90%] md:max-w-[85%] headline-xs">
-              {slides[pendingIndex !== null ? pendingIndex : currentIndex].headline}
+              {
+                slides[pendingIndex !== null ? pendingIndex : currentIndex]
+                  .headline
+              }
             </h1>
             <p className="hide-below-450 text-xs sm:text-sm md:text-lg lg:text-xl font-bold text-gray-700 bg-yellow-100 rounded-lg shadow px-4 py-2 mx-auto sm:max-w-[85%] md:max-w-[80%]">
-              {slides[pendingIndex !== null ? pendingIndex : currentIndex].subheadline}
+              {
+                slides[pendingIndex !== null ? pendingIndex : currentIndex]
+                  .subheadline
+              }
             </p>
             {/* Slide indicators just below the text (horizontal) */}
             {!verticalDots && (
-              <div ref={dotsRef} className="mt-10 sm:mt-12 md:mt-16 flex items-center gap-3 sm:gap-4 z-30">
+              <div
+                ref={dotsRef}
+                className="mt-10 sm:mt-12 md:mt-16 flex items-center gap-3 sm:gap-4 z-30"
+              >
                 {slides.map((_, idx) => (
                   <button
                     key={idx}
@@ -162,7 +194,10 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
           </div>
           {/* Vertical slide indicators at right center */}
           {verticalDots && (
-            <div ref={dotsRef} className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 sm:gap-2 z-50 bg-white/60 backdrop-blur-md border border-yellow-200 rounded-full px-1.5 py-2 shadow-xl">
+            <div
+              ref={dotsRef}
+              className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 sm:gap-2 z-50 bg-white/60 backdrop-blur-md border border-yellow-200 rounded-full px-1.5 py-2 shadow-xl"
+            >
               {slides.map((_, idx) => (
                 <button
                   key={idx}
