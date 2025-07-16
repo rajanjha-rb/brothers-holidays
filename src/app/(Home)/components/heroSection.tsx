@@ -36,10 +36,12 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [pendingIndex, setPendingIndex] = useState<number | null>(null);
   const [imageLoaded, setImageLoaded] = useState(true);
+  const [nextImageLoaded, setNextImageLoaded] = useState(false);
   const [extraPadding, setExtraPadding] = useState(0);
   const [verticalDots, setVerticalDots] = useState(false);
   const dotsRef = useRef<HTMLDivElement>(null);
   const lastSwitchRef = useRef(Date.now());
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -50,21 +52,28 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Preload the next image after the current one is loaded
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (imageLoaded) {
-        setPendingIndex((prev) => {
-          const next =
-            prev === null
-              ? (currentIndex + 1) % slides.length
-              : (prev + 1) % slides.length;
-          return next;
-        });
-        setImageLoaded(false);
-      }
+    if (!imageLoaded) return;
+    const nextIdx = (currentIndex + 1) % slides.length;
+    setNextImageLoaded(false);
+    const img = new window.Image();
+    img.src = slides[nextIdx].img;
+    img.onload = () => setNextImageLoaded(true);
+  }, [imageLoaded, currentIndex]);
+
+  // Start the timer only after the next image is loaded
+  useEffect(() => {
+    if (!imageLoaded || !nextImageLoaded) return;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setPendingIndex((currentIndex + 1) % slides.length);
+      setImageLoaded(false);
     }, 4000);
-    return () => clearInterval(interval);
-  }, [currentIndex, imageLoaded]);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [imageLoaded, nextImageLoaded, currentIndex]);
 
   // When pendingIndex changes, update currentIndex only after image loads
   useEffect(() => {
