@@ -6,21 +6,21 @@ import Head from "next/head";
 
 const slides = [
   {
-    img: "/1.webp",
+    img: "/1.avif",
     blurDataURL: "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // sample, replace with real blur
     headline: "Explore the Hidden Gems of Nepal",
     subheadline: "From Himalayan peaks to ancient temples — discover all.",
     alt: "Beautiful Nepal landscape with mountains and temples",
   },
   {
-    img: "/2.webp",
+    img: "/2.avif",
     blurDataURL: "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // sample, replace with real blur
     headline: "Journey Through Culture and Nature",
     subheadline: "Nepal offers unforgettable experiences at every turn.",
     alt: "Nepal cultural and natural scenery",
   },
   {
-    img: "/3.webp",
+    img: "/3.avif",
     blurDataURL: "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // sample, replace with real blur
     headline: "Timeless Nepal Awaits Your Next Escape",
     subheadline: "Nepal welcomes every soul seeking adventure and peace",
