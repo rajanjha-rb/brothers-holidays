@@ -43,6 +43,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   const dotsRef = useRef<HTMLDivElement>(null);
   const lastSwitchRef = useRef(Date.now());
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [imgFadeIn, setImgFadeIn] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -126,6 +127,18 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
     };
   }, [searchBoxRef, currentIndex, verticalDots]);
 
+  // When image loads, trigger fade-in
+  function handleImageLoadComplete() {
+    setImageLoaded(true);
+    setImgFadeIn(true);
+    if (currentIndex === 0 && !firstImageReady) setFirstImageReady(true);
+  }
+
+  // Reset fade-in when switching images
+  useEffect(() => {
+    setImgFadeIn(false);
+  }, [pendingIndex, currentIndex]);
+
   return (
     <>
       <Head>
@@ -136,6 +149,15 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
           crossOrigin=""
         />
         <link rel="preload" as="image" href="/1.webp" />
+        <style>{`
+          .fade-in-image {
+            opacity: 1;
+            transition: opacity 0.8s cubic-bezier(0.4,0,0.2,1);
+          }
+          .fade-in-image-init {
+            opacity: 0;
+          }
+        `}</style>
       </Head>
       <section className="relative w-full bg-[#F8F9FA] overflow-hidden">
         {/* Image with responsive height */}
@@ -147,12 +169,9 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
             sizes="100vw"
             priority={currentIndex === 0}
             quality={75}
-            className="object-cover"
+            className={`object-cover fade-in-image-init${imgFadeIn ? ' fade-in-image' : ''}`}
             style={{ objectPosition: "center" }}
-            onLoadingComplete={() => {
-              setImageLoaded(true);
-              if (currentIndex === 0 && !firstImageReady) setFirstImageReady(true);
-            }}
+            onLoadingComplete={handleImageLoadComplete}
             placeholder="blur"
             blurDataURL={slides[pendingIndex !== null ? pendingIndex : currentIndex].blurDataURL}
           />
