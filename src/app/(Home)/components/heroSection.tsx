@@ -36,6 +36,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   const lastSwitchRef = useRef(Date.now());
   const [imageLoaded, setImageLoaded] = useState(false); // Track image load
   const [mounted, setMounted] = useState(false); // Track client mount
+  const [firstImageLoaded, setFirstImageLoaded] = useState(false); // Track first image load
 
   useEffect(() => {
     setMounted(true);
@@ -108,13 +109,18 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
           quality={100}
           className="object-cover"
           style={{ objectPosition: "center" }}
-          onLoadingComplete={() => setImageLoaded(true)}
+          onLoadingComplete={() => {
+            setImageLoaded(true);
+            if (currentIndex === 0 && !firstImageLoaded) {
+              setFirstImageLoaded(true);
+            }
+          }}
         />
         {/* Minimal darkness overlay for better text readability */}
         <div className="absolute inset-0 bg-black/15 z-10 pointer-events-none" />
       </div>
       {/* Overlay text content */}
-      {mounted && ((currentIndex !== 0) || imageLoaded) && (
+      {mounted && ((currentIndex !== 0) || firstImageLoaded) && (
         <div
           className="absolute inset-0 z-20 flex flex-col items-center justify-start pt-8 sm:pt-16 md:pt-24 px-4 py-12 sm:py-16 md:py-20 pb-24 sm:pb-32 md:pb-40"
           style={extraPadding ? { paddingBottom: `calc(6rem + ${extraPadding}px)` } : {}}
