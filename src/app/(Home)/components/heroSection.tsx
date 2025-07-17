@@ -85,7 +85,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
         return arr;
       });
     }
-  }, [pendingIndex]);
+  }, [pendingIndex,imageLoadedArr]);
 
   // Helper to measure gap only when horizontal dots are rendered
   useEffect(() => {

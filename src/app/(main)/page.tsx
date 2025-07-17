@@ -1,23 +1,14 @@
-"use client";
-import React, { useRef } from "react";
-import HeroSection from "../(Home)/components/heroSection";
-import SearchBox from "../(Home)/components/searchBox";
+import React from "react";
+import HeroAndSearchSection from "./HeroAndSearchSection";
 import Image from "next/image";
 
 export default function HomePage() {
-  const searchBoxRef = useRef<HTMLDivElement>(null);
   return (
     <main className="bg-[#F8F9FA]">
       <div className="relative">
-        {/* Hero Section */}
-        <HeroSection searchBoxRef={searchBoxRef} />
-
-        {/* Overlapping SearchBox */}
-        <div ref={searchBoxRef} className="w-full max-w-5xl mx-auto px-2 sm:px-4 -mt-12 sm:-mt-16 md:-mt-20 z-30 relative no-overlap-below-450">
-          <SearchBox />
-        </div>
+        {/* Hero Section + SearchBox with ref (client) */}
+        <HeroAndSearchSection />
       </div>
-
       {/* Featured Destinations */}
       <section className="max-w-7xl mx-auto px-4 py-12 md:py-20">
         <h2 className="text-2xl md:text-4xl font-extrabold text-center text-blue-800 mb-8">Featured Destinations</h2>
@@ -51,7 +42,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
       {/* Why Choose Us */}
       <section className="bg-gradient-to-br from-yellow-50 to-blue-50 py-12 md:py-20">
         <div className="max-w-6xl mx-auto px-4">
@@ -80,7 +70,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Testimonials */}
       <section className="max-w-6xl mx-auto px-4 py-12 md:py-20">
         <h2 className="text-2xl md:text-4xl font-extrabold text-center text-blue-800 mb-10">What Our Clients Say</h2>
@@ -108,7 +97,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
       {/* Call to Action */}
       <section className="bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-200 py-12 md:py-20 flex flex-col items-center justify-center text-center">
         <h2 className="text-2xl md:text-4xl font-extrabold text-blue-900 mb-4">Ready for Your Next Luxury Escape?</h2>
