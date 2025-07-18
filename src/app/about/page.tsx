@@ -1,10 +1,9 @@
 import React from "react";
 import Footer from "../components/Footer";
 import { FaGlobeAsia, FaUsers, FaHeart, FaStar } from "react-icons/fa";
-import dynamic from "next/dynamic";
 import Navbar from "../components/Navbar";
 
-const Team = dynamic(() => import("../components/Team"));
+import Team from "../components/TeamClient";
 import GoogleMapEmbed from "../components/GoogleMapEmbedClient";
 
 const values = [

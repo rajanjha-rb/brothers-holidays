@@ -3,7 +3,9 @@
 import React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
+import { FaFacebook } from "react-icons/fa";
+import { FaInstagram } from "react-icons/fa";
+import { FaLinkedin } from "react-icons/fa";
 import { team as defaultTeam } from "@/data/team";
 
 interface TeamProps {
@@ -81,6 +83,7 @@ export default function Team({ team = defaultTeam }: TeamProps) {
             quality={75}
             placeholder="blur"
             blurDataURL={blurDataURLs[idx]}
+            loading={idx === 0 ? undefined : "lazy"}
             onLoadingComplete={() => setLoading(false)}
           />
         </div>
