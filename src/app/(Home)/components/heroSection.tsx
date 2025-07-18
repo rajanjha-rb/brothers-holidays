@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 const slides = [
   {
@@ -29,6 +30,9 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
+  const pathname = usePathname();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [pendingIndex, setPendingIndex] = useState<number | null>(null); // new state
   const [extraPadding, setExtraPadding] = useState(0);
@@ -52,40 +56,42 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
     }
   };
 
-  // Auto-advance logic
+  // Auto-advance logic and pendingIndex update (combined and guarded)
   useEffect(() => {
-    if (!imageLoadedArr[0]) return;
-    const interval = setInterval(() => {
+    if (!imageLoadedArr[0] || pathname !== "/" || !isVisible) return;
+    let interval: NodeJS.Timeout | null = null;
+    // Auto-advance
+    interval = setInterval(() => {
       const nextIdx = (currentIndex + 1) % slides.length;
-      if (nextIdx === currentIndex) return;
-      setPendingIndex(nextIdx);
-      // If image is already loaded, update immediately
-      if (imageLoadedArr[nextIdx]) {
-        setCurrentIndex(nextIdx);
-        setPendingIndex(null);
+      if (nextIdx !== currentIndex) {
+        if (imageLoadedArr[nextIdx]) {
+          if (currentIndex !== nextIdx) setCurrentIndex(nextIdx);
+        } else {
+          if (pendingIndex !== nextIdx) setPendingIndex(nextIdx);
+        }
       }
     }, 4000);
-    return () => clearInterval(interval);
-  }, [imageLoadedArr, currentIndex]);
-
-  // When pendingIndex changes and its image loads, update currentIndex
-  useEffect(() => {
+    // Pending index update (guarded)
     if (pendingIndex !== null && imageLoadedArr[pendingIndex]) {
-      setCurrentIndex(pendingIndex);
+      if (currentIndex !== pendingIndex) setCurrentIndex(pendingIndex);
       setPendingIndex(null);
     }
-  }, [pendingIndex, imageLoadedArr]);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [imageLoadedArr, currentIndex, pendingIndex, pathname, isVisible]);
 
   // When pendingIndex is set, if image is not loaded, set it to false (to trigger loading state)
   useEffect(() => {
     if (pendingIndex !== null && !imageLoadedArr[pendingIndex]) {
       setImageLoadedArr((prev) => {
+        if (prev[pendingIndex] === false) return prev; // guard
         const arr = [...prev];
         arr[pendingIndex] = false;
         return arr;
       });
     }
-  }, [pendingIndex,imageLoadedArr]);
+  }, [pendingIndex, imageLoadedArr]);
 
   // Helper to measure gap only when horizontal dots are rendered
   useEffect(() => {
@@ -121,18 +127,30 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
     };
   }, [searchBoxRef, currentIndex, verticalDots]);
 
+  // Intersection Observer to track visibility
+  useEffect(() => {
+    const observer = new window.IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.1 }
+    );
+    if (heroRef.current) observer.observe(heroRef.current);
+    return () => {
+      if (heroRef.current) observer.unobserve(heroRef.current);
+    };
+  }, []);
+
   // The image to show is always the currentIndex
   return (
-    <section className="relative w-full bg-[#F8F9FA] overflow-hidden">
+    <section ref={heroRef} className="relative w-full bg-[#F8F9FA] overflow-hidden">
       {/* Image with responsive height */}
       <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[24/9] max-h-[90vh]">
         <Image
           src={slides[currentIndex].img}
           alt={slides[currentIndex].alt}
           fill
-          sizes="100vw"
+          sizes="(max-width: 600px) 100vw, (max-width: 1200px) 80vw, 60vw"
           priority={currentIndex === 0}
-          quality={100}
+          quality={90}
           className="object-cover"
           style={{ objectPosition: "center" }}
           onLoadingComplete={() => {
@@ -155,9 +173,9 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
             src={slides[pendingIndex].img}
             alt={slides[pendingIndex].alt}
             fill
-            sizes="100vw"
+            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 80vw, 60vw"
             priority={false}
-            quality={100}
+            quality={90}
             className="object-cover invisible pointer-events-none"
             style={{ objectPosition: "center" }}
             onLoadingComplete={() => {
@@ -174,14 +192,14 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
         <div className="absolute inset-0 bg-black/15 z-10 pointer-events-none" />
         {/* Loading spinner overlay for first slide only */}
         {currentIndex === 0 && !isCurrentImageLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center z-30 bg-white/40">
+          <div className="absolute inset-0 flex items-center justify-center z-30 bg-white/40 pointer-events-none">
             <span className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></span>
           </div>
         )}
       </div>
       {/* Overlay text content */}
       <div
-        className={`absolute inset-0 z-20 flex flex-col items-center justify-start pt-8 sm:pt-16 md:pt-24 px-4 py-12 sm:py-16 md:py-20 pb-24 sm:pb-32 md:pb-40 transition-opacity duration-300 ${isCurrentImageLoaded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`absolute inset-0 z-20 flex flex-col items-center justify-start pt-8 sm:pt-16 md:pt-24 px-4 py-12 sm:py-16 md:py-20 pb-24 sm:pb-32 md:pb-40 transition-opacity duration-300 ${isCurrentImageLoaded ? 'opacity-100' : 'opacity-0'}`}
         style={extraPadding ? { paddingBottom: `calc(6rem + ${extraPadding}px)` } : {}}
       >
         <div className="text-center w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 flex flex-col items-center">
