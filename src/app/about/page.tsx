@@ -1,9 +1,11 @@
 import React from "react";
 import Footer from "../components/Footer";
 import { FaGlobeAsia, FaUsers, FaHeart, FaStar } from "react-icons/fa";
-import Team from "../components/Team";
+import dynamic from "next/dynamic";
 import Navbar from "../components/Navbar";
-import GoogleMapEmbed from "../components/GoogleMapEmbed";
+
+const Team = dynamic(() => import("../components/Team"));
+import GoogleMapEmbed from "../components/GoogleMapEmbedClient";
 
 const values = [
   { icon: <FaGlobeAsia className="text-2xl text-blue-600" />, title: "Global Reach", desc: "Local expertise, global reach." },

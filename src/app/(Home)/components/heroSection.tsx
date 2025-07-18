@@ -129,13 +129,14 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
 
   // Intersection Observer to track visibility
   useEffect(() => {
+    const node = heroRef.current;
     const observer = new window.IntersectionObserver(
       ([entry]) => setIsVisible(entry.isIntersecting),
       { threshold: 0.1 }
     );
-    if (heroRef.current) observer.observe(heroRef.current);
+    if (node) observer.observe(node);
     return () => {
-      if (heroRef.current) observer.unobserve(heroRef.current);
+      if (node) observer.unobserve(node);
     };
   }, []);
 
