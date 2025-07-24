@@ -52,7 +52,14 @@ export default async function createBlogCollection() {
         blogCollection,
         "featuredImage",
         300,
-        true
+        false
+      ),
+      databases.createStringAttribute(
+        db,
+        blogCollection,
+        "featuredImageBucket",
+        100,
+        false
       ),
     ]);
     console.log("Blog collection attributes created successfully");
