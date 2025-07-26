@@ -22,9 +22,9 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { user, hydrated, loading } = useAuthState();
+    const { user, hydrated, loading } = useAuthState();
   const router = useRouter();
-
+  
   // Ensure component is mounted before showing auth state
   useEffect(() => {
     setMounted(true);
@@ -40,7 +40,7 @@ export default function Navbar() {
     { name: "Blogs", href: "/", icon: <FaRegNewspaper />, color: "#D72631" },
     { name: "Gallery", href: "/", icon: <FaImages />, color: "#fff" },
     ...(showAuthButtons && user ? [{ name: "Dashboard", href: "/dashboard", icon: <FaUser />, color: "#fff" }] : []),
-    { name: "More", href: "/", dropdown: true, icon: <FaEllipsisH />, color: "#888" },
+    { name: "More", href: "#", dropdown: true, icon: <FaEllipsisH />, color: "#888" },
   ], [showAuthButtons, user]);
 
   // Handle scroll effect with throttling
@@ -122,7 +122,9 @@ export default function Navbar() {
             </a>
             <div className="flex items-center gap-3 ml-4">
               {showAuthButtons && user && (
-                <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/dashboard") }>
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => {
+                  router.push("/dashboard");
+                }}>
                   <Avatar>
                     <AvatarFallback className="bg-[#22223b] text-white font-bold">{(user.name || user.email || "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2)}</AvatarFallback>
                   </Avatar>

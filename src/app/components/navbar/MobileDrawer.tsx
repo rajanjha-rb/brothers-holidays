@@ -57,7 +57,7 @@ export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated =
     <div className="fixed inset-0 z-40 flex" aria-modal="true" role="dialog">
       {/* Overlay */}
       <button
-        className="fixed inset-0 w-full h-full bg-black bg-opacity-50 backdrop-blur-sm transition-all duration-300 focus:outline-none"
+        className="fixed inset-0 w-full h-full bg-black bg-opacity-50 backdrop-blur-sm transition-all duration-200 focus:outline-none"
         aria-label="Close menu overlay"
         tabIndex={0}
         style={{
@@ -76,7 +76,7 @@ export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated =
       {/* Drawer */}
       <nav
         ref={drawerRef}
-        className="md:hidden h-full w-4/5 max-w-sm flex flex-col transition-all duration-500 pointer-events-auto focus:outline-none shadow-2xl relative"
+        className="md:hidden h-full w-4/5 max-w-sm flex flex-col transition-all duration-300 pointer-events-auto focus:outline-none shadow-2xl relative"
         style={{
           borderTopRightRadius: "2rem",
           borderBottomRightRadius: "2rem",
@@ -101,7 +101,7 @@ export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated =
         {/* Close Button */}
         <div className="flex-shrink-0 pt-6 pb-4 px-6 relative">
           <button
-            className="absolute top-6 right-6 text-2xl focus:outline-none transition-all duration-300 hover:scale-110 active:scale-95"
+            className="absolute top-6 right-6 text-2xl focus:outline-none transition-all duration-200 hover:scale-110 active:scale-95"
             onClick={() => setOpen(false)}
             aria-label="Close menu"
             tabIndex={0}
@@ -136,7 +136,23 @@ export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated =
         </div>
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-6 pb-6 mobile-drawer-content" style={{ minHeight: 0 }}>
-          <NavLinks navLinks={navLinks} onLinkClick={() => setOpen(false)} variant="mobile" setShowMore={setShowMore} />
+          <NavLinks 
+            navLinks={navLinks} 
+            onLinkClick={() => {
+              // Close drawer immediately with no delay
+              setOpen(false);
+              // Remove body overflow restrictions immediately
+              document.body.style.overflow = "";
+              document.body.classList.remove("mobile-menu-open");
+              // Force immediate cleanup
+              setTimeout(() => {
+                document.body.style.overflow = "";
+                document.body.classList.remove("mobile-menu-open");
+              }, 0);
+            }} 
+            variant="mobile" 
+            setShowMore={setShowMore} 
+          />
         </div>
         {/* Fixed Footer */}
         <div className="flex-shrink-0 px-6 pb-6 space-y-4" style={{ pointerEvents: 'auto', zIndex: 60 }}>
@@ -151,7 +167,14 @@ export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated =
               <a
                 href="tel:+9779807872340"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium text-sm hover:bg-blue-100 transition-colors"
-                onClick={() => setOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpen(false);
+                  document.body.style.overflow = "";
+                  document.body.classList.remove("mobile-menu-open");
+                  // For phone links, use direct href
+                  window.open("tel:+9779807872340", "_self");
+                }}
               >
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
                   <path

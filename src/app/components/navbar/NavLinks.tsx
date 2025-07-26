@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FaFacebookSquare, FaInstagram, FaWhatsappSquare } from "react-icons/fa";
 import { SiViber } from "react-icons/si";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -35,15 +36,23 @@ export const dropdownOptions: {
 ];
 
 export function MoreModal({ navLinks, setShowMore, onLinkClick }: { navLinks: NavLinkType[]; setShowMore: (v: boolean) => void; onLinkClick: () => void }) {
+  const router = useRouter();
+  
+  const handleModalNavigation = (href: string) => {
+    setShowMore(false);
+    if (onLinkClick) onLinkClick();
+    router.push(href);
+  };
+
   const dropdownLinks = dropdownOptions.map((opt, idx) => (
     <div key={opt.label}>
       <Link
         href={opt.href}
         className="flex items-center gap-3 rounded-lg transition-all duration-200 hover:bg-[#FFF7E0] focus:bg-[#FFF7E0] font-semibold text-base px-6 py-4 focus:outline-none"
         style={{ color: opt.color, minHeight: 48 }}
-        onClick={() => {
-          setShowMore(false);
-          if (onLinkClick) onLinkClick();
+        onClick={(e) => {
+          e.preventDefault();
+          handleModalNavigation(opt.href);
         }}
         role="menuitem"
         tabIndex={0}
@@ -58,9 +67,9 @@ export function MoreModal({ navLinks, setShowMore, onLinkClick }: { navLinks: Na
   ));
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 animate-fadeInMobile" style={{ touchAction: 'none' }}>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30" style={{ touchAction: 'none' }}>
       <div
-        className="w-full max-w-[420px] mx-auto bg-white border border-[#FFD166] rounded-2xl shadow-2xl p-0 animate-slideUpMobile relative flex flex-col"
+        className="w-full max-w-[420px] mx-auto bg-white border border-[#FFD166] rounded-2xl shadow-2xl p-0 relative flex flex-col"
         style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)', maxHeight: '80vh' }}
         role="dialog"
         aria-modal="true"
@@ -99,6 +108,22 @@ interface NavLinksProps {
 }
 
 export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", setShowMore }: NavLinksProps) {
+  const router = useRouter();
+  
+  // Prefetch critical routes for instant navigation
+  React.useEffect(() => {
+    const criticalRoutes = ['/about', '/contact', '/login', '/register', '/dashboard'];
+    criticalRoutes.forEach(route => {
+      router.prefetch(route);
+    });
+  }, [router]);
+  
+  const handleNavigation = (href: string) => {
+    if (onLinkClick) onLinkClick();
+    // Use Next.js router for fast client-side navigation
+    router.push(href);
+  };
+
   if (variant === "desktop") {
     return (
       <ul className="hidden md:flex items-center justify-between gap-4 md:gap-5 lg:gap-6 xl:gap-8 py-1.5 flex-nowrap w-full">
@@ -107,7 +132,7 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
             <li key={link.name} className={`relative group`}>
               <Link
                 href={link.href}
-                className={`flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2 lg:px-3 py-1 md:py-1.5 lg:py-2 font-semibold text-xs md:text-sm lg:text-base uppercase tracking-wide transition-all duration-300 rounded-xl relative group-hover:scale-105 ${
+                className={`flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2 lg:px-3 py-1 md:py-1.5 lg:py-2 font-semibold text-xs md:text-sm lg:text-base uppercase tracking-wide transition-all duration-200 rounded-xl relative group-hover:scale-105 ${
                   link.special
                     ? "border-2 bg-white/10 text-gold shadow-lg hover:shadow-xl"
                     : "text-white hover:bg-white/10"
@@ -122,6 +147,12 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
                       }
                     : { color: "#F8F9FA" }
                 }
+                onClick={(e) => {
+                  if (link.href !== "/" && link.href !== "#") {
+                    e.preventDefault();
+                    handleNavigation(link.href);
+                  }
+                }}
               >
                 <span
                   style={{
@@ -175,7 +206,10 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
                    style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
                  >
                   <DropdownMenuItem asChild className="rounded-lg transition-all duration-200 hover:bg-[#FFF7E0] hover:text-[#D72631] font-semibold text-base px-3 py-2">
-                    <Link href="/" className="flex items-center gap-2">
+                    <Link href="/" className="flex items-center gap-2" onClick={(e) => {
+                      e.preventDefault();
+                      handleNavigation("/");
+                    }}>
                       <span style={{ color: '#D72631', fontSize: 20, display: 'flex', alignItems: 'center' }}>
                         {navLinks.find(link => link.name === "Blogs")?.icon}
                       </span>
@@ -183,7 +217,10 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="rounded-lg transition-all duration-200 hover:bg-[#FFF7E0] hover:text-[#0057B7] font-semibold text-base px-3 py-2">
-                    <Link href="/about" className="flex items-center gap-2">
+                    <Link href="/about" className="flex items-center gap-2" onClick={(e) => {
+                      e.preventDefault();
+                      handleNavigation("/about");
+                    }}>
                       <span style={{ color: '#0057B7', fontSize: 20, display: 'flex', alignItems: 'center' }}>
                         <FaInfoCircle />
                       </span>
@@ -191,7 +228,10 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="rounded-lg transition-all duration-200 hover:bg-[#FFF7E0] hover:text-[#FFD166] font-semibold text-base px-3 py-2">
-                    <Link href="/contact" className="flex items-center gap-2">
+                    <Link href="/contact" className="flex items-center gap-2" onClick={(e) => {
+                      e.preventDefault();
+                      handleNavigation("/contact");
+                    }}>
                       <span style={{ color: '#FFD166', fontSize: 20, display: 'flex', alignItems: 'center' }}>
                         <FaPhoneAlt />
                       </span>
@@ -232,15 +272,14 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
   // Mobile variant
   return (
     <div className="flex flex-col gap-2 w-full mb-6">
-      {navLinks.filter(link => link.name !== "Social Media" && link.name !== "More").map((link, index) => (
+      {navLinks.filter(link => link.name !== "Social Media" && link.name !== "More").map((link) => (
         <div
           key={link.name}
           className="w-full"
-          style={{ animationDelay: `${index * 100}ms` }}
         >
           <Link
             href={link.href}
-            className={`flex items-center gap-4 w-full text-left font-semibold text-lg py-4 px-6 rounded-2xl transition-all duration-300 hover:scale-105 focus:outline-none group ${
+            className={`flex items-center gap-4 w-full text-left font-semibold text-lg py-4 px-6 rounded-2xl transition-all duration-200 hover:scale-105 focus:outline-none group ${
               link.special
                 ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
                 : "hover:bg-white/80 text-gray-800"
@@ -249,11 +288,11 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
               minHeight: 56,
               minWidth: 44,
               outline: "none",
-              animation: "slideInRight 0.5s ease-out forwards",
-              opacity: 0,
-              transform: "translateX(20px)",
             }}
-            onClick={onLinkClick}
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavigation(link.href);
+            }}
             tabIndex={0}
             aria-label={link.name}
           >
@@ -266,8 +305,8 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
       {navLinks.find(link => link.name === "More") && (
         <div className="relative w-full">
           <button
-            className="flex items-center gap-4 w-full text-left font-semibold text-lg py-4 px-6 rounded-2xl transition-all duration-300 focus:outline-none group bg-transparent text-gray-800"
-            style={{ minHeight: 56, minWidth: 44, outline: "none", animation: "slideInRight 0.5s ease-out forwards", opacity: 0, transform: "translateX(20px)" }}
+            className="flex items-center gap-4 w-full text-left font-semibold text-lg py-4 px-6 rounded-2xl transition-all duration-200 focus:outline-none group bg-transparent text-gray-800"
+            style={{ minHeight: 56, minWidth: 44, outline: "none" }}
             onClick={() => (setShowMore ? setShowMore(true) : undefined)}
             tabIndex={0}
             aria-label="More"
