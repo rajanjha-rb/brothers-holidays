@@ -123,6 +123,7 @@ export default function Navbar() {
             <div className="flex items-center gap-3 ml-4">
               {showAuthButtons && user && (
                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => {
+                  // Use Next.js router for instant navigation
                   router.push("/dashboard");
                 }}>
                   <Avatar>

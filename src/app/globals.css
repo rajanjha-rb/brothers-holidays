@@ -204,8 +204,8 @@
   }
 }
 
-/* Fade-in animation for hero section */
-.fade-in {
+/* Optimized for instant loading - removed fade-in animations */
+/* .fade-in {
   animation: fadeInHero 1.2s ease-in;
 }
 @keyframes fadeInHero {
@@ -217,7 +217,7 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
+} */
 
 @media (max-width: 550px) {
   .headline-xs {

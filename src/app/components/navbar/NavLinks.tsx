@@ -39,9 +39,19 @@ export function MoreModal({ navLinks, setShowMore, onLinkClick }: { navLinks: Na
   const router = useRouter();
   
   const handleModalNavigation = (href: string) => {
+    // For mobile modal, use the most aggressive optimization
     setShowMore(false);
     if (onLinkClick) onLinkClick();
-    router.push(href);
+    
+    // Use a more direct approach for mobile devices
+    // This ensures maximum speed on mobile
+    try {
+      // Try Next.js router first for client-side navigation
+      router.push(href);
+    } catch {
+      // Fallback to direct navigation if router fails
+      window.location.href = href;
+    }
   };
 
   const dropdownLinks = dropdownOptions.map((opt, idx) => (
@@ -113,15 +123,64 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
   // Prefetch critical routes for instant navigation
   React.useEffect(() => {
     const criticalRoutes = ['/about', '/contact', '/login', '/register', '/dashboard'];
+    
+    // Aggressive prefetching for all critical routes
     criticalRoutes.forEach(route => {
       router.prefetch(route);
     });
+    
+    // Mobile-specific optimizations
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // On mobile, prefetch routes more aggressively
+      criticalRoutes.forEach(route => {
+        // Prefetch multiple times to ensure it's cached
+        router.prefetch(route);
+        setTimeout(() => router.prefetch(route), 100);
+        setTimeout(() => router.prefetch(route), 500);
+      });
+    }
+    
+    // Also prefetch on hover for even faster navigation (desktop)
+    if (!isMobile) {
+      const prefetchOnHover = (href: string) => {
+        router.prefetch(href);
+      };
+      
+      // Add hover listeners for critical links
+      const links = document.querySelectorAll('a[href^="/"]');
+      links.forEach(link => {
+        link.addEventListener('mouseenter', () => {
+          const href = link.getAttribute('href');
+          if (href && criticalRoutes.includes(href)) {
+            prefetchOnHover(href);
+          }
+        });
+      });
+    }
   }, [router]);
-  
+
   const handleNavigation = (href: string) => {
     if (onLinkClick) onLinkClick();
-    // Use Next.js router for fast client-side navigation
+    // Use Next.js router for instant client-side navigation
     router.push(href);
+  };
+
+  const handleMobileNavigation = (href: string) => {
+    // For mobile, use the most aggressive optimization
+    // Close drawer immediately and navigate instantly
+    if (onLinkClick) onLinkClick();
+    
+    // Use a more direct approach for mobile devices
+    // This ensures maximum speed on mobile
+    try {
+      // Try Next.js router first for client-side navigation
+      router.push(href);
+    } catch {
+      // Fallback to direct navigation if router fails
+      window.location.href = href;
+    }
   };
 
   if (variant === "desktop") {
@@ -291,7 +350,7 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
             }}
             onClick={(e) => {
               e.preventDefault();
-              handleNavigation(link.href);
+              handleMobileNavigation(link.href);
             }}
             tabIndex={0}
             aria-label={link.name}
@@ -321,4 +380,4 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
       )}
     </div>
   );
-} 
+}

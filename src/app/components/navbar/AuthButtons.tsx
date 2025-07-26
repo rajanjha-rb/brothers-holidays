@@ -17,6 +17,7 @@ export function UserAvatar({ user, size: _size = "md" }: { user: User, size?: "s
   const initials = (user.name || user.email || "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2);
   return (
     <div className="flex items-center gap-2 cursor-pointer" onClick={() => {
+      // Use Next.js router for instant navigation
       router.push("/dashboard");
     }}>
       <Avatar>
@@ -32,6 +33,7 @@ export default function AuthButtons({ user, setOpen, variant = "desktop", loadin
   
   const handleAuthNavigation = (href: string) => {
     if (setOpen) setOpen(false);
+    // Use Next.js router for instant navigation without page reload
     router.push(href);
   };
 

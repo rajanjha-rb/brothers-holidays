@@ -87,13 +87,13 @@ export default function AboutPage() {
       <Navbar />
       
       {/* Hero Section - Shows immediately */}
-      <section className="w-full flex flex-col items-center justify-center text-center py-16 px-4 border-b border-gray-100 bg-gradient-to-b from-yellow-200 via-yellow-50 to-white animate-fadein">
+      <section className="w-full flex flex-col items-center justify-center text-center py-16 px-4 border-b border-gray-100 bg-gradient-to-b from-yellow-200 via-yellow-50 to-white">
         <FaGlobeAsia className="text-[#D72631] text-5xl mb-4" />
         <h1 className="text-4xl md:text-5xl font-extrabold mb-0 text-yellow-800 drop-shadow-lg">About Brothers Holidays</h1>
       </section>
 
       {/* Company Story & Mission - Shows immediately */}
-      <section className="max-w-3xl mx-auto py-12 px-4 border-b border-gray-100 animate-fadein">
+      <section className="max-w-3xl mx-auto py-12 px-4 border-b border-gray-100">
         <h2 className="text-2xl font-bold mb-4 text-blue-900">Our Story</h2>
         <p className="text-gray-700 mb-6">
           Brothers Holidays was founded with a passion for travel and a mission to make every journey extraordinary. With years of experience, our team brings you the best of Nepal and beyond, blending local expertise with global standards.
@@ -104,7 +104,7 @@ export default function AboutPage() {
       </section>
 
       {/* Values Section - Shows immediately */}
-      <section className="w-full py-16 px-4 border-b border-gray-100 bg-gray-50 animate-fadein">
+      <section className="w-full py-16 px-4 border-b border-gray-100 bg-gray-50">
         <div className="max-w-4xl mx-auto text-center mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-4 text-blue-900">Our Values</h2>
           <p className="text-gray-600">The principles that guide everything we do</p>
@@ -132,7 +132,7 @@ export default function AboutPage() {
       </Suspense>
 
       {/* Testimonials Section - Shows immediately */}
-      <section className="w-full py-16 px-4 border-b border-gray-100 bg-white animate-fadein">
+      <section className="w-full py-16 px-4 border-b border-gray-100 bg-white">
         <div className="max-w-4xl mx-auto text-center mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-4 text-blue-900">What Our Clients Say</h2>
           <p className="text-gray-600">Real experiences from real travelers</p>
@@ -159,15 +159,9 @@ export default function AboutPage() {
 
       <Footer />
 
-      {/* Animations */}
+      {/* Optimized for instant loading - no animations */}
       <style jsx global>{`
-        @keyframes fadein {
-          from { opacity: 0; transform: translateY(24px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadein {
-          animation: fadein 1.2s cubic-bezier(0.4,0,0.2,1) both;
-        }
+        /* Removed fade-in animations for instant page appearance */
       `}</style>
     </main>
   );

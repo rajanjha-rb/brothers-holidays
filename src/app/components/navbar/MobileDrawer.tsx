@@ -76,7 +76,7 @@ export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated =
       {/* Drawer */}
       <nav
         ref={drawerRef}
-        className="md:hidden h-full w-4/5 max-w-sm flex flex-col transition-all duration-300 pointer-events-auto focus:outline-none shadow-2xl relative"
+        className="md:hidden h-full w-4/5 max-w-sm flex flex-col transition-all duration-150 pointer-events-auto focus:outline-none shadow-2xl relative"
         style={{
           borderTopRightRadius: "2rem",
           borderBottomRightRadius: "2rem",
@@ -144,11 +144,6 @@ export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated =
               // Remove body overflow restrictions immediately
               document.body.style.overflow = "";
               document.body.classList.remove("mobile-menu-open");
-              // Force immediate cleanup
-              setTimeout(() => {
-                document.body.style.overflow = "";
-                document.body.classList.remove("mobile-menu-open");
-              }, 0);
             }} 
             variant="mobile" 
             setShowMore={setShowMore} 
