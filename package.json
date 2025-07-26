@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "analyze-images": "node scripts/optimize-images.js",
+    "analyze-performance": "node scripts/performance-analyzer.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

@@ -1,10 +1,37 @@
-import React from "react";
+"use client";
+
+import React, { Suspense } from "react";
 import Footer from "../components/Footer";
 import { FaGlobeAsia, FaUsers, FaHeart, FaStar } from "react-icons/fa";
 import Navbar from "../components/Navbar";
+import dynamic from "next/dynamic";
+import PerformanceMonitor from "../components/PerformanceMonitor";
 
-import Team from "../components/TeamClient";
-import GoogleMapEmbed from "../components/GoogleMapEmbedClient";
+// Lazy load heavy components
+const Team = dynamic(() => import("../components/TeamClient"), { 
+  ssr: false,
+  loading: () => (
+    <div className="w-full py-16 px-4 border-b border-gray-100 bg-white">
+      <div className="max-w-5xl mx-auto text-center mb-10">
+        <h2 className="text-2xl md:text-3xl font-bold mb-2 text-blue-900">Meet Our Team</h2>
+        <p className="text-gray-600">Loading team information...</p>
+      </div>
+      <div className="flex justify-center">
+        <div className="animate-pulse bg-gray-200 rounded-2xl w-80 h-80"></div>
+      </div>
+    </div>
+  )
+});
+
+const GoogleMapEmbed = dynamic(() => import("../components/GoogleMapEmbedClient"), { 
+  ssr: false,
+  loading: () => (
+    <div className="w-full py-12 px-4 bg-gray-50 flex flex-col items-center justify-center">
+      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-yellow-800">Our Office Location</h2>
+      <div className="w-full max-w-2xl aspect-video rounded-2xl bg-gray-200 animate-pulse"></div>
+    </div>
+  )
+});
 
 const values = [
   { icon: <FaGlobeAsia className="text-2xl text-blue-600" />, title: "Global Reach", desc: "Local expertise, global reach." },
@@ -34,6 +61,7 @@ const testimonials = [
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-white flex flex-col justify-between">
+      <PerformanceMonitor pageName="About Page" />
       <Navbar />
       {/* Hero Section */}
       <section className="w-full flex flex-col items-center justify-center text-center py-16 px-4 border-b border-gray-100 bg-gradient-to-b from-yellow-200 via-yellow-50 to-white">
@@ -67,13 +95,25 @@ export default function AboutPage() {
       </section>
 
       {/* Team Section - Tabbed/Slider UI */}
-      <section className="w-full py-16 px-4 border-b border-gray-100 bg-white">
-        <div className="max-w-5xl mx-auto text-center mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2 text-blue-900">Meet Our Team</h2>
-          <p className="text-gray-600">Passionate, experienced, and dedicated to making your travel dreams come true.</p>
+      <Suspense fallback={
+        <div className="w-full py-16 px-4 border-b border-gray-100 bg-white">
+          <div className="max-w-5xl mx-auto text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2 text-blue-900">Meet Our Team</h2>
+            <p className="text-gray-600">Loading team information...</p>
+          </div>
+          <div className="flex justify-center">
+            <div className="animate-pulse bg-gray-200 rounded-2xl w-80 h-80"></div>
+          </div>
         </div>
-        <Team />
-      </section>
+      }>
+        <section className="w-full py-16 px-4 border-b border-gray-100 bg-white">
+          <div className="max-w-5xl mx-auto text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2 text-blue-900">Meet Our Team</h2>
+            <p className="text-gray-600">Passionate, experienced, and dedicated to making your travel dreams come true.</p>
+          </div>
+          <Team />
+        </section>
+      </Suspense>
 
       {/* Testimonials Grid */}
       <section className="w-full py-12 px-4 border-b border-gray-100 bg-gray-50">
@@ -83,7 +123,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {testimonials.map((t) => (
             <div key={t.name} className="bg-white rounded-2xl shadow p-6 text-center flex flex-col items-center border border-gray-100">
-              <div className="text-lg text-gray-700 mb-4 italic">“{t.text}”</div>
+              <div className="text-lg text-gray-700 mb-4 italic">&ldquo;{t.text}&rdquo;</div>
               <div className="font-bold text-blue-700">{t.name}</div>
               <div className="text-sm text-gray-500">{t.country}</div>
             </div>
@@ -104,13 +144,20 @@ export default function AboutPage() {
       </section>
 
       {/* Office Location - Google Maps */}
-      <section className="w-full py-12 px-4 bg-gray-50 flex flex-col items-center justify-center">
-        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-yellow-800">Our Office Location</h2>
-        <GoogleMapEmbed
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3531.5335437197277!2d85.3137147740542!3d27.73168492442015!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb190005dd8d47%3A0x55fc46bb27a53495!2sBrothers%20Holidays%20Adventure!5e0!3m2!1sen!2snp!4v1752637872899!5m2!1sen!2snp"
-          title="Brothers Holidays Adventure Office Location"
-        />
-      </section>
+      <Suspense fallback={
+        <div className="w-full py-12 px-4 bg-gray-50 flex flex-col items-center justify-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-yellow-800">Our Office Location</h2>
+          <div className="w-full max-w-2xl aspect-video rounded-2xl bg-gray-200 animate-pulse"></div>
+        </div>
+      }>
+        <section className="w-full py-12 px-4 bg-gray-50 flex flex-col items-center justify-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-yellow-800">Our Office Location</h2>
+          <GoogleMapEmbed
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3531.5335437197277!2d85.3137147740542!3d27.73168492442015!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb190005dd8d47%3A0x55fc46bb27a53495!2sBrothers%20Holidays%20Adventure!5e0!3m2!1sen!2snp!4v1752637872899!5m2!1sen!2snp"
+            title="Brothers Holidays Adventure Office Location"
+          />
+        </section>
+      </Suspense>
 
       <Footer />
     </main>

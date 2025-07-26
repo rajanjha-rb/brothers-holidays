@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
@@ -34,21 +34,23 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [pendingIndex, setPendingIndex] = useState<number | null>(null); // new state
+  const [pendingIndex, setPendingIndex] = useState<number | null>(null);
   const [extraPadding, setExtraPadding] = useState(0);
   const [verticalDots, setVerticalDots] = useState(false);
   const dotsRef = useRef<HTMLDivElement>(null);
   const lastSwitchRef = useRef(Date.now());
+  
   // Track loading state for each slide
   const [imageLoadedArr, setImageLoadedArr] = useState(() =>
     slides.map((_, i) => (i === 0 ? false : false))
   );
 
-  // Helper: is current image loaded?
-  const isCurrentImageLoaded = imageLoadedArr[currentIndex];
+  // Memoize current slide data
+  const currentSlide = useMemo(() => slides[currentIndex], [currentIndex]);
+  const isCurrentImageLoaded = useMemo(() => imageLoadedArr[currentIndex], [imageLoadedArr, currentIndex]);
 
-  // Slide change handler
-  const requestSlideChange = (idx: number) => {
+  // Optimized slide change handler
+  const requestSlideChange = useCallback((idx: number) => {
     if (idx === currentIndex) return;
     setPendingIndex(idx);
     // If image is already loaded, update immediately
@@ -56,14 +58,13 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
       setCurrentIndex(idx);
       setPendingIndex(null);
     }
-  };
+  }, [currentIndex, imageLoadedArr]);
 
-  // Auto-advance logic and pendingIndex update (combined and guarded)
+  // Optimized auto-advance logic
   useEffect(() => {
     if (!imageLoadedArr[0] || pathname !== "/" || !isVisible) return;
-    let interval: NodeJS.Timeout | null = null;
-    // Auto-advance
-    interval = setInterval(() => {
+    
+    const interval = setInterval(() => {
       const nextIdx = (currentIndex + 1) % slides.length;
       if (nextIdx !== currentIndex) {
         if (imageLoadedArr[nextIdx]) {
@@ -73,17 +74,19 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
         }
       }
     }, 4000);
+    
     // Pending index update (guarded)
     if (pendingIndex !== null && imageLoadedArr[pendingIndex]) {
       if (currentIndex !== pendingIndex) setCurrentIndex(pendingIndex);
       setPendingIndex(null);
     }
+    
     return () => {
       if (interval) clearInterval(interval);
     };
   }, [imageLoadedArr, currentIndex, pendingIndex, pathname, isVisible]);
 
-  // When pendingIndex is set, if image is not loaded, set it to false (to trigger loading state)
+  // Optimized pending index effect
   useEffect(() => {
     if (pendingIndex !== null && !imageLoadedArr[pendingIndex]) {
       setImageLoadedArr((prev) => {
@@ -95,7 +98,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
     }
   }, [pendingIndex, imageLoadedArr]);
 
-  // Helper to measure gap only when horizontal dots are rendered
+  // Optimized gap measurement effect
   useEffect(() => {
     let debounceTimeout: NodeJS.Timeout;
     function adjustPadding() {
@@ -137,20 +140,22 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
     };
   }, [searchBoxRef, currentIndex, verticalDots]);
 
-  // Intersection Observer to track visibility
+  // Optimized intersection observer
   useEffect(() => {
     const node = heroRef.current;
+    if (!node) return;
+    
     const observer = new window.IntersectionObserver(
       ([entry]) => setIsVisible(entry.isIntersecting),
       { threshold: 0.1 }
     );
-    if (node) observer.observe(node);
+    
+    observer.observe(node);
     return () => {
       if (node) observer.unobserve(node);
     };
   }, []);
 
-  // The image to show is always the currentIndex
   return (
     <section
       ref={heroRef}
@@ -159,8 +164,8 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
       {/* Image with responsive height */}
       <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[24/9] max-h-[90vh]">
         <Image
-          src={slides[currentIndex].img}
-          alt={slides[currentIndex].alt}
+          src={currentSlide.img}
+          alt={currentSlide.alt}
           fill
           sizes="(max-width: 600px) 100vw, (max-width: 1200px) 80vw, 60vw"
           priority={currentIndex === 0}
@@ -224,10 +229,10 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
       >
         <div className="text-center w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 flex flex-col items-center">
           <h1 className="text-base md:text-2xl lg:text-3xl font-extrabold text-blue-700 bg-white/95 border-2 border-yellow-300 rounded-lg shadow-lg px-4 py-3 mx-auto sm:max-w-[90%] md:max-w-[85%] headline-xs">
-            {slides[currentIndex].headline}
+            {currentSlide.headline}
           </h1>
           <p className="hide-below-450 text-xs sm:text-sm md:text-lg lg:text-xl font-bold text-gray-700 bg-yellow-100 rounded-lg shadow px-4 py-2 mx-auto sm:max-w-[85%] md:max-w-[80%]">
-            {slides[currentIndex].subheadline}
+            {currentSlide.subheadline}
           </p>
           {/* Slide indicators just below the text (horizontal) */}
           {!verticalDots && (

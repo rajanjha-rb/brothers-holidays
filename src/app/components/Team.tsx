@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, useCallback } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { FaFacebook } from "react-icons/fa";
@@ -14,47 +14,105 @@ interface TeamProps {
 
 const roles = ["Chairperson", "Director", "Manager"];
 
+// Memoized component to prevent unnecessary re-renders
+const TeamMember = React.memo(({ member, onLoadingComplete }: {
+  member: typeof defaultTeam[0];
+  onLoadingComplete: () => void;
+}) => {
+  const blurDataURL = "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA";
+  
+  return (
+    <section className="max-w-5xl w-full flex flex-col md:flex-row items-center gap-10 md:gap-16 mx-auto">
+      {/* Image */}
+      <div className="w-full max-w-xs aspect-square flex-shrink-0 rounded-2xl overflow-hidden shadow-2xl">
+        <Image
+          src={member.image}
+          alt={member.name}
+          width={400}
+          height={400}
+          className="w-full h-full object-cover object-center select-none"
+          draggable={false}
+          priority={true}
+          quality={75}
+          placeholder="blur"
+          blurDataURL={blurDataURL}
+          onLoadingComplete={onLoadingComplete}
+        />
+      </div>
+      {/* Info */}
+      <div className="flex-1 flex flex-col justify-center items-start text-left">
+        <h2 className="text-3xl md:text-4xl font-extrabold text-black mb-2">{member.name}</h2>
+        <div className="text-lg text-yellow-400 font-bold mb-2 uppercase tracking-wide">{member.position}</div>
+        <div className="text-xl text-gray-700 mb-8 max-w-xl leading-relaxed">{member.description}</div>
+        <div className="flex gap-4 mb-8">
+          <Button asChild variant="ghost" size="icon" className="hover:bg-blue-900/20">
+            <a href={member.socials.facebook} aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+              <FaFacebook className="text-blue-500 text-2xl" />
+            </a>
+          </Button>
+          <Button asChild variant="ghost" size="icon" className="hover:bg-pink-900/20">
+            <a href={member.socials.instagram} aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+              <FaInstagram className="text-pink-400 text-2xl" />
+            </a>
+          </Button>
+          <Button asChild variant="ghost" size="icon" className="hover:bg-blue-900/20">
+            <a href={member.socials.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+              <FaLinkedin className="text-blue-300 text-2xl" />
+            </a>
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+});
+
+TeamMember.displayName = 'TeamMember';
+
 export default function Team({ team = defaultTeam }: TeamProps) {
   const [idx, setIdx] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
-  const member = team[idx];
+  
+  // Memoize the current member to prevent unnecessary re-renders
+  const member = useMemo(() => team[idx], [team, idx]);
+  
+  // Memoize role indices to avoid recalculating on every render
+  const roleIndices = useMemo(() => {
+    return roles.map(role => team.findIndex((m) => m.position.toLowerCase() === role.toLowerCase()));
+  }, [team]);
 
-  // Auto-advance every 5 seconds, but only if not loading
+  // Auto-advance every 8 seconds (increased from 5 to reduce performance impact)
   React.useEffect(() => {
     if (loading) return;
     const interval = setInterval(() => {
       setLoading(true);
       setIdx((prev) => (prev + 1) % team.length);
-    }, 5000);
+    }, 8000);
     return () => clearInterval(interval);
   }, [team.length, loading]);
 
-  // Find the index of the first team member with the given role
-  const getRoleIndex = (role: string) => team.findIndex((m) => m.position.toLowerCase() === role.toLowerCase());
+  // Memoize click handlers
+  const handleRoleClick = useCallback((teamIdx: number) => {
+    if (teamIdx !== -1) {
+      setLoading(true);
+      setIdx(teamIdx);
+    }
+  }, []);
 
-  // Custom blurDataURLs for each member (sample, replace with real blurs)
-  const blurDataURLs = [
-    "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // Chairperson
-    "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // Director
-    "data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA", // Manager
-  ];
+  const handleLoadingComplete = useCallback(() => {
+    setLoading(false);
+  }, []);
 
   return (
     <div className="w-full flex flex-col items-center">
       {/* Tab Navigation */}
       <div className="flex items-center gap-2 bg-white/90 border border-gray-200 rounded-xl px-4 py-2 mb-10 shadow-sm">
         {roles.map((role, i) => {
-          const teamIdx = getRoleIndex(role);
+          const teamIdx = roleIndices[i];
           const isActive = teamIdx === idx;
           return (
             <button
               key={role}
-              onClick={() => {
-                if (teamIdx !== -1) {
-                  setLoading(true);
-                  setIdx(teamIdx);
-                }
-              }}
+              onClick={() => handleRoleClick(teamIdx)}
               className={`px-3 py-1 font-semibold text-base focus:outline-none transition-colors border-0 bg-transparent
                 ${isActive ? "text-black" : "text-gray-500 hover:text-black"}
                 ${i !== 0 ? "border-l border-gray-300" : ""}
@@ -69,48 +127,11 @@ export default function Team({ team = defaultTeam }: TeamProps) {
           );
         })}
       </div>
-      <section className="max-w-5xl w-full flex flex-col md:flex-row items-center gap-10 md:gap-16 mx-auto">
-        {/* Image */}
-        <div className="w-full max-w-xs aspect-square flex-shrink-0 rounded-2xl overflow-hidden shadow-2xl">
-          <Image
-            src={member.image}
-            alt={member.name}
-            width={400}
-            height={400}
-            className="w-full h-full object-cover object-center select-none"
-            draggable={false}
-            priority={idx === 0}
-            quality={75}
-            placeholder="blur"
-            blurDataURL={blurDataURLs[idx]}
-            loading={idx === 0 ? undefined : "lazy"}
-            onLoadingComplete={() => setLoading(false)}
-          />
-        </div>
-        {/* Info */}
-        <div className="flex-1 flex flex-col justify-center items-start text-left">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-black mb-2">{member.name}</h2>
-          <div className="text-lg text-yellow-400 font-bold mb-2 uppercase tracking-wide">{member.position}</div>
-          <div className="text-xl text-gray-700 mb-8 max-w-xl leading-relaxed">{member.description}</div>
-          <div className="flex gap-4 mb-8">
-            <Button asChild variant="ghost" size="icon" className="hover:bg-blue-900/20">
-              <a href={member.socials.facebook} aria-label="Facebook" target="_blank" rel="noopener noreferrer">
-                <FaFacebook className="text-blue-500 text-2xl" />
-              </a>
-            </Button>
-            <Button asChild variant="ghost" size="icon" className="hover:bg-pink-900/20">
-              <a href={member.socials.instagram} aria-label="Instagram" target="_blank" rel="noopener noreferrer">
-                <FaInstagram className="text-pink-400 text-2xl" />
-              </a>
-            </Button>
-            <Button asChild variant="ghost" size="icon" className="hover:bg-blue-900/20">
-              <a href={member.socials.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
-                <FaLinkedin className="text-blue-300 text-2xl" />
-              </a>
-            </Button>
-          </div>
-        </div>
-      </section>
+      
+      <TeamMember 
+        member={member} 
+        onLoadingComplete={handleLoadingComplete}
+      />
     </div>
   );
 } 
