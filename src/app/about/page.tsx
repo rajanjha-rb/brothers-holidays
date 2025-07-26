@@ -7,7 +7,7 @@ import Navbar from "../components/Navbar";
 import dynamic from "next/dynamic";
 import PerformanceMonitor from "../components/PerformanceMonitor";
 
-// Lazy load heavy components
+// Lazy load heavy components with better loading states
 const Team = dynamic(() => import("../components/TeamClient"), { 
   ssr: false,
   loading: () => (
@@ -58,19 +58,43 @@ const testimonials = [
   },
 ];
 
+// Optimized testimonials component with lazy loading
+const TestimonialCard = React.memo(({ testimonial }: { testimonial: typeof testimonials[0] }) => (
+  <div className="bg-white rounded-2xl shadow p-6 text-center flex flex-col items-center border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+    <div className="text-lg text-gray-700 mb-4 italic">&ldquo;{testimonial.text}&rdquo;</div>
+    <div className="font-bold text-blue-700">{testimonial.name}</div>
+    <div className="text-sm text-gray-500">{testimonial.country}</div>
+  </div>
+));
+
+TestimonialCard.displayName = 'TestimonialCard';
+
+// Optimized values component
+const ValueCard = React.memo(({ value }: { value: typeof values[0] }) => (
+  <div className="flex flex-col items-center p-4 hover:scale-105 transition-transform duration-300">
+    {value.icon}
+    <div className="font-bold text-base mt-2 mb-1 text-gray-900">{value.title}</div>
+    <div className="text-gray-500 text-sm">{value.desc}</div>
+  </div>
+));
+
+ValueCard.displayName = 'ValueCard';
+
 export default function AboutPage() {
+
   return (
     <main className="min-h-screen bg-white flex flex-col justify-between">
       <PerformanceMonitor pageName="About Page" />
       <Navbar />
-      {/* Hero Section */}
-      <section className="w-full flex flex-col items-center justify-center text-center py-16 px-4 border-b border-gray-100 bg-gradient-to-b from-yellow-200 via-yellow-50 to-white">
+      
+      {/* Hero Section - Shows immediately */}
+      <section className="w-full flex flex-col items-center justify-center text-center py-16 px-4 border-b border-gray-100 bg-gradient-to-b from-yellow-200 via-yellow-50 to-white animate-fadein">
         <FaGlobeAsia className="text-[#D72631] text-5xl mb-4" />
         <h1 className="text-4xl md:text-5xl font-extrabold mb-0 text-yellow-800 drop-shadow-lg">About Brothers Holidays</h1>
       </section>
 
-      {/* Company Story & Mission */}
-      <section className="max-w-3xl mx-auto py-12 px-4 border-b border-gray-100">
+      {/* Company Story & Mission - Shows immediately */}
+      <section className="max-w-3xl mx-auto py-12 px-4 border-b border-gray-100 animate-fadein">
         <h2 className="text-2xl font-bold mb-4 text-blue-900">Our Story</h2>
         <p className="text-gray-700 mb-6">
           Brothers Holidays was founded with a passion for travel and a mission to make every journey extraordinary. With years of experience, our team brings you the best of Nepal and beyond, blending local expertise with global standards.
@@ -81,20 +105,16 @@ export default function AboutPage() {
         </p>
       </section>
 
-      {/* Core Values Section */}
-      <section className="w-full py-8 px-4 border-b border-gray-100 bg-gray-50">
+      {/* Core Values Section - Shows immediately */}
+      <section className="w-full py-8 px-4 border-b border-gray-100 bg-gray-50 animate-fadein">
         <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
           {values.map((val) => (
-            <div key={val.title} className="flex flex-col items-center p-4">
-              {val.icon}
-              <div className="font-bold text-base mt-2 mb-1 text-gray-900">{val.title}</div>
-              <div className="text-gray-500 text-sm">{val.desc}</div>
-            </div>
+            <ValueCard key={val.title} value={val} />
           ))}
         </div>
       </section>
 
-      {/* Team Section - Tabbed/Slider UI */}
+      {/* Team Section - Lazy loaded */}
       <Suspense fallback={
         <div className="w-full py-16 px-4 border-b border-gray-100 bg-white">
           <div className="max-w-5xl mx-auto text-center mb-10">
@@ -115,24 +135,20 @@ export default function AboutPage() {
         </section>
       </Suspense>
 
-      {/* Testimonials Grid */}
-      <section className="w-full py-12 px-4 border-b border-gray-100 bg-gray-50">
+      {/* Testimonials Grid - Shows immediately */}
+      <section className="w-full py-12 px-4 border-b border-gray-100 bg-gray-50 animate-fadein">
         <div className="max-w-4xl mx-auto text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold mb-2 text-red-600">What Our Travelers Say</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {testimonials.map((t) => (
-            <div key={t.name} className="bg-white rounded-2xl shadow p-6 text-center flex flex-col items-center border border-gray-100">
-              <div className="text-lg text-gray-700 mb-4 italic">&ldquo;{t.text}&rdquo;</div>
-              <div className="font-bold text-blue-700">{t.name}</div>
-              <div className="text-sm text-gray-500">{t.country}</div>
-            </div>
+            <TestimonialCard key={t.name} testimonial={t} />
           ))}
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="w-full py-12 px-4 flex flex-col items-center justify-center text-center bg-white">
+      {/* Call to Action - Shows immediately */}
+      <section className="w-full py-12 px-4 flex flex-col items-center justify-center text-center bg-white animate-fadein">
         <h2 className="text-2xl md:text-3xl font-bold mb-4 text-blue-900">Ready for your next adventure?</h2>
         <p className="text-gray-700 mb-6 max-w-xl mx-auto">Contact us today and let our experts help you plan the perfect trip. Your journey begins with Brothers Holidays!</p>
         <a
@@ -143,7 +159,7 @@ export default function AboutPage() {
         </a>
       </section>
 
-      {/* Office Location - Google Maps */}
+      {/* Office Location - Lazy loaded */}
       <Suspense fallback={
         <div className="w-full py-12 px-4 bg-gray-50 flex flex-col items-center justify-center">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 text-yellow-800">Our Office Location</h2>
@@ -160,6 +176,17 @@ export default function AboutPage() {
       </Suspense>
 
       <Footer />
+      
+      {/* Animations */}
+      <style jsx global>{`
+        @keyframes fadein {
+          from { opacity: 0; transform: translateY(24px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadein {
+          animation: fadein 1.2s cubic-bezier(0.4,0,0.2,1) both;
+        }
+      `}</style>
     </main>
   );
 } 

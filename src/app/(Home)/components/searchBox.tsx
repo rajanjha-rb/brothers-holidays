@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import {
-  MapPinIcon,
-  MoonIcon,
-  CurrencyDollarIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
+import { 
+  FaMapMarkerAlt, 
+  FaMoon, 
+  FaDollarSign, 
+  FaSearch 
+} from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 
 export default function SearchBox() {
@@ -64,7 +64,7 @@ export default function SearchBox() {
             {/* Destination */}
             <div className="flex-1 min-w-[120px] min-w-0 flex items-center">
               <div className="flex items-center w-full bg-white/30 rounded-2xl px-3 py-2 sm:px-5 sm:py-3 border border-gray-200 focus-within:border-yellow-400 shadow-md transition-all duration-200 backdrop-blur-md">
-                <MapPinIcon className="h-6 w-6 text-pink-700 flex-shrink-0 mr-2" aria-hidden="true" />
+                <FaMapMarkerAlt className="h-6 w-6 text-pink-700 flex-shrink-0 mr-2" aria-hidden="true" />
                 <input
                   type="text"
                   value={formData.destination}
@@ -79,7 +79,7 @@ export default function SearchBox() {
             {/* Nights */}
             <div className="flex-1 min-w-[120px] min-w-0 flex items-center">
               <div className="flex items-center w-full bg-white/30 rounded-2xl px-3 py-2 sm:px-5 sm:py-3 border border-gray-200 focus-within:border-yellow-400 shadow-md transition-all duration-200 backdrop-blur-md">
-                <MoonIcon className="h-6 w-6 text-blue-700 flex-shrink-0 mr-2" aria-hidden="true" />
+                <FaMoon className="h-6 w-6 text-blue-700 flex-shrink-0 mr-2" aria-hidden="true" />
                 <input
                   type="number"
                   value={formData.nights}
@@ -95,7 +95,7 @@ export default function SearchBox() {
             {/* Budget */}
             <div className="flex-1 min-w-[120px] min-w-0 flex items-center">
               <div className="flex items-center w-full bg-white/30 rounded-2xl px-3 py-2 sm:px-5 sm:py-3 border border-gray-200 focus-within:border-yellow-400 shadow-md transition-all duration-200 backdrop-blur-md">
-                <CurrencyDollarIcon className="h-6 w-6 text-green-700 flex-shrink-0 mr-2" aria-hidden="true" />
+                <FaDollarSign className="h-6 w-6 text-green-700 flex-shrink-0 mr-2" aria-hidden="true" />
                 <input
                   type="number"
                   value={formData.budget}
@@ -114,7 +114,7 @@ export default function SearchBox() {
               disabled={loading}
               className="flex items-center gap-2 px-6 py-3 sm:px-8 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <MagnifyingGlassIcon className="h-5 w-5" />
+              <FaSearch className="h-5 w-5" />
               <span className="hidden sm:inline">{loading ? "Searching..." : "Search"}</span>
             </Button>
           </div>

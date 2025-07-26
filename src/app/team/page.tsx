@@ -1,17 +1,130 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
 import { team } from "@/data/team";
 import Head from "next/head";
 
 const roles = ["Chairperson", "Director", "Manager"];
 
+// Enhanced lazy loading image component with shadcn skeleton
+const LazyTeamImage = ({ src, alt, onLoadStateChange }: { 
+  src: string; 
+  alt: string; 
+  onLoadStateChange?: (isLoaded: boolean) => void;
+}) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
+  useEffect(() => {
+    const loadImage = () => {
+      const img = new window.Image();
+      
+      img.onload = () => {
+        setIsLoaded(true);
+        setIsError(false);
+        onLoadStateChange?.(true);
+      };
+      
+      img.onerror = () => {
+        if (retryCount < 2) {
+          // Retry loading the image
+          setRetryCount(prev => prev + 1);
+          setTimeout(() => loadImage(), 1000);
+        } else {
+          setIsError(true);
+          onLoadStateChange?.(true); // Still call onLoadStateChange to show content
+        }
+      };
+      
+      img.src = src;
+    };
+
+    loadImage();
+  }, [src, retryCount, onLoadStateChange]);
+
+  return (
+    <div className="w-full max-w-xs aspect-square flex-shrink-0 rounded-2xl overflow-hidden shadow-2xl relative bg-gray-800">
+      {/* Skeleton loading placeholder using shadcn */}
+      {!isLoaded && !isError && (
+        <div className="w-full h-full flex flex-col items-center justify-center p-6 space-y-6">
+          {/* Skeleton avatar */}
+          <Skeleton className="w-28 h-28 rounded-full" />
+          
+          {/* Skeleton content structure */}
+          <div className="w-full space-y-4">
+            {/* Name skeleton */}
+            <div className="text-center">
+              <Skeleton className="w-40 h-8 mx-auto mb-2" />
+              <Skeleton className="w-24 h-5 mx-auto" />
+            </div>
+            
+            {/* Description skeleton */}
+            <div className="space-y-2">
+              <Skeleton className="w-full h-4" />
+              <Skeleton className="w-3/4 h-4" />
+              <Skeleton className="w-1/2 h-4" />
+            </div>
+            
+            {/* Social buttons skeleton */}
+            <div className="flex justify-center space-x-3 pt-2">
+              <Skeleton className="w-10 h-10 rounded-full" />
+              <Skeleton className="w-10 h-10 rounded-full" />
+              <Skeleton className="w-10 h-10 rounded-full" />
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Error placeholder */}
+      {isError && (
+        <div className="w-full h-full flex items-center justify-center bg-gray-700 rounded-2xl">
+          <div className="text-gray-400 text-center">
+            <div className="text-4xl mb-2">👤</div>
+            <div className="text-sm">Image not available</div>
+          </div>
+        </div>
+      )}
+      
+      {/* Actual image with smooth transition */}
+      {isLoaded && (
+        <Image
+          src={src}
+          alt={alt}
+          width={400}
+          height={400}
+          className="w-full h-full object-cover object-center select-none transition-all duration-500 ease-out"
+          draggable={false}
+          quality={75}
+        />
+      )}
+    </div>
+  );
+};
+
+
+
 export default function TeamPage() {
   const [idx, setIdx] = React.useState(0);
+  const [imageLoaded, setImageLoaded] = React.useState(false);
+
   const member = team[idx];
+
+  // Preload all team images for better performance
+  React.useEffect(() => {
+    const preloadImages = () => {
+      team.forEach(member => {
+        const img = new window.Image();
+        img.src = member.image;
+      });
+    };
+    
+    preloadImages();
+  }, []);
 
   // Auto-advance every 5 seconds
   React.useEffect(() => {
@@ -20,6 +133,11 @@ export default function TeamPage() {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Reset image loaded state when member changes
+  React.useEffect(() => {
+    setImageLoaded(false);
+  }, [idx]);
 
   // Find the index of the first team member with the given role
   const getRoleIndex = (role: string) => team.findIndex((m) => m.position.toLowerCase() === role.toLowerCase());
@@ -56,23 +174,17 @@ export default function TeamPage() {
         })}
       </div>
       <section className="max-w-5xl w-full flex flex-col md:flex-row items-center gap-10 md:gap-16 mx-auto">
-        {/* Image */}
-        <div className="w-full max-w-xs aspect-square flex-shrink-0 rounded-2xl overflow-hidden shadow-2xl">
-          <Image
-            src={member.image}
-            alt={member.name}
-            width={400}
-            height={400}
-            className="w-full h-full object-cover object-center select-none"
-            draggable={false}
-            priority={idx === 0}
-            quality={75}
-            placeholder="blur"
-            blurDataURL="data:image/webp;base64,UklGRiIAAABXRUJQVlA4ICwAAAAwAQCdASoEAAQAAVAfJZgCdAEOkAQA"
-          />
-        </div>
-        {/* Info */}
-        <div className="flex-1 flex flex-col justify-center items-start text-left">
+        {/* Lazy Loading Image */}
+        <LazyTeamImage 
+          src={member.image} 
+          alt={member.name} 
+          onLoadStateChange={setImageLoaded}
+        />
+        
+        {/* Info - Shows only after image loads for smooth transition */}
+        <div className={`flex-1 flex flex-col justify-center items-start text-left transition-all duration-500 ${
+          imageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}>
           <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-2">{member.name}</h2>
           <div className="text-lg text-yellow-400 font-bold mb-2 uppercase tracking-wide">{member.position}</div>
           <div className="text-xl text-gray-100 mb-8 max-w-xl leading-relaxed">{member.description}</div>
