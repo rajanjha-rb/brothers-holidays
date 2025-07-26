@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth";
+import React, { useState, useEffect, useMemo } from "react";
+import { useAuthState } from "@/store/auth";
 import Logo from "./navbar/Logo";
 import NavLinks from "./navbar/NavLinks";
 import AuthButtons from "./navbar/AuthButtons";
@@ -21,28 +21,41 @@ const PALETTE = {
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user, hydrated, loading } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+  const { user, hydrated, loading } = useAuthState();
   const router = useRouter();
 
-  // Don't render auth buttons until hydration is complete and not loading
-  const showAuthButtons = hydrated && !loading;
+  // Ensure component is mounted before showing auth state
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  // Create navLinks with conditional dashboard link
-  const navLinks = [
+  // Don't render auth buttons until hydration is complete and component is mounted
+  const showAuthButtons = mounted && hydrated && !loading;
+
+  // Memoize navLinks to prevent unnecessary re-renders
+  const navLinks = useMemo(() => [
     { name: "Home", href: "/", icon: <FaHome />, color: "#fff" },
     { name: "Holidays", href: "/", dropdown: true, icon: <FaSuitcaseRolling />, color: "#FFD166" },
     { name: "Blogs", href: "/", icon: <FaRegNewspaper />, color: "#D72631" },
     { name: "Gallery", href: "/", icon: <FaImages />, color: "#fff" },
-    ...(user ? [{ name: "Dashboard", href: "/dashboard", icon: <FaUser />, color: "#fff" }] : []),
+    ...(showAuthButtons && user ? [{ name: "Dashboard", href: "/dashboard", icon: <FaUser />, color: "#fff" }] : []),
     { name: "More", href: "/", dropdown: true, icon: <FaEllipsisH />, color: "#888" },
-  ];
+  ], [showAuthButtons, user]);
 
-  // Handle scroll effect
+  // Handle scroll effect with throttling
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 10);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 

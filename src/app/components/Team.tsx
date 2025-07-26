@@ -16,10 +16,9 @@ interface TeamProps {
 const roles = ["Chairperson", "Director", "Manager"];
 
 // Enhanced lazy loading image component with shadcn skeleton
-const LazyTeamImage = ({ src, alt, onLoadStateChange }: { 
+const LazyTeamImage = ({ src, alt }: { 
   src: string; 
   alt: string; 
-  onLoadStateChange?: (isLoaded: boolean) => void;
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -32,7 +31,6 @@ const LazyTeamImage = ({ src, alt, onLoadStateChange }: {
       img.onload = () => {
         setIsLoaded(true);
         setIsError(false);
-        onLoadStateChange?.(true);
       };
       
       img.onerror = () => {
@@ -42,7 +40,6 @@ const LazyTeamImage = ({ src, alt, onLoadStateChange }: {
           setTimeout(() => loadImage(), 1000);
         } else {
           setIsError(true);
-          onLoadStateChange?.(true); // Still call onLoadStateChange to show content
         }
       };
       
@@ -50,7 +47,7 @@ const LazyTeamImage = ({ src, alt, onLoadStateChange }: {
     };
 
     loadImage();
-  }, [src, retryCount, onLoadStateChange]);
+  }, [src, retryCount]);
 
   return (
     <div className="w-full max-w-xs aspect-square flex-shrink-0 rounded-2xl overflow-hidden shadow-2xl relative bg-gray-800">
@@ -115,26 +112,16 @@ const LazyTeamImage = ({ src, alt, onLoadStateChange }: {
 const TeamMember = React.memo(({ member }: {
   member: typeof defaultTeam[0];
 }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-
-  // Reset image loaded state when member changes
-  useEffect(() => {
-    setImageLoaded(false);
-  }, [member.name]);
-
   return (
     <section className="max-w-5xl w-full flex flex-col md:flex-row items-center gap-10 md:gap-16 mx-auto">
       {/* Lazy Loading Image */}
       <LazyTeamImage 
         src={member.image} 
         alt={member.name} 
-        onLoadStateChange={setImageLoaded}
       />
       
-      {/* Info - Shows only after image loads for smooth transition */}
-      <div className={`flex-1 flex flex-col justify-center items-start text-left transition-all duration-500 ${
-        imageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-      }`}>
+      {/* Info - Shows immediately with smooth animation */}
+      <div className="flex-1 flex flex-col justify-center items-start text-left animate-fadein">
         <h2 className="text-3xl md:text-4xl font-extrabold text-black mb-2">{member.name}</h2>
         <div className="text-lg text-yellow-400 font-bold mb-2 uppercase tracking-wide">{member.position}</div>
         <div className="text-xl text-gray-700 mb-8 max-w-xl leading-relaxed">{member.description}</div>
@@ -201,8 +188,6 @@ export default function Team({ team = defaultTeam }: TeamProps) {
       setIdx(teamIdx);
     }
   }, []);
-
-
 
   return (
     <div className="w-full flex flex-col items-center">

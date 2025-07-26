@@ -143,18 +143,48 @@ export const useAuthStore = create<IAuthStore>()(
     {
       name: "auth",
       version: STORAGE_VERSION,
+      // Optimize storage for faster hydration
+      storage: {
+        getItem: (name) => {
+          try {
+            const value = localStorage.getItem(name);
+            return value ? JSON.parse(value) : null;
+          } catch {
+            return null;
+          }
+        },
+        setItem: (name, value) => {
+          try {
+            localStorage.setItem(name, JSON.stringify(value));
+          } catch {
+            // Ignore storage errors
+          }
+        },
+        removeItem: (name) => {
+          try {
+            localStorage.removeItem(name);
+          } catch {
+            // Ignore storage errors
+          }
+        },
+      },
       migrate: (persistedState, version) => {
         if (version !== STORAGE_VERSION) {
           // Clear state if version mismatch
-          return { session: null, jwt: null, user: null, hydrated: false, loading: false };
+          return { session: null, jwt: null, user: null, hydrated: false, loading: false } as IAuthStore;
         }
-        return persistedState;
+        return persistedState as IAuthStore;
       },
       onRehydrateStorage() {
         return (state, error) => {
-          if (!error) state?.setHydrated();
+          if (!error && state) {
+            // Immediately set hydrated to true for faster rendering
+            state.setHydrated();
+          }
         };
       },
+      // Skip hydration if localStorage is not available
+      skipHydration: typeof window === 'undefined' || !isLocalStorageAvailable(),
     }
   )
 );
@@ -164,4 +194,16 @@ export const clearAuthState = () => {
     localStorage.removeItem('auth');
     window.location.reload();
   }
+};
+
+// Custom hook for faster auth state access
+export const useAuthState = () => {
+  const { user, hydrated, loading } = useAuthStore();
+  
+  // Return early if not hydrated to prevent unnecessary re-renders
+  if (!hydrated) {
+    return { user: null, hydrated: false, loading: true };
+  }
+  
+  return { user, hydrated, loading };
 };

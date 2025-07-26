@@ -81,7 +81,6 @@ const ValueCard = React.memo(({ value }: { value: typeof values[0] }) => (
 ValueCard.displayName = 'ValueCard';
 
 export default function AboutPage() {
-
   return (
     <main className="min-h-screen bg-white flex flex-col justify-between">
       <PerformanceMonitor pageName="About Page" />
@@ -99,17 +98,20 @@ export default function AboutPage() {
         <p className="text-gray-700 mb-6">
           Brothers Holidays was founded with a passion for travel and a mission to make every journey extraordinary. With years of experience, our team brings you the best of Nepal and beyond, blending local expertise with global standards.
         </p>
-        <h3 className="text-xl font-semibold mb-2 text-red-600">Our Mission</h3>
-        <p className="text-gray-700">
-          To inspire and enable people to explore the world, creating memories that last a lifetime. We believe in responsible tourism, authentic experiences, and personalized service.
+        <p className="text-gray-700 mb-6">
+          We believe that travel should be more than just visiting places—it should be about creating memories that last a lifetime. Our commitment to excellence and attention to detail ensures that every trip we plan becomes an unforgettable adventure.
         </p>
       </section>
 
-      {/* Core Values Section - Shows immediately */}
-      <section className="w-full py-8 px-4 border-b border-gray-100 bg-gray-50 animate-fadein">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
-          {values.map((val) => (
-            <ValueCard key={val.title} value={val} />
+      {/* Values Section - Shows immediately */}
+      <section className="w-full py-16 px-4 border-b border-gray-100 bg-gray-50 animate-fadein">
+        <div className="max-w-4xl mx-auto text-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-blue-900">Our Values</h2>
+          <p className="text-gray-600">The principles that guide everything we do</p>
+        </div>
+        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+          {values.map((value, index) => (
+            <ValueCard key={index} value={value} />
           ))}
         </div>
       </section>
@@ -126,57 +128,37 @@ export default function AboutPage() {
           </div>
         </div>
       }>
-        <section className="w-full py-16 px-4 border-b border-gray-100 bg-white">
-          <div className="max-w-5xl mx-auto text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2 text-blue-900">Meet Our Team</h2>
-            <p className="text-gray-600">Passionate, experienced, and dedicated to making your travel dreams come true.</p>
-          </div>
-          <Team />
-        </section>
+        <Team />
       </Suspense>
 
-      {/* Testimonials Grid - Shows immediately */}
-      <section className="w-full py-12 px-4 border-b border-gray-100 bg-gray-50 animate-fadein">
-        <div className="max-w-4xl mx-auto text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2 text-red-600">What Our Travelers Say</h2>
+      {/* Testimonials Section - Shows immediately */}
+      <section className="w-full py-16 px-4 border-b border-gray-100 bg-white animate-fadein">
+        <div className="max-w-4xl mx-auto text-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-blue-900">What Our Clients Say</h2>
+          <p className="text-gray-600">Real experiences from real travelers</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          {testimonials.map((t) => (
-            <TestimonialCard key={t.name} testimonial={t} />
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+          {testimonials.map((testimonial, index) => (
+            <TestimonialCard key={index} testimonial={testimonial} />
           ))}
         </div>
       </section>
 
-      {/* Call to Action - Shows immediately */}
-      <section className="w-full py-12 px-4 flex flex-col items-center justify-center text-center bg-white animate-fadein">
-        <h2 className="text-2xl md:text-3xl font-bold mb-4 text-blue-900">Ready for your next adventure?</h2>
-        <p className="text-gray-700 mb-6 max-w-xl mx-auto">Contact us today and let our experts help you plan the perfect trip. Your journey begins with Brothers Holidays!</p>
-        <a
-          href="tel:+9779741726064"
-          className="inline-block px-8 py-3 rounded-lg font-bold text-lg shadow transition-transform hover:scale-105 bg-blue-700 text-white"
-        >
-          Call Us: +977 9741726064
-        </a>
-      </section>
-
-      {/* Office Location - Lazy loaded */}
+      {/* Contact & Map Section - Lazy loaded */}
       <Suspense fallback={
         <div className="w-full py-12 px-4 bg-gray-50 flex flex-col items-center justify-center">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 text-yellow-800">Our Office Location</h2>
           <div className="w-full max-w-2xl aspect-video rounded-2xl bg-gray-200 animate-pulse"></div>
         </div>
       }>
-        <section className="w-full py-12 px-4 bg-gray-50 flex flex-col items-center justify-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-yellow-800">Our Office Location</h2>
-          <GoogleMapEmbed
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3531.5335437197277!2d85.3137147740542!3d27.73168492442015!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb190005dd8d47%3A0x55fc46bb27a53495!2sBrothers%20Holidays%20Adventure!5e0!3m2!1sen!2snp!4v1752637872899!5m2!1sen!2snp"
-            title="Brothers Holidays Adventure Office Location"
-          />
-        </section>
+        <GoogleMapEmbed 
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3531.5335437197277!2d85.3137147740542!3d27.73168492442015!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb190005dd8d47%3A0x55fc46bb27a53495!2sBrothers%20Holidays%20Adventure!5e0!3m2!1sen!2snp!4v1752637872899!5m2!1sen!2snp"
+          title="Brothers Holidays Adventure Office Location"
+        />
       </Suspense>
 
       <Footer />
-      
+
       {/* Animations */}
       <style jsx global>{`
         @keyframes fadein {
