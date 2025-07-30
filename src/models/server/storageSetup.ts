@@ -5,10 +5,12 @@ import { storage } from "./config";
 export default async function getOrCreateStorage() {
   try {
     await storage.getBucket(featuredImageBucket);
-    console.log("Storage Connected");
+    console.log('Storage bucket already exists:', featuredImageBucket);
+    // Storage connected successfully
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     try {
+      console.log('Creating storage bucket:', featuredImageBucket);
       await storage.createBucket(
         featuredImageBucket,
         featuredImageBucket,
@@ -24,11 +26,12 @@ export default async function getOrCreateStorage() {
         ["jpg", "png", "gif", "jpeg", "webp", "heic"]
       );
 
-      console.log("Storage Created");
-      console.log("Storage Connected");
+      console.log('Storage bucket created successfully:', featuredImageBucket);
+      // Storage created and connected successfully
        
-    } catch (_error) {
-      console.error("Error creating storage:", _error);
+    } catch (error) {
+      console.error('Error creating storage bucket:', error);
+      // Error creating storage silently
     }
   }
 }

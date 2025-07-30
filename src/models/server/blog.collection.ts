@@ -7,7 +7,7 @@ export default async function createBlogCollection() {
   try {
     // Check if collection exists
     await databases.getCollection(db, blogCollection);
-    console.log("Blog collection already exists");
+    // Blog collection already exists
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     try {
@@ -17,10 +17,10 @@ export default async function createBlogCollection() {
         Permission.create("users"),
         Permission.update("users"),
         Permission.delete("users"),
-      ]);
-      console.log("Blog collection created successfully");
-    } catch (createError) {
-      console.error("Error creating blog collection:", createError);
+      ]    );
+    // Blog collection created successfully
+    } catch {
+      // Error creating blog collection silently
       return;
     }
   }
@@ -62,10 +62,10 @@ export default async function createBlogCollection() {
         false
       ),
     ]);
-    console.log("Blog collection attributes created successfully");
-  } catch (attrError) {
-    console.error("Error creating blog collection attributes:", attrError);
-  }
+    // Blog collection attributes created successfully
+      } catch {
+      // Error creating blog collection attributes silently
+    }
 
   //create indexes
   try {
@@ -98,8 +98,8 @@ export default async function createBlogCollection() {
         ["$updatedAt"]
       ),
     ]);
-    console.log("Blog collection indexes created successfully");
-  } catch (indexError) {
-    console.error("Error creating blog collection indexes:", indexError);
-  }
+    // Blog collection indexes created successfully
+      } catch {
+      // Error creating blog collection indexes silently
+    }
 }

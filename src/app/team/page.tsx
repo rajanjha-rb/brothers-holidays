@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
+import { FaFacebook, FaInstagram } from "react-icons/fa";
 import { team } from "@/data/team";
 import Head from "next/head";
 
@@ -199,11 +199,7 @@ export default function TeamPage() {
                 <FaInstagram className="text-pink-400 text-2xl" />
               </a>
             </Button>
-            <Button asChild variant="ghost" size="icon" className="hover:bg-blue-900/20">
-              <a href={member.socials.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
-                <FaLinkedin className="text-blue-300 text-2xl" />
-              </a>
-            </Button>
+
           </div>
         </div>
       </section>

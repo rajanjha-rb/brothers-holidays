@@ -1,9 +1,13 @@
 "use client";
 import React, { useRef, useEffect } from "react";
 import NavLinks, { NavLink, MoreModal } from "./NavLinks";
-import AuthButtons from "./AuthButtons";
 import type { User } from "./AuthButtons";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useAdminStatus, useAuthStore } from "@/store/auth";
+import { FaSignOutAlt, FaEnvelope, FaCalendarAlt } from "react-icons/fa";
 
 interface MobileDrawerProps {
   open: boolean;
@@ -19,9 +23,24 @@ const PALETTE = {
   gold: "#FFD166",
 };
 
-export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated = false, loading = false }: MobileDrawerProps) {
+export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated = false, loading: _loading = false }: MobileDrawerProps) {
   const [showMore, setShowMore] = useState(false);
   const drawerRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
+  const { isAdmin } = useAdminStatus();
+  const logout = useAuthStore(state => state.logout);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setOpen(false);
+      document.body.style.overflow = "";
+      document.body.classList.remove("mobile-menu-open");
+      router.push("/");
+            } catch {
+          // Logout failed silently
+        }
+  };
 
   // Focus trap for accessibility
   useEffect(() => {
@@ -151,37 +170,113 @@ export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated =
         </div>
         {/* Fixed Footer */}
         <div className="flex-shrink-0 px-6 pb-6 space-y-4" style={{ pointerEvents: 'auto', zIndex: 60 }}>
-          {hydrated && (
-            <div className="flex flex-col items-center w-full">
-              <AuthButtons user={user} setOpen={setOpen} variant="mobile" loading={loading} />
+          {/* User Avatar for logged-in users */}
+          {hydrated && user && (
+            <div className="flex flex-col items-center w-full mb-4">
+              {isAdmin ? (
+                // Admin users - direct navigation to dashboard
+                <div className="flex items-center gap-3 cursor-pointer" onClick={() => {
+                  setOpen(false);
+                  document.body.style.overflow = "";
+                  document.body.classList.remove("mobile-menu-open");
+                  router.push("/dashboard");
+                }}>
+                  <Avatar>
+                    <AvatarFallback className="bg-[#22223b] text-white font-bold">{(user.name || user.email || "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2)}</AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium text-black">{user.name || user.email || "User"}</span>
+                </div>
+              ) : (
+                // Non-admin users - dropdown with logout option
+                <DropdownMenu modal={true}>
+                  <DropdownMenuTrigger asChild>
+                    <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+                      <Avatar>
+                        <AvatarFallback className="bg-[#22223b] text-white font-bold">{(user.name || user.email || "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2)}</AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium text-black">{user.name || user.email || "User"}</span>
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" className="w-48">
+                    <DropdownMenuItem 
+                      onClick={handleLogout}
+                      variant="destructive"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <FaSignOutAlt className="w-4 h-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           )}
           <div className="pt-4 border-t border-gray-200">
             <div className="text-center space-y-3">
               <p className="text-sm text-gray-600 font-medium">Need Help?</p>
+              {/* Book Now Button for Mobile */}
               <a
-                href="tel:+9779807872340"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium text-sm hover:bg-blue-100 transition-colors"
+                href="/booking"
+                className="group inline-flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-gradient-to-r from-yellow-50 to-yellow-100 text-yellow-800 font-semibold text-base hover:from-yellow-100 hover:to-yellow-200 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 border-2 border-yellow-300"
                 onClick={(e) => {
                   e.preventDefault();
                   setOpen(false);
                   document.body.style.overflow = "";
                   document.body.classList.remove("mobile-menu-open");
-                  // For phone links, use direct href
-                  window.open("tel:+9779807872340", "_self");
+                  router.push("/booking");
                 }}
               >
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-                  <path
-                    d="M22 16.92v3a2 2 0 0 1-2.18 2A19.72 19.72 0 0 1 3.08 5.18 2 2 0 0 1 5 3h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.68 2.34a2 2 0 0 1-.45 2.11l-1.27 1.27a16 16 0 0 0 6.29 6.29l1.27-1.27a2 2 0 0 1 2.11-.45c.74.32 1.53.55 2.34.68A2 2 0 0 1 22 16.92z"
-                    stroke={PALETTE.blue}
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Call +977 9741726064
+                <FaCalendarAlt size={20} className="transition-transform duration-300 group-hover:rotate-12" />
+                <span className="transition-all duration-300 group-hover:translate-x-1">Book Now</span>
               </a>
+              <div className="flex flex-col gap-3">
+                <a
+                  href="tel:+9779807872340"
+                  className="group inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-medium text-sm hover:from-blue-100 hover:to-blue-200 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setOpen(false);
+                    document.body.style.overflow = "";
+                    document.body.classList.remove("mobile-menu-open");
+                    // For phone links, use direct href
+                    window.open("tel:+9779807872340", "_self");
+                  }}
+                >
+                  <div className="relative elegant-animation">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" className="transition-transform duration-300 group-hover:rotate-12 gentle-glow">
+                      <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2A19.72 19.72 0 0 1 3.08 5.18 2 2 0 0 1 5 3h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.68 2.34a2 2 0 0 1-.45 2.11l-1.27 1.27a16 16 0 0 0 6.29 6.29l1.27-1.27a2 2 0 0 1 2.11-.45c.74.32 1.53.55 2.34.68A2 2 0 0 1 22 16.92z"
+                        stroke={PALETTE.blue}
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {/* Elegant pulse animation for mobile */}
+                    <div className="elegant-pulse"></div>
+                  </div>
+                  <span className="transition-all duration-300 group-hover:translate-x-1">Call +977 9741726064</span>
+                </a>
+                <a
+                  href="mailto:brothersholidays@gmail.com"
+                  className="group inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-gradient-to-r from-green-50 to-green-100 text-green-700 font-medium text-sm hover:from-green-100 hover:to-green-200 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setOpen(false);
+                    document.body.style.overflow = "";
+                    document.body.classList.remove("mobile-menu-open");
+                    // For email links, use direct href
+                    window.open("mailto:brothersholidays@gmail.com", "_self");
+                  }}
+                >
+                  <div className="relative email-elegant">
+                    <FaEnvelope size={18} className="transition-transform duration-300 group-hover:rotate-12 email-gentle-glow" />
+                    {/* Elegant email pulse animation for mobile */}
+                    <div className="email-elegant-pulse"></div>
+                  </div>
+                  <span className="transition-all duration-300 group-hover:translate-x-1">brothersholidays@gmail.com</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>

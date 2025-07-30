@@ -1,35 +1,35 @@
 export const team = [
   {
-    name: "Rustam Dhital",
+    name: "Sofia",
     position: "Chairperson",
     image: "/chairperson.webp",
     description: "Visionary leader and Chairperson, guiding Brothers Holidays with passion and integrity.",
     socials: {
       facebook: "#",
       instagram: "#",
-      linkedin: "#",
+      whatsapp: "#",
     },
   },
   {
-    name: "Rupesh Dhital",
+    name: "Anandreansyah",
     position: "Director",
     image: "/director.webp",
     description: "Director with expertise in seamless travel operations and customer satisfaction.",
     socials: {
       facebook: "#",
       instagram: "#",
-      linkedin: "#",
+      whatsapp: "#",
     },
   },
   {
-    name: "Aayush Panta",
+    name: "Jons Sena",
     position: "Manager",
     image: "/manager.webp",
     description: "Manager dedicated to crafting personalized travel experiences for every client.",
     socials: {
       facebook: "#",
       instagram: "#",
-      linkedin: "#",
+      whatsapp: "#",
     },
   }
 ]; 

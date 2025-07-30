@@ -242,3 +242,621 @@
     display: none !important;
   }
 }
+
+/* Custom animations for contact elements */
+@keyframes contactGlow {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(0, 87, 183, 0.1);
+  }
+  50% {
+    box-shadow: 0 8px 25px rgba(0, 87, 183, 0.2);
+  }
+}
+
+@keyframes iconBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+
+
+/* Elegant pulse animation for call icon */
+@keyframes elegantPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.7;
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.3;
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0;
+    box-shadow: 0 0 0 12px rgba(220, 38, 38, 0);
+  }
+}
+
+@keyframes gentleGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(220, 38, 38, 0);
+  }
+}
+
+
+
+/* Elegant pulse animation for email icon */
+@keyframes elegantEmailPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.7;
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.3;
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0;
+    box-shadow: 0 0 0 12px rgba(59, 130, 246, 0);
+  }
+}
+
+@keyframes gentleEmailGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
+  }
+}
+
+/* Apply animations to contact elements */
+.contact-icon {
+  animation: iconBounce 2s ease-in-out infinite;
+}
+
+
+
+.contact-glow {
+  animation: contactGlow 3s ease-in-out infinite;
+}
+
+/* Elegant animation classes */
+.elegant-animation {
+  position: relative;
+}
+
+.elegant-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: elegantPulse 2s ease-out infinite;
+  z-index: -1;
+}
+
+.gentle-glow {
+  animation: gentleGlow 2s ease-in-out infinite;
+}
+
+
+
+.email-elegant {
+  position: relative;
+}
+
+.email-elegant-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: elegantEmailPulse 2s ease-out infinite;
+  z-index: -1;
+}
+
+.email-gentle-glow {
+  animation: gentleEmailGlow 2s ease-in-out infinite;
+}
+
+/* Smooth hover transitions */
+.contact-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.contact-hover:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+/* RTE Editor Styles */
+.w-md-editor {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+}
+
+.w-md-editor-toolbar {
+  border-bottom: 1px solid #e5e7eb;
+  background-color: white;
+}
+
+.w-md-editor-content {
+  background-color: white;
+}
+
+.w-md-editor-text {
+  color: #374151;
+}
+
+.w-md-editor-text-pre,
+.w-md-editor-text-input {
+  color: #374151;
+}
+
+.w-md-editor-preview {
+  background-color: white !important;
+  color: #374151 !important;
+}
+
+/* Force light mode for markdown preview in blog posts */
+.markdown-content .w-md-editor-preview {
+  background-color: white !important;
+  color: #374151 !important;
+}
+
+/* Override any dark mode styles for markdown content */
+.markdown-content {
+  background-color: white !important;
+  color: #374151 !important;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Force RTE preview to have proper background */
+.w-md-editor-preview,
+.w-md-editor-preview *,
+.w-md-editor-content,
+.w-md-editor-content * {
+  background-color: white !important;
+  color: #374151 !important;
+}
+
+/* Override RTE container backgrounds */
+.w-md-editor,
+.w-md-editor * {
+  background-color: white !important;
+}
+
+/* Specific overrides for RTE preview content */
+.w-md-editor-preview {
+  background-color: white !important;
+  color: #374151 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Override any RTE dark mode styles */
+[data-color-mode="dark"] .w-md-editor-preview,
+[data-color-mode="auto"] .w-md-editor-preview {
+  background-color: white !important;
+  color: #374151 !important;
+}
+
+/* Nuclear option: Override ALL RTE background colors with maximum specificity */
+.w-md-editor-preview,
+.w-md-editor-preview *,
+.w-md-editor-preview > *,
+.w-md-editor-preview div,
+.w-md-editor-preview p,
+.w-md-editor-preview h1,
+.w-md-editor-preview h2,
+.w-md-editor-preview h3,
+.w-md-editor-preview h4,
+.w-md-editor-preview h5,
+.w-md-editor-preview h6,
+.w-md-editor-preview ul,
+.w-md-editor-preview ol,
+.w-md-editor-preview li,
+.w-md-editor-preview blockquote,
+.w-md-editor-preview code,
+.w-md-editor-preview pre,
+.w-md-editor-preview table,
+.w-md-editor-preview th,
+.w-md-editor-preview td {
+  background-color: white !important;
+  color: #374151 !important;
+}
+
+/* Override RTE's CSS custom properties at the root level */
+:root {
+  --md-editor-bg-color: white !important;
+  --md-editor-color: #374151 !important;
+  --color-canvas-default: white !important;
+  --color-canvas-subtle: white !important;
+  --color-canvas-inset: white !important;
+  --color-fg-default: #374151 !important;
+  --color-fg-muted: #6b7280 !important;
+  --color-fg-subtle: #9ca3af !important;
+  --color-border-default: #e5e7eb !important;
+  --color-border-muted: #f3f4f6 !important;
+  --color-neutral-muted: #f9fafb !important;
+  --color-accent-fg: #3b82f6 !important;
+  --color-accent-emphasis: #1d4ed8 !important;
+}
+
+/* Override any element that might be using these variables */
+* {
+  --md-editor-bg-color: white !important;
+  --md-editor-color: #374151 !important;
+}
+
+/* Override any CSS custom properties that RTE might be using */
+.w-md-editor-preview {
+  --md-editor-bg-color: red !important;
+  --md-editor-color: white !important;
+  --color-canvas-default: red !important;
+  --color-canvas-subtle: red !important;
+  --color-canvas-inset: red !important;
+  --color-fg-default: white !important;
+  --color-fg-muted: white !important;
+  --color-fg-subtle: white !important;
+  background-color: red !important;
+  color: white !important;
+}
+
+/* Force light mode for ALL markdown editor components */
+.w-md-editor,
+.w-md-editor *,
+.w-md-editor-preview,
+.w-md-editor-preview *,
+.w-md-editor-content,
+.w-md-editor-content *,
+.w-md-editor-text,
+.w-md-editor-text *,
+.w-md-editor-text-pre,
+.w-md-editor-text-input,
+.w-md-editor-text-input * {
+  background-color: #f8fafc !important;
+  color: #374151 !important;
+}
+
+/* Specific overrides for markdown preview in blog posts */
+article .w-md-editor-preview,
+article .w-md-editor-preview *,
+article .markdown-content,
+article .markdown-content * {
+  background-color: #f8fafc !important;
+  color: #374151 !important;
+}
+
+/* Override any data attributes that might be causing dark mode */
+[data-color-mode*="dark"],
+[data-color-mode*="auto"] {
+  background-color: #f8fafc !important;
+  color: #374151 !important;
+}
+
+/* Force light mode for the entire blog content area */
+main article,
+main article *,
+main .prose,
+main .prose * {
+  background-color: #f8fafc !important;
+  color: #374151 !important;
+}
+
+/* Nuclear option: Override ALL possible dark mode styles */
+*[class*="w-md-editor"],
+*[class*="markdown"],
+*[class*="prose"] {
+  background-color: #f8fafc !important;
+  color: #374151 !important;
+}
+
+/* Override any CSS custom properties that might be causing dark mode */
+:root {
+  --md-editor-bg-color: white !important;
+  --md-editor-color: #374151 !important;
+}
+
+/* Force light mode for any element with data attributes */
+[data-color-mode],
+[data-theme],
+[data-mode] {
+  background-color: #f8fafc !important;
+  color: #374151 !important;
+}
+
+/* Specific override for blog content RTE */
+.rte-content-override,
+.rte-content-override *,
+.rte-content-override .w-md-editor-preview,
+.rte-content-override .w-md-editor-preview * {
+  background-color: #f8fafc !important;
+  color: #374151 !important;
+}
+
+/* Force light background on ALL RTE elements with maximum specificity */
+div[class*="w-md-editor"],
+div[class*="w-md-editor"] *,
+div[class*="w-md-editor"] > *,
+div[class*="w-md-editor"] div,
+div[class*="w-md-editor"] p,
+div[class*="w-md-editor"] h1,
+div[class*="w-md-editor"] h2,
+div[class*="w-md-editor"] h3,
+div[class*="w-md-editor"] h4,
+div[class*="w-md-editor"] h5,
+div[class*="w-md-editor"] h6,
+div[class*="w-md-editor"] ul,
+div[class*="w-md-editor"] ol,
+div[class*="w-md-editor"] li,
+div[class*="w-md-editor"] blockquote,
+div[class*="w-md-editor"] code,
+div[class*="w-md-editor"] pre,
+div[class*="w-md-editor"] table,
+div[class*="w-md-editor"] th,
+div[class*="w-md-editor"] td {
+  background-color: #f8fafc !important;
+  color: #374151 !important;
+}
+
+/* Nuclear option: Override the entire main content area */
+main {
+  background-color: #f8fafc !important;
+}
+
+main > div {
+  background-color: #f8fafc !important;
+}
+
+/* Force the markdown-content div to be light */
+.markdown-content {
+  background-color: #f8fafc !important;
+}
+
+/* Make the RTE content light too */
+.markdown-content .w-md-editor-preview,
+.markdown-content .w-md-editor-preview * {
+  background-color: #f8fafc !important;
+  color: #374151 !important;
+}
+
+/* Amazing scroll indicator animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4);
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.scroll-indicator-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+.scroll-indicator-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.scroll-indicator-sparkle {
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+/* Override prose margins and padding */
+.prose,
+.prose *,
+.prose-xl,
+.prose-xl * {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Remove any default margins from markdown content */
+.markdown-content,
+.markdown-content *,
+.w-md-editor-preview,
+.w-md-editor-preview * {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Professional Blog Styling */
+.markdown-content {
+  line-height: 1.8;
+  color: #374151 !important;
+  background-color: white !important;
+}
+
+.markdown-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+.markdown-content h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #111827;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.markdown-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+.markdown-content h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content p {
+  margin-bottom: 1.5rem;
+  font-size: 1.125rem;
+  line-height: 1.8;
+}
+
+.markdown-content ul, .markdown-content ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.markdown-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.7;
+}
+
+.markdown-content blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1.5rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: #6b7280;
+  background-color: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.markdown-content code {
+  background-color: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: #dc2626;
+}
+
+.markdown-content pre {
+  background-color: #1f2937;
+  color: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 2rem 0;
+}
+
+.markdown-content pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.markdown-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+.markdown-content a:hover {
+  color: #2563eb;
+}
+
+.markdown-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 2rem 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.markdown-content th,
+.markdown-content td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.markdown-content th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.markdown-content tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .markdown-content h1 {
+    font-size: 2rem;
+  }
+  
+  .markdown-content h2 {
+    font-size: 1.75rem;
+  }
+  
+  .markdown-content h3 {
+    font-size: 1.375rem;
+  }
+  
+  .markdown-content p {
+    font-size: 1rem;
+  }
+}
+
+

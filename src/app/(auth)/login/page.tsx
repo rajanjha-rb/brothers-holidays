@@ -14,14 +14,55 @@ export default function Login() {
   const [error, setError] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
   const [rememberMe, setRememberMe] = React.useState(false);
+  const [loginAttempts, setLoginAttempts] = React.useState(0);
+  const [isBlocked, setIsBlocked] = React.useState(false);
+  const [blockTime, setBlockTime] = React.useState(0);
+
 
   useEffect(() => {
     document.body.classList.remove("mobile-menu-open");
     document.body.style.overflow = "";
+    
+    // Check for existing block from localStorage
+    const storedBlockTime = localStorage.getItem('loginBlockTime');
+    if (storedBlockTime) {
+      const blockUntil = parseInt(storedBlockTime);
+      const now = Date.now();
+      if (now < blockUntil) {
+        setIsBlocked(true);
+        setBlockTime(blockUntil);
+      } else {
+        localStorage.removeItem('loginBlockTime');
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    if (isBlocked && blockTime > 0) {
+      const timer = setInterval(() => {
+        const now = Date.now();
+        if (now >= blockTime) {
+          setIsBlocked(false);
+          setBlockTime(0);
+          localStorage.removeItem('loginBlockTime');
+          clearInterval(timer);
+        }
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [isBlocked, blockTime]);
+
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (isBlocked) {
+      const remainingTime = Math.ceil((blockTime - Date.now()) / 1000);
+      setError(`Too many failed attempts. Please try again in ${remainingTime} seconds.`);
+      return;
+    }
+    
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email");
     const password = formData.get("password");
@@ -34,6 +75,22 @@ export default function Login() {
     const loginResponse = await login(email.toString(), password.toString());
     if (loginResponse.error) {
       setError(loginResponse.error.message);
+      // Increment failed attempts
+      const newAttempts = loginAttempts + 1;
+      setLoginAttempts(newAttempts);
+      
+      // Block after 5 failed attempts for 15 minutes
+      if (newAttempts >= 5) {
+        const blockUntil = Date.now() + (15 * 60 * 1000); // 15 minutes
+        setIsBlocked(true);
+        setBlockTime(blockUntil);
+        localStorage.setItem('loginBlockTime', blockUntil.toString());
+        setError("Too many failed attempts. Please try again in 15 minutes.");
+      }
+    } else {
+      // Reset attempts on successful login
+      setLoginAttempts(0);
+      localStorage.removeItem('loginBlockTime');
     }
     setIsLoading(false);
   };
@@ -75,6 +132,8 @@ export default function Login() {
               <p className="text-sm text-red-600 text-center">{error}</p>
             </div>
           )}
+
+
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -129,14 +188,27 @@ export default function Login() {
             </div>
             <Button
               type="submit"
-              disabled={isLoading}
-              className="w-full h-12 text-base font-semibold rounded-lg bg-red-500 hover:bg-red-600 transition-all duration-300 shadow-md mt-2 transform hover:scale-105 hover:shadow-xl focus:scale-105 focus:shadow-xl"
-              style={{boxShadow: "0 4px 15px rgba(215,38,49,0.10)"}}
+              disabled={isLoading || isBlocked}
+              className={`w-full h-12 text-base font-semibold rounded-lg transition-all duration-300 shadow-md mt-2 transform hover:scale-105 hover:shadow-xl focus:scale-105 focus:shadow-xl ${
+                isBlocked 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-red-500 hover:bg-red-600'
+              }`}
+              style={{boxShadow: isBlocked ? "none" : "0 4px 15px rgba(215,38,49,0.10)"}}
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   Signing in...
+                </div>
+              ) : isBlocked ? (
+                <div className="flex items-center gap-2">
+                  <span>Account Temporarily Locked</span>
+                  {blockTime > 0 && (
+                    <span className="text-sm">
+                      ({Math.ceil((blockTime - Date.now()) / 1000)}s)
+                    </span>
+                  )}
                 </div>
               ) : (
                 "Sign in"

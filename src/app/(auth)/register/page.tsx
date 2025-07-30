@@ -2,22 +2,51 @@
 
 import React, { useEffect } from "react";
 import { useAuthStore } from "../../../store/auth";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
+// Password validation function
+const validatePassword = (password: string) => {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  
+  const errors = [];
+  if (password.length < minLength) errors.push(`At least ${minLength} characters`);
+  if (!hasUpperCase) errors.push("One uppercase letter");
+  if (!hasLowerCase) errors.push("One lowercase letter");
+  if (!hasNumbers) errors.push("One number");
+  if (!hasSpecialChar) errors.push("One special character");
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
 export default function Register() {
-  const { login, createAccount } = useAuthStore();
+  const { createAccount } = useAuthStore();
+  const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
+  const [passwordValidation, setPasswordValidation] = React.useState<{ isValid: boolean; errors: string[] }>({ isValid: false, errors: [] });
+
 
   useEffect(() => {
     document.body.classList.remove("mobile-menu-open");
     document.body.style.overflow = "";
   }, []);
+
+  const handlePasswordChange = (password: string) => {
+    setPasswordValidation(validatePassword(password));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,6 +58,13 @@ export default function Register() {
 
     if (!name || !email || !password) {
       setError("Please fill out all fields");
+      return;
+    }
+
+    // Validate password strength
+    const validation = validatePassword(password.toString());
+    if (!validation.isValid) {
+      setError(`Password must contain: ${validation.errors.join(", ")}`);
       return;
     }
 
@@ -44,10 +80,8 @@ export default function Register() {
     if (response.error) {
       setError(response.error.message);
     } else {
-      const loginResponse = await login(email.toString(), password.toString());
-      if (loginResponse.error) {
-        setError(loginResponse.error.message);
-      }
+      // Account created successfully, redirect to login
+      router.push("/login");
     }
 
     setIsLoading(false);
@@ -119,6 +153,7 @@ export default function Register() {
                   className="h-12 border-gray-300 rounded-lg text-base pr-12 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:shadow-lg transition-all duration-300"
                   required
                   disabled={isLoading}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
                 />
                 <button
                   type="button"
@@ -130,6 +165,11 @@ export default function Register() {
                   {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
                 </button>
               </div>
+              {passwordValidation.errors.length > 0 && (
+                <p className="text-sm text-red-600 mt-1">
+                  Password must contain: {passwordValidation.errors.join(", ")}
+                </p>
+              )}
             </div>
             <Button
               type="submit"

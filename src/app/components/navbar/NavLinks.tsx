@@ -17,7 +17,7 @@ export const dropdownOptions: {
 }[] = [
   {
     label: 'Blogs',
-    href: '/',
+    href: '/blogs',
     icon: (navLinks: NavLinkType[]) => navLinks.find((link: NavLinkType) => link.name === "Blogs")?.icon,
     color: '#D72631',
   },
@@ -77,7 +77,7 @@ export function MoreModal({ navLinks, setShowMore, onLinkClick }: { navLinks: Na
   ));
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30" style={{ touchAction: 'none' }}>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30" style={{ touchAction: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : 'auto' }}>
       <div
         className="w-full max-w-[420px] mx-auto bg-white border border-[#FFD166] rounded-2xl shadow-2xl p-0 relative flex flex-col"
         style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)', maxHeight: '80vh' }}
@@ -236,7 +236,7 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
           {/* More Dropdown */}
           {navLinks.find(link => link.name === "More") && (
             <li key="More" className="relative group more-nav-item">
-              <DropdownMenu>
+              <DropdownMenu modal={typeof window !== 'undefined' && window.innerWidth >= 768 ? false : true}>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2 lg:px-3 py-1 md:py-1.5 lg:py-2 font-semibold text-xs md:text-sm lg:text-base uppercase tracking-wide transition-all duration-300 rounded-xl text-white hover:bg-white/10">
                     <span style={{ color: '#888', fontSize: 22, display: 'flex', alignItems: 'center', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.10))', marginRight: 8 }}>
@@ -300,28 +300,28 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
                 </DropdownMenuContent>
               </DropdownMenu>
             </li>
-          )}
+                    )}
         </div>
-        {/* Social Media Icons - Desktop Only */}
-        <div className="hidden md:flex items-center gap-3 ml-4">
+        {/* Social Media Icons */}
+        <div className="hidden md:flex items-center gap-2 ml-4">
           <a href="https://www.facebook.com/brothersholidaysadventure" target="_blank" rel="noopener noreferrer" className="transition-transform duration-200 hover:scale-110">
             <div style={{ background: '#1877F3', borderRadius: '50%', padding: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <FaFacebookSquare color="#fff" size={22} />
+              <FaFacebookSquare color="#fff" size={18} />
             </div>
           </a>
           <a href="https://www.instagram.com/brothersholidaysadventure/" target="_blank" rel="noopener noreferrer" className="transition-transform duration-200 hover:scale-110">
             <div style={{ background: 'radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)', borderRadius: '50%', padding: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <FaInstagram color="#fff" size={22} />
+              <FaInstagram color="#fff" size={18} />
             </div>
           </a>
           <a href="https://wa.me/9779763683242" target="_blank" rel="noopener noreferrer" className="transition-transform duration-200 hover:scale-110">
             <div style={{ background: '#25D366', borderRadius: '50%', padding: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <FaWhatsappSquare color="#fff" size={22} />
+              <FaWhatsappSquare color="#fff" size={18} />
             </div>
           </a>
           <a href="https://viber.com" target="_blank" rel="noopener noreferrer" className="transition-transform duration-200 hover:scale-110">
             <div style={{ background: '#7c529e', borderRadius: '50%', padding: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <SiViber color="#fff" size={22} />
+              <SiViber color="#fff" size={18} />
             </div>
           </a>
         </div>

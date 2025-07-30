@@ -1,14 +1,15 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
-import { useAuthState } from "@/store/auth";
+import Link from "next/link";
+import { useAuthState, useAdminStatus, useAuthStore } from "@/store/auth";
 import Logo from "./navbar/Logo";
 import NavLinks from "./navbar/NavLinks";
-import AuthButtons from "./navbar/AuthButtons";
 import MobileDrawer from "./navbar/MobileDrawer";
 import MobileActionBar from "./navbar/MobileActionBar";
-import { FaHome, FaSuitcaseRolling, FaRegNewspaper, FaImages, FaEllipsisH, FaPhoneAlt, FaUser } from "react-icons/fa";
+import { FaHome, FaSuitcaseRolling, FaRegNewspaper, FaImages, FaEllipsisH, FaPhoneAlt, FaUser, FaSignOutAlt, FaEnvelope, FaCalendarAlt } from "react-icons/fa";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const PALETTE = {
   blue: "#0057B7",
@@ -19,19 +20,30 @@ const PALETTE = {
 };
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
-    const { user, hydrated, loading } = useAuthState();
+  const { user, hydrated, loading } = useAuthState();
+  const { isAdmin } = useAdminStatus();
   const router = useRouter();
+  const logout = useAuthStore(state => state.logout);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push("/");
+            } catch {
+          // Logout failed silently
+        }
+  };
+
+  
+          // User authentication status checked
   
   // Ensure component is mounted before showing auth state
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Don't render auth buttons until hydration is complete and component is mounted
-  const showAuthButtons = mounted && hydrated && !loading;
 
   // Memoize navLinks to prevent unnecessary re-renders
   const navLinks = useMemo(() => [
@@ -39,9 +51,9 @@ export default function Navbar() {
     { name: "Holidays", href: "/", dropdown: true, icon: <FaSuitcaseRolling />, color: "#FFD166" },
     { name: "Blogs", href: "/", icon: <FaRegNewspaper />, color: "#D72631" },
     { name: "Gallery", href: "/", icon: <FaImages />, color: "#fff" },
-    ...(showAuthButtons && user ? [{ name: "Dashboard", href: "/dashboard", icon: <FaUser />, color: "#fff" }] : []),
+    ...(mounted && hydrated && !loading && user && isAdmin ? [{ name: "Dashboard", href: "/dashboard", icon: <FaUser />, color: "#fff" }] : []),
     { name: "More", href: "#", dropdown: true, icon: <FaEllipsisH />, color: "#888" },
-  ], [showAuthButtons, user]);
+  ], [mounted, hydrated, loading, user, isAdmin]);
 
   // Handle scroll effect with throttling
   useEffect(() => {
@@ -59,9 +71,12 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Prevent background scroll when mobile menu is open
+  // Prevent background scroll when mobile menu is open (NOT dropdown menus)
   useEffect(() => {
-    if (open) {
+    // Only prevent scrolling on mobile devices when mobile menu is open
+    const isMobile = window.innerWidth < 768; // md breakpoint
+    
+    if (mobileMenuOpen && isMobile) {
       document.body.style.overflow = "hidden";
       document.body.classList.add("mobile-menu-open");
     } else {
@@ -72,17 +87,17 @@ export default function Navbar() {
       document.body.style.overflow = "";
       document.body.classList.remove("mobile-menu-open");
     };
-  }, [open]);
+  }, [mobileMenuOpen]);
 
   // Keyboard accessibility: close on Escape
   useEffect(() => {
-    if (!open) return;
+    if (!mobileMenuOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") setMobileMenuOpen(false);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open]);
+  }, [mobileMenuOpen]);
 
   return (
     <header className={`w-full sticky top-0 z-50 transition-all duration-300 ${scrolled ? "shadow-lg" : ""}`}>
@@ -100,59 +115,148 @@ export default function Navbar() {
           <Logo />
           
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-4">
-            <a
-              href="tel:+9779807872340"
-              className="flex items-center gap-3 font-bold text-base transition-all duration-300 group hover:scale-105"
-              style={{ color: PALETTE.red }}
-            >
-              <div className="relative">
-                <span
-                  className="p-3 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover:shadow-xl"
+          <div className="hidden md:flex items-center gap-6">
+            {/* Contact Info */}
+            <div className="flex items-center gap-4">
+              {/* Phone Number */}
+              <a
+                href="tel:+9779807872340"
+                className="group relative flex items-center gap-2 font-semibold text-xs md:text-sm uppercase tracking-wide contact-hover"
+                style={{ color: PALETTE.red }}
+              >
+                <div className="relative elegant-animation">
+                  <span
+                    className="p-2.5 rounded-lg flex items-center justify-center shadow-lg transition-all duration-500 group-hover:shadow-xl group-hover:scale-110 gentle-glow"
+                    style={{
+                      background: `linear-gradient(135deg, ${PALETTE.red} 0%, ${PALETTE.darkBlue} 100%)`,
+                      color: PALETTE.white,
+                    }}
+                  >
+                    <FaPhoneAlt size={14} className="contact-icon transition-transform duration-300 group-hover:rotate-12" />
+                  </span>
+                  {/* Elegant pulse animation */}
+                  <div className="elegant-pulse"></div>
+                  {/* Subtle glow effect */}
+                  <div className="absolute inset-0 rounded-lg bg-red-500 opacity-0 group-hover:opacity-20 transition-opacity duration-500 blur-sm" />
+                </div>
+                <span className="hidden lg:inline transition-all duration-300 group-hover:translate-x-1">+977 9741726064</span>
+                <span className="lg:hidden transition-all duration-300 group-hover:translate-x-1">Call</span>
+              </a>
+              
+              {/* Email Address */}
+              <a
+                href="mailto:brothersholidays@gmail.com"
+                className="group relative flex items-center gap-2 font-semibold text-xs md:text-sm uppercase tracking-wide contact-hover"
+                style={{ color: PALETTE.blue }}
+              >
+                <div className="relative email-elegant">
+                  <span
+                    className="p-2.5 rounded-lg flex items-center justify-center shadow-lg transition-all duration-500 group-hover:shadow-xl group-hover:scale-110 email-gentle-glow"
+                    style={{
+                      background: `linear-gradient(135deg, ${PALETTE.blue} 0%, ${PALETTE.darkBlue} 100%)`,
+                      color: PALETTE.white,
+                    }}
+                  >
+                    <FaEnvelope size={14} className="contact-icon transition-transform duration-300 group-hover:rotate-12" />
+                  </span>
+                  {/* Elegant email pulse animation */}
+                  <div className="email-elegant-pulse"></div>
+                  {/* Subtle glow effect */}
+                  <div className="absolute inset-0 rounded-lg bg-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-500 blur-sm" />
+                </div>
+                <span className="hidden xl:inline transition-all duration-300 group-hover:translate-x-1">brothersholidays@gmail.com</span>
+                <span className="hidden lg:inline xl:hidden transition-all duration-300 group-hover:translate-x-1">brothersholidays@</span>
+                <span className="lg:hidden transition-all duration-300 group-hover:translate-x-1">Email</span>
+              </a>
+            </div>
+            {/* Book Now Button - Hide for logged-in admin users */}
+            {!(mounted && hydrated && !loading && user && isAdmin) && (
+              <div className="flex items-center ml-4">
+                <Link
+                  href="/booking"
+                  className="group relative flex items-center gap-2 px-4 py-2.5 font-bold text-sm uppercase tracking-wider transition-all duration-300 rounded-full overflow-hidden"
                   style={{
-                    background: `linear-gradient(135deg, ${PALETTE.red} 0%, ${PALETTE.darkBlue} 100%)`,
-                    color: PALETTE.white,
+                    background: "linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)",
+                    boxShadow: "0 4px 20px rgba(255,107,53,0.25), 0 2px 8px rgba(0,0,0,0.1)",
+                  }}
+                  onClick={(e: React.MouseEvent) => {
+                    e.preventDefault();
+                    router.push("/booking");
                   }}
                 >
-                  <FaPhoneAlt size={16} />
-                </span>
-                <div className="absolute inset-0 rounded-xl bg-red-500 animate-ping opacity-20" />
+                  {/* Hover effect overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                  
+                  {/* Icon with glow effect */}
+                  <span className="relative z-10 flex items-center justify-center w-6 h-6 rounded-full bg-white/20 backdrop-blur-sm">
+                    <FaCalendarAlt className="text-white text-sm" />
+                  </span>
+                  
+                  {/* Text */}
+                  <span className="relative z-10 text-white font-semibold">Book Now</span>
+                  
+                  {/* Arrow indicator */}
+                  <span className="relative z-10 text-white text-xs opacity-80 group-hover:translate-x-1 transition-transform duration-300">→</span>
+                </Link>
               </div>
-              <span className="inline">+977 9741726064</span>
-            </a>
-            <div className="flex items-center gap-3 ml-4">
-              {showAuthButtons && user && (
-                <div className="flex items-center gap-2 cursor-pointer" onClick={() => {
-                  // Use Next.js router for instant navigation
-                  router.push("/dashboard");
-                }}>
-                  <Avatar>
-                    <AvatarFallback className="bg-[#22223b] text-white font-bold">{(user.name || user.email || "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2)}</AvatarFallback>
-                  </Avatar>
-                  <span className="font-medium text-black">{user.name || user.email || "User"}</span>
-                </div>
-              )}
-              {showAuthButtons && !user && <AuthButtons user={user} variant="desktop" loading={loading} />}
-            </div>
+            )}
+            {/* User Avatar for logged-in users */}
+            {mounted && hydrated && !loading && user && (
+              <div className="flex items-center gap-3 ml-4">
+                {isAdmin ? (
+                  // Admin users - direct navigation to dashboard
+                  <div className="flex items-center gap-2 cursor-pointer" onClick={() => {
+                    router.push("/dashboard");
+                  }}>
+                    <Avatar>
+                      <AvatarFallback className="bg-[#22223b] text-white font-bold">{(user.name || user.email || "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2)}</AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium text-black">{user.name || user.email || "User"}</span>
+                  </div>
+                ) : (
+                  // Non-admin users - dropdown with logout option
+                  <DropdownMenu modal={typeof window !== 'undefined' && window.innerWidth >= 768 ? false : true}>
+                    <DropdownMenuTrigger asChild>
+                      <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+                        <Avatar>
+                          <AvatarFallback className="bg-[#22223b] text-white font-bold">{(user.name || user.email || "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2)}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium text-black">{user.name || user.email || "User"}</span>
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem 
+                        onClick={handleLogout}
+                        variant="destructive"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <FaSignOutAlt className="w-4 h-4" />
+                        <span>Logout</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
           <button
             className="md:hidden flex flex-col justify-center items-center w-12 h-12 group relative"
             aria-label="Toggle menu"
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => setMobileMenuOpen((v) => !v)}
             style={{ touchAction: "manipulation" }}
           >
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-red-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
-            <span className={`block w-7 h-0.5 rounded-full transition-all duration-300 ${open ? "rotate-45 translate-y-1.5" : ""}`} style={{ background: PALETTE.red }}></span>
-            <span className={`block w-7 h-0.5 rounded-full transition-all duration-300 my-1 ${open ? "opacity-0" : ""}`} style={{ background: PALETTE.red }}></span>
-            <span className={`block w-7 h-0.5 rounded-full transition-all duration-300 ${open ? "-rotate-45 -translate-y-1.5" : ""}`} style={{ background: PALETTE.red }}></span>
+            <span className={`block w-7 h-0.5 rounded-full transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-1.5" : ""}`} style={{ background: PALETTE.red }}></span>
+            <span className={`block w-7 h-0.5 rounded-full transition-all duration-300 my-1 ${mobileMenuOpen ? "opacity-0" : ""}`} style={{ background: PALETTE.red }}></span>
+            <span className={`block w-7 h-0.5 rounded-full transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-1.5" : ""}`} style={{ background: PALETTE.red }}></span>
           </button>
         </div>
       </div>
 
       {/* Mobile Action Bar */}
-      {!open && <MobileActionBar />}
+      {!mobileMenuOpen && <MobileActionBar />}
 
       {/* Bottom Navigation */}
       <nav className="w-full shadow-lg relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${PALETTE.blue} 0%, ${PALETTE.darkBlue} 100%)` }}>
@@ -166,7 +270,7 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Drawer */}
-      <MobileDrawer open={open} setOpen={setOpen} navLinks={navLinks} user={user} hydrated={showAuthButtons} loading={loading} />
+      <MobileDrawer open={mobileMenuOpen} setOpen={setMobileMenuOpen} navLinks={navLinks} user={user} hydrated={mounted && hydrated && !loading} loading={loading} />
 
       {/* Custom CSS */}
       <style jsx global>{`

@@ -35,6 +35,7 @@ interface IAuthStore {
     error?: AppwriteException | null;
   }>;
   logout(): Promise<void>;
+
 }
 
 function isLocalStorageAvailable() {
@@ -72,10 +73,20 @@ export const useAuthStore = create<IAuthStore>()(
         set({ loading: true });
         try {
           const session = await account.getSession("current");
-          set({ session });
-        } catch (error) {
+          // Session verified successfully
+          
+          // Also get the user object to see its structure
+          try {
+            const user = await account.get<UserPrefs>();
+            // User object retrieved successfully
+            set({ session, user });
+          } catch {
+            // Error retrieving user object
+            set({ session, user: null });
+          }
+        } catch {
+          // Session verification failed
           set({ session: null, user: null });
-          console.log(error);
         } finally {
           set({ loading: false });
         }
@@ -95,6 +106,9 @@ export const useAuthStore = create<IAuthStore>()(
             account.get<UserPrefs>(),
             account.createJWT(),
           ]);
+          
+            // User object processed successfully
+          
           if (!user.prefs?.reputation)
             await account.updatePrefs<UserPrefs>({
               reputation: 0,
@@ -104,7 +118,7 @@ export const useAuthStore = create<IAuthStore>()(
 
           return { success: true };
         } catch (error) {
-          console.log(error);
+          // Login error occurred
           return {
             success: false,
             error: error instanceof AppwriteException ? error : null,
@@ -121,7 +135,7 @@ export const useAuthStore = create<IAuthStore>()(
           await account.create(ID.unique(), email, password, name);
           return { success: true };
         } catch (error) {
-          console.log(error);
+          // Account creation error
           return {
             success: false,
             error: error instanceof AppwriteException ? error : null,
@@ -134,11 +148,13 @@ export const useAuthStore = create<IAuthStore>()(
           set({ loading: true });
           await account.deleteSessions();
           set({ session: null, jwt: null, user: null, loading: false });
-        } catch (error) {
-          console.log(error);
+        } catch {
+          // Logout error occurred
           set({ loading: false });
         }
       },
+
+      
     })),
     {
       name: "auth",
@@ -207,3 +223,32 @@ export const useAuthState = () => {
   
   return { user, hydrated, loading };
 };
+
+// Utility function to check if user is admin
+export const isAdmin = (user: Models.User<UserPrefs> | null): boolean => {
+  if (!user) {
+    return false;
+  }
+  
+  // Check different possible label properties
+  const labels = user.labels || [];
+  
+  if (!Array.isArray(labels)) {
+    return false;
+  }
+  
+  return labels.includes('admin');
+};
+
+// Hook to get admin status
+export const useAdminStatus = () => {
+  const { user, hydrated, loading } = useAuthState();
+  
+  if (!hydrated || loading) {
+    return { isAdmin: false, loading: true };
+  }
+  
+  return { isAdmin: isAdmin(user), loading: false };
+};
+
+

@@ -6,16 +6,16 @@ import { databases } from "./config";
 export default async function getOrCreateDB() {
   try {
     await databases.get(db);
-    console.log("Database connection");
+    // Database connected successfully
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     try {
       await databases.create(db, db);
-      console.log("database created");
+      // Database created successfully
        
-    } catch (_error) {
-      console.log("Error creating databases", _error);
-    }
+          } catch {
+        // Error creating database silently
+      }
   }
 
   // Always check/create the collection

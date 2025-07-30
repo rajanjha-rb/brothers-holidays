@@ -1,35 +1,39 @@
-import { NextRequest, NextResponse } from "next/server";
-import { storage } from "@/models/server/config";
+import { NextRequest, NextResponse } from 'next/server';
+import { storage } from '@/models/client/config';
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const bucket = searchParams.get("bucket");
-  const id = searchParams.get("id");
-  
-  if (!bucket || !id) {
-    console.error('Missing required parameters:', { bucket, id });
-    return new NextResponse("Missing bucket or id parameters", { status: 400 });
-  }
-  
+export async function GET(request: NextRequest) {
   try {
-    console.log('Fetching image preview:', { bucket, id });
-    // Get the file preview URL from Appwrite
-    const url = await storage.getFilePreview(bucket, id, 800, 600);
-    
-    if (!url) {
-      console.error('Received empty URL from getFilePreview');
-      return new NextResponse("Failed to generate image URL", { status: 500 });
+    const { searchParams } = new URL(request.url);
+    const bucket = searchParams.get('bucket');
+    const fileId = searchParams.get('fileId');
+
+    if (!bucket || !fileId) {
+      return NextResponse.json({ error: 'Missing bucket or fileId parameter' }, { status: 400 });
     }
+
+    // Get the file view URL
+    const fileView = storage.getFileView(bucket, fileId);
     
-    console.log('Redirecting to image URL:', url);
-    return NextResponse.redirect(url.toString(), 302);
+    // Fetch the image
+    const response = await fetch(fileView.toString());
+    
+    if (!response.ok) {
+      return NextResponse.json({ error: 'Image not found' }, { status: 404 });
+    }
+
+    // Get the image data
+    const imageBuffer = await response.arrayBuffer();
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
+
+    // Return the image with proper headers
+    return new NextResponse(imageBuffer, {
+      headers: {
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=31536000, immutable', // Cache for 1 year
+      },
+    });
   } catch (error) {
     console.error('Image proxy error:', error);
-    return new NextResponse("Failed to load image", { 
-      status: 500,
-      headers: {
-        'Cache-Control': 'no-store, max-age=0'
-      }
-    });
+    return NextResponse.json({ error: 'Failed to fetch image' }, { status: 500 });
   }
-}
+} 

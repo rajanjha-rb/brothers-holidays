@@ -1,14 +1,29 @@
-// brothers-holidays/src/app/(main)/dashboard/page.tsx
+"use client";
 
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/auth";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { FaSignOutAlt, FaUser, FaCog } from "react-icons/fa";
 
 export default function AdminDashboard() {
+  const { logout, user } = useAuthStore();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push("/");
+            } catch {
+          // Logout failed silently
+        }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
@@ -24,7 +39,17 @@ export default function AdminDashboard() {
               </li>
               <li>
                 <Link href="/dashboard/allblogs">
-                  <Button variant="ghost" className="w-full justify-start">Blogs</Button>
+                  <Button variant="ghost" className="w-full justify-start">All Blogs</Button>
+                </Link>
+              </li>
+              <li>
+                <Link href="/dashboard/addnewblog">
+                  <Button variant="ghost" className="w-full justify-start">Add New Blog</Button>
+                </Link>
+              </li>
+              <li>
+                <Link href="/dashboard/admin-management">
+                  <Button variant="ghost" className="w-full justify-start">Admin Management</Button>
                 </Link>
               </li>
               <li><Button variant="ghost" className="w-full justify-start">Destination</Button></li>
@@ -35,9 +60,20 @@ export default function AdminDashboard() {
               
               <li><Button variant="ghost" className="w-full justify-start">Ratings</Button></li>
               <li><Button variant="ghost" className="w-full justify-start">Media</Button></li>
-
             </ul>
           </nav>
+          
+          {/* Logout Section */}
+          <div className="mt-auto pt-6 border-t">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+              onClick={handleLogout}
+            >
+              <FaSignOutAlt className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
       </aside>
 
@@ -49,13 +85,33 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-4">
             <Badge variant="secondary">3</Badge>
             <DropdownMenu>
-              <Avatar>
-                <AvatarImage src="/manager.webp" alt="Manager" />
-                <AvatarFallback>M</AvatarFallback>
-              </Avatar>
-              {/* Add dropdown items here */}
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Avatar>
+                    <AvatarImage src="/manager.webp" alt={user?.name || "Admin"} />
+                    <AvatarFallback>{user?.name?.charAt(0) || "A"}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <FaUser className="w-4 h-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <FaCog className="w-4 h-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={handleLogout}
+                >
+                  <FaSignOutAlt className="w-4 h-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
             </DropdownMenu>
-            <span className="font-medium">Hello, Samantha</span>
+            <span className="font-medium">Hello, {user?.name || "Admin"}</span>
           </div>
         </div>
 
