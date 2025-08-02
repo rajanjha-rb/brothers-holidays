@@ -1,8 +1,14 @@
 "use client";
 import React, { useRef, useEffect } from "react";
 import NavLinks, { NavLink, MoreModal } from "./NavLinks";
-import type { User } from "./AuthButtons";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+// Define User type locally since AuthButtons was removed
+interface User {
+  $id: string;
+  name?: string;
+  email?: string;
+}
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";

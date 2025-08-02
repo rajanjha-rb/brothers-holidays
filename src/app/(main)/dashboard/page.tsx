@@ -6,13 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/store/auth";
+import { useAuthState, useAuthStore } from "@/store/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FaSignOutAlt, FaUser, FaCog } from "react-icons/fa";
 
 export default function AdminDashboard() {
-  const { logout, user } = useAuthStore();
+  const { user } = useAuthState();
+  const { logout } = useAuthStore();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -25,9 +26,9 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r flex flex-col">
+      <aside className="w-64 bg-white/95 backdrop-blur-sm border-r border-pink-200 flex flex-col">
         <div className="p-6">
           <h1 className="text-2xl font-bold mb-8">Brothers Holidays</h1>
           <nav>
@@ -81,7 +82,12 @@ export default function AdminDashboard() {
       <main className="flex-1 p-8">
         {/* Topbar */}
         <div className="flex justify-between items-center mb-8">
-          <Input placeholder="Search here" className="w-1/3" />
+          <div className="relative w-1/3">
+            <Input placeholder="Search here" className="pr-10" />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+            </div>
+          </div>
           <div className="flex items-center gap-4">
             <Badge variant="secondary">3</Badge>
             <DropdownMenu>

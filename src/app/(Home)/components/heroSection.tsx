@@ -159,7 +159,7 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
   return (
     <section
       ref={heroRef}
-      className="relative w-full bg-[#F8F9FA] overflow-hidden"
+      className="relative w-full bg-gradient-to-br from-pink-50 via-white to-pink-100 overflow-hidden"
     >
       {/* Image with responsive height */}
       <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[24/9] max-h-[90vh]">
@@ -228,10 +228,10 @@ export default function HeroSection({ searchBoxRef }: HeroSectionProps) {
         }
       >
         <div className="text-center w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 flex flex-col items-center">
-          <h1 className="text-base md:text-2xl lg:text-3xl font-extrabold text-blue-700 bg-white/95 border-2 border-yellow-300 rounded-lg shadow-lg px-4 py-3 mx-auto sm:max-w-[90%] md:max-w-[85%] headline-xs">
+          <h1 className="text-base md:text-2xl lg:text-3xl font-extrabold text-blue-900 bg-white/98 backdrop-blur-md border border-blue-100 rounded-xl shadow-2xl px-6 py-4 mx-auto sm:max-w-[90%] md:max-w-[85%] headline-xs transform hover:scale-105 transition-transform duration-300">
             {currentSlide.headline}
           </h1>
-          <p className="hide-below-450 text-xs sm:text-sm md:text-lg lg:text-xl font-bold text-gray-700 bg-yellow-100 rounded-lg shadow px-4 py-2 mx-auto sm:max-w-[85%] md:max-w-[80%]">
+          <p className="hide-below-450 text-xs sm:text-sm md:text-lg lg:text-xl font-semibold text-gray-700 bg-gradient-to-r from-pink-50 to-pink-100 rounded-xl shadow-xl px-6 py-3 mx-auto sm:max-w-[85%] md:max-w-[80%] transform hover:scale-105 transition-transform duration-300">
             {currentSlide.subheadline}
           </p>
           {/* Slide indicators just below the text (horizontal) */}

@@ -16,9 +16,15 @@ interface IAuthStore {
   user: Models.User<UserPrefs> | null;
   hydrated: boolean;
   loading: boolean;
+  adminStatus: {
+    isAdmin: boolean;
+    checked: boolean;
+    loading: boolean;
+  };
 
   setHydrated(): void;
   verfiySession(): Promise<void>;
+  checkAdminStatus(): Promise<void>;
   login(
     email: string,
     password: string
@@ -35,7 +41,6 @@ interface IAuthStore {
     error?: AppwriteException | null;
   }>;
   logout(): Promise<void>;
-
 }
 
 function isLocalStorageAvailable() {
@@ -49,16 +54,21 @@ function isLocalStorageAvailable() {
   }
 }
 
-const STORAGE_VERSION = 2; // Increment this on breaking changes
+const STORAGE_VERSION = 3; // Increment this on breaking changes
 
 export const useAuthStore = create<IAuthStore>()(
   persist(
-    immer((set) => ({
+    immer((set, get) => ({
       session: null,
       jwt: null,
       user: null,
       hydrated: false,
       loading: false,
+      adminStatus: {
+        isAdmin: false,
+        checked: false,
+        loading: false,
+      },
 
       setHydrated() {
         set({ hydrated: true });
@@ -80,6 +90,9 @@ export const useAuthStore = create<IAuthStore>()(
             const user = await account.get<UserPrefs>();
             // User object retrieved successfully
             set({ session, user });
+            
+            // Check admin status after user is loaded
+            get().checkAdminStatus();
           } catch {
             // Error retrieving user object
             set({ session, user: null });
@@ -89,6 +102,50 @@ export const useAuthStore = create<IAuthStore>()(
           set({ session: null, user: null });
         } finally {
           set({ loading: false });
+        }
+      },
+
+      async checkAdminStatus() {
+        const { user } = get();
+        if (!user) {
+          set({ 
+            adminStatus: { 
+              isAdmin: false, 
+              checked: true, 
+              loading: false 
+            } 
+          });
+          return;
+        }
+
+        set({ 
+          adminStatus: { 
+            isAdmin: false, 
+            checked: false, 
+            loading: true 
+          } 
+        });
+
+        try {
+          // Check if user has admin label
+          const labels = user.labels || [];
+          const isAdmin = Array.isArray(labels) && labels.includes('admin');
+          
+          set({ 
+            adminStatus: { 
+              isAdmin, 
+              checked: true, 
+              loading: false 
+            } 
+          });
+        } catch {
+          set({ 
+            adminStatus: { 
+              isAdmin: false, 
+              checked: true, 
+              loading: false 
+            } 
+          });
         }
       },
 
@@ -115,6 +172,9 @@ export const useAuthStore = create<IAuthStore>()(
             });
 
           set({ session, user, jwt });
+
+          // Check admin status after login
+          get().checkAdminStatus();
 
           return { success: true };
         } catch (error) {
@@ -147,7 +207,17 @@ export const useAuthStore = create<IAuthStore>()(
         try {
           set({ loading: true });
           await account.deleteSessions();
-          set({ session: null, jwt: null, user: null, loading: false });
+          set({ 
+            session: null, 
+            jwt: null, 
+            user: null, 
+            loading: false,
+            adminStatus: {
+              isAdmin: false,
+              checked: true,
+              loading: false,
+            }
+          });
         } catch {
           // Logout error occurred
           set({ loading: false });
@@ -187,7 +257,18 @@ export const useAuthStore = create<IAuthStore>()(
       migrate: (persistedState, version) => {
         if (version !== STORAGE_VERSION) {
           // Clear state if version mismatch
-          return { session: null, jwt: null, user: null, hydrated: false, loading: false } as IAuthStore;
+          return { 
+            session: null, 
+            jwt: null, 
+            user: null, 
+            hydrated: false, 
+            loading: false,
+            adminStatus: {
+              isAdmin: false,
+              checked: false,
+              loading: false,
+            }
+          } as IAuthStore;
         }
         return persistedState as IAuthStore;
       },
@@ -212,16 +293,30 @@ export const clearAuthState = () => {
   }
 };
 
-// Custom hook for faster auth state access
+// Optimized hook for auth state access - prevents multiple re-renders
 export const useAuthState = () => {
-  const { user, hydrated, loading } = useAuthStore();
+  const { user, hydrated, loading, adminStatus } = useAuthStore();
   
   // Return early if not hydrated to prevent unnecessary re-renders
   if (!hydrated) {
-    return { user: null, hydrated: false, loading: true };
+    return { 
+      user: null, 
+      hydrated: false, 
+      loading: true,
+      isAdmin: false,
+      adminChecked: false,
+      adminLoading: false
+    };
   }
   
-  return { user, hydrated, loading };
+  return { 
+    user, 
+    hydrated, 
+    loading,
+    isAdmin: adminStatus.isAdmin,
+    adminChecked: adminStatus.checked,
+    adminLoading: adminStatus.loading
+  };
 };
 
 // Utility function to check if user is admin
@@ -240,15 +335,14 @@ export const isAdmin = (user: Models.User<UserPrefs> | null): boolean => {
   return labels.includes('admin');
 };
 
-// Hook to get admin status
+// Hook to get admin status - now uses centralized state
 export const useAdminStatus = () => {
-  const { user, hydrated, loading } = useAuthState();
+  const { isAdmin, adminChecked, adminLoading } = useAuthState();
   
-  if (!hydrated || loading) {
-    return { isAdmin: false, loading: true };
-  }
-  
-  return { isAdmin: isAdmin(user), loading: false };
+  return { 
+    isAdmin, 
+    loading: adminLoading || !adminChecked 
+  };
 };
 
 

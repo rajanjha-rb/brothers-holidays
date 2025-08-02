@@ -1,15 +1,14 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { databases, storage } from "@/models/client/config";
-import { db, blogCollection, featuredImageBucket } from "@/models/name";
+import { databases } from "@/models/server/config";
+import { db, blogCollection } from "@/models/name";
 import { MarkdownPreview } from "@/components/RTE";
-import { FaCalendar, FaTags, FaArrowLeft, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
-import { useAuthStore, useAdminStatus } from "@/store/auth";
+import { FaCalendar, FaTags } from "react-icons/fa";
 import Navbar from "@/app/components/Navbar";
+import AdminControls from "./AdminControls";
+import ScrollButton from "./ScrollButton";
+import RTEStyles from "./RTEStyles";
 
 interface Blog {
   $id: string;
@@ -24,112 +23,61 @@ interface Blog {
   $updatedAt: string;
 }
 
-export default function BlogViewPage() {
-  const params = useParams();
-  const router = useRouter();
-  const { user, hydrated, loading: authLoading } = useAuthStore();
-  const { isAdmin, loading: adminLoading } = useAdminStatus();
-  const [blog, setBlog] = useState<Blog | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface PageProps {
+  params: Promise<{
+    id: string;
+    slug: string;
+  }>;
+}
 
-  const blogId = params.id as string;
-
-  // Function to return content exactly as stored in database - no cleaning
-  const getOriginalContent = (content: string): string => {
-    return content || '';
-  };
-
-  useEffect(() => {
-    const fetchBlog = async () => {
-      if (!blogId) return;
-      
-      setLoading(true);
-      setError(null);
-      try {
-        const doc = await databases.getDocument(db, blogCollection, blogId);
-        const blogData = doc as unknown as Blog;
-        setBlog(blogData);
-        
-        // Debug: Log the featured image information
-        if (blogData.featuredImage) {
-          console.log('Featured Image ID:', blogData.featuredImage);
-          console.log('Featured Image Bucket:', featuredImageBucket);
-          const imageUrl = storage.getFileView(featuredImageBucket, blogData.featuredImage).toString();
-          console.log('Featured Image URL:', imageUrl);
-          
-          // Test if the URL is valid
-          try {
-            new URL(imageUrl);
-            console.log('✅ Image URL is valid');
-          } catch (error) {
-            console.error('❌ Image URL is invalid:', error);
-          }
-        }
-      } catch {
-        setError("Failed to fetch blog");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBlog();
-  }, [blogId]);
-
-  // Force RTE styles after component mounts
-  useEffect(() => {
-    if (blog) {
-      // Wait for RTE to load and then force styles
-      const applyRTEStyles = () => {
-        // Force light background on all RTE elements
-        const rteElements = document.querySelectorAll('.w-md-editor-preview, .w-md-editor-preview *');
-        rteElements.forEach((element) => {
-          (element as HTMLElement).style.backgroundColor = '#f8fafc';
-          (element as HTMLElement).style.color = '#374151';
-        });
-        
-        // Also target any elements with data attributes
-        const dataElements = document.querySelectorAll('[data-color-mode], [data-theme]');
-        dataElements.forEach((element) => {
-          (element as HTMLElement).style.backgroundColor = '#f8fafc';
-          (element as HTMLElement).style.color = '#374151';
-        });
-      };
-
-      // Apply immediately
-      applyRTEStyles();
-      
-      // Apply again after a short delay to catch any late-loading elements
-      setTimeout(applyRTEStyles, 100);
-      setTimeout(applyRTEStyles, 500);
-      setTimeout(applyRTEStyles, 1000);
-    }
-  }, [blog]);
-
-
-
-
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Loading blog post...</p>
-        </div>
-      </div>
-    );
+// This function runs at build time to generate static paths for all blogs
+export async function generateStaticParams() {
+  try {
+    const response = await databases.listDocuments(db, blogCollection);
+    const blogsData = response.documents as unknown as Blog[];
+    
+    return blogsData.map((blog) => ({
+      id: blog.$id,
+      slug: blog.slug,
+    }));
+  } catch (error) {
+    console.error('Error generating static params:', error);
+    return [];
   }
+}
 
-  if (error || !blog) {
+// On-demand revalidation - pages will be revalidated when content changes
+// No time-based revalidation to avoid unnecessary server load
+
+// Fetch blog data on the server side
+async function getBlog(blogId: string): Promise<Blog | null> {
+  try {
+    const doc = await databases.getDocument(db, blogCollection, blogId);
+    return doc as unknown as Blog;
+  } catch (error) {
+    console.error('Error fetching blog:', error);
+    return null;
+  }
+}
+
+// Function to return content exactly as stored in database - no cleaning
+const getOriginalContent = (content: string): string => {
+  return content || '';
+};
+
+export default async function BlogViewPage({ params }: PageProps) {
+  const { id: blogId } = await params;
+  const blog = await getBlog(blogId);
+
+  if (!blog) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center max-w-md mx-auto px-4">
           <div className="text-red-500 text-6xl mb-4">📄</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Blog Not Found</h1>
-          <p className="text-gray-600 mb-6">{error || "The blog post you're looking for doesn't exist."}</p>
+          <p className="text-gray-600 mb-6">The blog post you&apos;re looking for doesn&apos;t exist.</p>
           <Button 
-            onClick={() => router.push('/blogs')}
+            onClick={() => window.location.href = '/blogs'}
             className="bg-blue-600 hover:bg-blue-700"
           >
             Back to Blogs
@@ -141,72 +89,14 @@ export default function BlogViewPage() {
 
   return (
     <div className="min-h-screen bg-white" style={{ backgroundColor: 'white' }}>
-      {/* Show navbar only for non-admin users or when not logged in */}
-      {(!user || !hydrated || authLoading || adminLoading || !isAdmin) && <Navbar />}
+      {/* Show navbar for all users */}
+      <Navbar />
 
-      {/* Admin Controls - Show only for logged-in admin users */}
-      {user && hydrated && !authLoading && !adminLoading && isAdmin && (
-        <div className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-6xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              {/* Back to blogs button */}
-              <Button 
-                onClick={() => router.push('/blogs')}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <FaArrowLeft className="w-4 h-4" />
-                Back to Blogs
-              </Button>
+      {/* Admin Controls - Client component for interactive features */}
+      <AdminControls blog={blog} />
 
-              {/* Admin action buttons */}
-              <div className="flex items-center gap-3">
-                <Button 
-                  onClick={() => router.push('/dashboard/addnewblog')}
-                  className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-                >
-                  <FaPlus className="w-4 h-4" />
-                  Add New Blog
-                </Button>
-                
-                <Button 
-                  onClick={() => router.push(`/blogs/${blog.$id}/edit`)}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <FaEdit className="w-4 h-4" />
-                  Edit
-                </Button>
-                
-                <Button 
-                  onClick={() => {
-                    if (confirm("Are you sure you want to delete this blog?")) {
-                      // Handle delete logic here
-                      if (blog.featuredImage) {
-                        storage.deleteFile(featuredImageBucket, blog.featuredImage).catch(() => {
-                          // Ignore image deletion errors
-                        });
-                      }
-                      databases.deleteDocument(db, blogCollection, blog.$id)
-                        .then(() => {
-                          router.push('/dashboard/allblogs');
-                        })
-                        .catch(() => {
-                          alert("Failed to delete blog");
-                        });
-                    }
-                  }}
-                  variant="outline"
-                  className="text-red-600 border-red-600 hover:bg-red-50 flex items-center gap-2"
-                >
-                  <FaTrash className="w-4 h-4" />
-                  Delete
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* RTE Styles - Client component for styling */}
+      <RTEStyles />
 
       {/* Hero Section with Featured Image Background */}
       {blog.featuredImage && (
@@ -215,24 +105,9 @@ export default function BlogViewPage() {
           {/* Background Image Container */}
           <div className="absolute inset-0 overflow-hidden z-0">
             <img 
-              src={storage.getFileView(featuredImageBucket, blog.featuredImage).toString()}
+              src={`/api/image-proxy?bucket=${blog.featuredImageBucket}&fileId=${blog.featuredImage}`}
               alt={blog.title}
               className="w-full h-full object-cover"
-              onLoad={() => {
-                console.log('✅ Background image loaded successfully!');
-                console.log('Image dimensions:', 'loaded');
-              }}
-              onError={(e) => {
-                console.error('❌ Background image failed to load:', e.currentTarget.src);
-                console.error('Image ID:', blog.featuredImage);
-                console.error('Bucket:', featuredImageBucket);
-                console.error('Full URL:', e.currentTarget.src);
-                // Add a fallback background color if image fails
-                e.currentTarget.style.display = 'none';
-                if (e.currentTarget.parentElement) {
-                  e.currentTarget.parentElement.style.backgroundColor = '#1f2937';
-                }
-              }}
               style={{
                 minHeight: '100vh',
                 minWidth: '100vw'
@@ -283,44 +158,10 @@ export default function BlogViewPage() {
           </div>
           
           {/* Clean Scroll Animation in Hero Section */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30">
-            <button 
-              onClick={() => {
-                // Scroll to the very beginning of the page to ensure nothing is skipped
-                // Account for any fixed headers or navigation
-                const navbar = document.querySelector('header');
-                const navbarHeight = navbar ? navbar.offsetHeight : 0;
-                
-                // Scroll to the very top of the page, accounting for navbar, plus a bit more
-                window.scrollTo({
-                  top: navbarHeight + 100,
-                  behavior: 'smooth'
-                });
-              }}
-              className="flex flex-col items-center space-y-2 cursor-pointer group"
-            >
-              {/* Simple scroll indicator with wave */}
-              <div className="relative">
-                <div className="w-5 h-7 border border-white/70 rounded-full flex justify-center items-start pt-1 group-hover:border-white transition-all duration-300">
-                  <div className="w-0.5 h-2 bg-white/90 rounded-full animate-bounce"></div>
-                </div>
-                {/* More visible wave effect */}
-                <div className="absolute inset-0 w-5 h-7 border border-white/60 rounded-full opacity-60 animate-ping transition-all duration-1200"></div>
-                {/* Second wave for better visibility */}
-                <div className="absolute inset-0 w-5 h-7 border border-white/40 rounded-full opacity-40 animate-ping transition-all duration-1800" style={{animationDelay: '0.6s'}}></div>
-            </div>
-              
-              {/* Simple text */}
-              <span className="text-white/80 text-xs font-medium group-hover:text-white transition-colors duration-300">
-                Scroll
-              </span>
-            </button>
-          </div>
+          <ScrollButton />
 
         </div>
       )}
-
-
 
       {/* Main Content */}
       <main className="bg-slate-50" style={{ backgroundColor: '#f8fafc' }}>

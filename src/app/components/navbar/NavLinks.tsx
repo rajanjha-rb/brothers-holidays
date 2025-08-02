@@ -265,9 +265,9 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
                    style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
                  >
                   <DropdownMenuItem asChild className="rounded-lg transition-all duration-200 hover:bg-[#FFF7E0] hover:text-[#D72631] font-semibold text-base px-3 py-2">
-                    <Link href="/" className="flex items-center gap-2" onClick={(e) => {
+                    <Link href="/blogs" className="flex items-center gap-2" onClick={(e) => {
                       e.preventDefault();
-                      handleNavigation("/");
+                      handleNavigation("/blogs");
                     }}>
                       <span style={{ color: '#D72631', fontSize: 20, display: 'flex', alignItems: 'center' }}>
                         {navLinks.find(link => link.name === "Blogs")?.icon}

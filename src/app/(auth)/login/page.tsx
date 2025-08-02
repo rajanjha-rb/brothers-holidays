@@ -96,7 +96,7 @@ export default function Login() {
   };
 
   return (
-    <div className="h-screen overflow-hidden flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-gold-100 relative">
+    <div className="h-screen overflow-hidden flex items-center justify-center bg-gradient-to-br from-pink-50 via-white to-pink-100 relative">
       {/* Adventurous SVG Motif: Layered mountains, sun, winding path, hot air balloon */}
       <svg className="fixed bottom-0 left-0 w-full h-80 z-0 pointer-events-none select-none" viewBox="0 0 1440 400" fill="none" xmlns="http://www.w3.org/2000/svg" style={{opacity:0.22}}>
         {/* Sun */}

@@ -5,10 +5,10 @@ import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaRegEnvelope } from "react-ico
 
 export default function ContactPage() {
   return (
-    <main className="min-h-screen bg-[#faf9fb] flex flex-col justify-between">
+    <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100 flex flex-col justify-between">
       <Navbar />
       {/* Hero Section */}
-      <section className="relative w-full flex flex-col items-center justify-center bg-gradient-to-tr from-[#FFFBEA] to-[#FFE9A0] border-b border-gray-200 py-14" style={{ minHeight: 220 }}>
+      <section className="relative w-full flex flex-col items-center justify-center bg-gradient-to-tr from-pink-100 to-purple-100 border-b border-pink-200 py-14" style={{ minHeight: 220 }}>
         <FaRegEnvelope className="text-[#D72631] text-5xl mb-4" />
         <h1 className="text-3xl md:text-4xl font-extrabold text-[#232946] mb-2 text-center">Contact Us</h1>
       </section>
@@ -42,15 +42,15 @@ export default function ContactPage() {
         </div>
         {/* Right: Contact Form */}
         <div className="flex-1 flex justify-center items-center">
-          <form className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-[#FFD166] p-8 flex flex-col gap-5">
+          <form className="w-full max-w-md bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-pink-300 p-8 flex flex-col gap-5">
             <div className="flex flex-col sm:flex-row gap-3">
-              <input type="text" name="firstName" placeholder="First Name*" className="flex-1 px-4 py-2 rounded border border-[#FFD166] focus:ring-2 focus:ring-[#FFD166] outline-none text-base w-full" required />
-              <input type="text" name="lastName" placeholder="Last Name*" className="flex-1 px-4 py-2 rounded border border-[#FFD166] focus:ring-2 focus:ring-[#FFD166] outline-none text-base w-full" required />
+              <input type="text" name="firstName" placeholder="First Name*" className="flex-1 px-4 py-2 rounded border border-pink-300 focus:ring-2 focus:ring-pink-400 outline-none text-base w-full" required />
+              <input type="text" name="lastName" placeholder="Last Name*" className="flex-1 px-4 py-2 rounded border border-pink-300 focus:ring-2 focus:ring-pink-400 outline-none text-base w-full" required />
             </div>
-            <input type="email" name="email" placeholder="Email*" className="w-full px-4 py-2 rounded border border-[#FFD166] focus:ring-2 focus:ring-[#FFD166] outline-none text-base" required />
-            <input type="tel" name="phone" placeholder="Phone Number*" className="w-full px-4 py-2 rounded border border-[#FFD166] focus:ring-2 focus:ring-[#FFD166] outline-none text-base" required />
-            <textarea name="message" placeholder="Your message..." rows={4} className="w-full px-4 py-2 rounded border border-[#FFD166] focus:ring-2 focus:ring-[#FFD166] outline-none text-base resize-none" required />
-            <button type="submit" className="w-full bg-gradient-to-r from-[#D72631] to-[#FFD166] text-white font-bold py-3 rounded-xl shadow-lg hover:from-[#FFD166] hover:to-[#D72631] hover:scale-105 transition text-lg">Send Message</button>
+            <input type="email" name="email" placeholder="Email*" className="w-full px-4 py-2 rounded border border-pink-300 focus:ring-2 focus:ring-pink-400 outline-none text-base" required />
+            <input type="tel" name="phone" placeholder="Phone Number*" className="w-full px-4 py-2 rounded border border-pink-300 focus:ring-2 focus:ring-pink-400 outline-none text-base" required />
+            <textarea name="message" placeholder="Your message..." rows={4} className="w-full px-4 py-2 rounded border border-pink-300 focus:ring-2 focus:ring-pink-400 outline-none text-base resize-none" required />
+            <button type="submit" className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-3 rounded-xl shadow-lg hover:from-pink-600 hover:to-purple-700 hover:scale-105 transition text-lg">Send Message</button>
           </form>
         </div>
       </section>

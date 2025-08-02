@@ -143,13 +143,13 @@ export default function TeamPage() {
   const getRoleIndex = (role: string) => team.findIndex((m) => m.position.toLowerCase() === role.toLowerCase());
 
   return (
-    <main className="min-h-screen bg-black flex flex-col justify-center items-center py-20 px-4">
+    <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100 flex flex-col justify-center items-center py-20 px-4">
       <Head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </Head>
       {/* Tab Navigation */}
-      <div className="flex items-center gap-2 bg-white/90 border border-gray-200 rounded-xl px-4 py-2 mb-10 shadow-sm">
+      <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm border border-pink-200 rounded-xl px-4 py-2 mb-10 shadow-sm">
         {roles.map((role, i) => {
           const teamIdx = getRoleIndex(role);
           const isActive = teamIdx === idx;
@@ -160,14 +160,14 @@ export default function TeamPage() {
                 if (teamIdx !== -1) setIdx(teamIdx);
               }}
               className={`px-3 py-1 font-semibold text-base focus:outline-none transition-colors border-0 bg-transparent
-                ${isActive ? "text-black" : "text-gray-500 hover:text-black"}
-                ${i !== 0 ? "border-l border-gray-300" : ""}
+                ${isActive ? "text-pink-700" : "text-gray-500 hover:text-pink-600"}
+                ${i !== 0 ? "border-l border-pink-200" : ""}
                 relative`}
               style={{ outline: "none" }}
             >
               <span className="relative z-10">{role}</span>
               {isActive && (
-                <span className="absolute left-0 -bottom-1 w-full h-1 bg-black rounded-full" />
+                <span className="absolute left-0 -bottom-1 w-full h-1 bg-pink-500 rounded-full" />
               )}
             </button>
           );
@@ -185,9 +185,9 @@ export default function TeamPage() {
         <div className={`flex-1 flex flex-col justify-center items-start text-left transition-all duration-500 ${
           imageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-2">{member.name}</h2>
-          <div className="text-lg text-yellow-400 font-bold mb-2 uppercase tracking-wide">{member.position}</div>
-          <div className="text-xl text-gray-100 mb-8 max-w-xl leading-relaxed">{member.description}</div>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">{member.name}</h2>
+          <div className="text-lg text-pink-600 font-bold mb-2 uppercase tracking-wide">{member.position}</div>
+          <div className="text-xl text-gray-700 mb-8 max-w-xl leading-relaxed">{member.description}</div>
           <div className="flex gap-4 mb-8">
             <Button asChild variant="ghost" size="icon" className="hover:bg-blue-900/20">
               <a href={member.socials.facebook} aria-label="Facebook" target="_blank" rel="noopener noreferrer">

@@ -134,7 +134,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer style={{ background: PALETTE.white, color: PALETTE.gray }} className="w-full border-t border-[#FFD166] pt-0 pb-8 px-2 sm:px-4 md:px-8 mt-16 text-base sm:text-sm py-10 px-4 overflow-x-hidden font-sans">
+    <footer style={{ background: 'linear-gradient(to bottom right, #f8fafc, #f1f5f9)', color: PALETTE.gray }} className="w-full border-t border-gray-200 pt-0 pb-8 px-2 sm:px-4 md:px-8 mt-16 text-base sm:text-sm py-10 px-4 overflow-x-hidden font-sans">
       {/* Gold Divider */}
       <div style={{ height: 5, background: `linear-gradient(90deg, ${PALETTE.gold} 0%, ${PALETTE.blue} 100%)` }} className="w-full mb-10" />
       

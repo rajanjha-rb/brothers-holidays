@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useAuthState, useAdminStatus, useAuthStore } from "@/store/auth";
+import { useAuthState, useAuthStore } from "@/store/auth";
 import Logo from "./navbar/Logo";
 import NavLinks from "./navbar/NavLinks";
 import MobileDrawer from "./navbar/MobileDrawer";
@@ -23,8 +23,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { user, hydrated, loading } = useAuthState();
-  const { isAdmin } = useAdminStatus();
+  const { user, hydrated, loading, isAdmin } = useAuthState();
   const router = useRouter();
   const logout = useAuthStore(state => state.logout);
 
@@ -49,7 +48,7 @@ export default function Navbar() {
   const navLinks = useMemo(() => [
     { name: "Home", href: "/", icon: <FaHome />, color: "#fff" },
     { name: "Holidays", href: "/", dropdown: true, icon: <FaSuitcaseRolling />, color: "#FFD166" },
-    { name: "Blogs", href: "/", icon: <FaRegNewspaper />, color: "#D72631" },
+    { name: "Blogs", href: "/blogs", icon: <FaRegNewspaper />, color: "#D72631" },
     { name: "Gallery", href: "/", icon: <FaImages />, color: "#fff" },
     ...(mounted && hydrated && !loading && user && isAdmin ? [{ name: "Dashboard", href: "/dashboard", icon: <FaUser />, color: "#fff" }] : []),
     { name: "More", href: "#", dropdown: true, icon: <FaEllipsisH />, color: "#888" },
@@ -105,12 +104,12 @@ export default function Navbar() {
       <div
         className="bg-white border-b-2 relative overflow-hidden"
         style={{
-          borderColor: PALETTE.gold,
+          borderColor: "#e5e7eb",
           background: scrolled ? "rgba(255,255,255,0.95)" : "white",
           backdropFilter: scrolled ? "blur(10px)" : "none",
         }}
       >
-        <div className="absolute inset-0 opacity-5" style={{ background: `linear-gradient(135deg, ${PALETTE.blue} 0%, ${PALETTE.gold} 100%)` }} />
+        <div className="absolute inset-0 opacity-5" style={{ background: `linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)` }} />
         <div className="max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-4 md:px-8 py-3 sm:py-4 relative">
           <Logo />
           

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useAdminStatus } from "@/store/auth";
+import { useAuthState } from "@/store/auth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,21 +17,22 @@ interface User {
 }
 
 export default function AdminManagement() {
-  const { isAdmin } = useAdminStatus();
+  const { hydrated, loading, isAdmin, adminChecked } = useAuthState();
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const [newUserEmail, setNewUserEmail] = useState("");
   const [processing, setProcessing] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (!isAdmin) return;
-    fetchUsers();
-  }, [isAdmin]);
+    if (hydrated && !loading && adminChecked && isAdmin) {
+      fetchUsers();
+    }
+  }, [isAdmin, adminChecked, loading, hydrated]);
 
   const fetchUsers = async () => {
     try {
-      setLoading(true);
+      setLoadingUsers(true);
       // Note: This would require a backend API endpoint to fetch users
       // For now, we'll show a placeholder
       setUsers([
@@ -52,7 +53,7 @@ export default function AdminManagement() {
       // Error fetching users silently
       setMessage("Error fetching users");
     } finally {
-      setLoading(false);
+      setLoadingUsers(false);
     }
   };
 
@@ -99,6 +100,17 @@ export default function AdminManagement() {
       setProcessing(false);
     }
   };
+
+  if (loading || !hydrated || !adminChecked) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking permissions...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (
@@ -161,7 +173,7 @@ export default function AdminManagement() {
           <Card className="p-6 mb-8">
             <h2 className="text-xl font-semibold mb-4">User Management</h2>
             
-            {loading ? (
+            {loadingUsers ? (
               <div className="text-center py-8">
                 <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                 <p className="text-gray-600">Loading users...</p>

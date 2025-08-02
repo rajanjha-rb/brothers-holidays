@@ -1,27 +1,23 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useAdminStatus } from "@/store/auth";
+import { useAuthState } from "@/store/auth";
 import { useRouter } from "next/navigation";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { isAdmin, loading } = useAdminStatus();
+  const { hydrated, loading, isAdmin, adminChecked } = useAuthState();
   const router = useRouter();
 
-      // Admin status checked
-
   useEffect(() => {
-    // Dashboard layout effect triggered
-    
-    if (!loading && !isAdmin) {
-              // Redirecting non-admin user
+    // Only check after auth is hydrated and admin status is checked
+    if (hydrated && !loading && adminChecked && !isAdmin) {
       // Redirect non-admin users to home page
       router.push("/");
     }
-  }, [isAdmin, loading, router]);
+  }, [isAdmin, adminChecked, loading, hydrated, router]);
 
   // Show loading while checking admin status
-  if (loading) {
+  if (loading || !hydrated || !adminChecked) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">

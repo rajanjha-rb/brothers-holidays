@@ -14,7 +14,7 @@ import { ID } from "appwrite";
 import slugify from "@/app/utils/slugify";
 import RTE from "@/components/RTE";
 import { FaPlus, FaTimes, FaSpinner, FaArrowLeft } from "react-icons/fa";
-import { useAuthStore } from "@/store/auth";
+import { useAuthState } from "@/store/auth";
 
 interface BlogFormData {
   title: string;
@@ -38,12 +38,14 @@ interface Blog {
 export default function BlogEditPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user } = useAuthState();
   const [tagInput, setTagInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [blog, setBlog] = useState<Blog | null>(null);
   const [fetching, setFetching] = useState(true);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [navigating, setNavigating] = useState(false);
 
   const blogId = params.id as string;
 
@@ -73,6 +75,11 @@ export default function BlogEditPage() {
           tags: new Set(blogData.tags || []),
           attachment: null,
         });
+        
+        // Prefetch common navigation routes for faster navigation
+        router.prefetch('/blogs');
+        router.prefetch('/dashboard/allblogs');
+        router.prefetch(`/blogs/${blogId}/${slugify(blogData.title)}`);
       } catch (err) {
         console.error('Error fetching blog:', err);
         setError("Failed to fetch blog");
@@ -82,7 +89,7 @@ export default function BlogEditPage() {
     };
 
     fetchBlog();
-  }, [blogId]);
+  }, [blogId, router]);
 
   const update = async () => {
     if (!blog) throw new Error("Blog not found");
@@ -90,23 +97,28 @@ export default function BlogEditPage() {
     const attachmentId = await (async () => {
       if (!formData.attachment) return blog?.featuredImage as string;
 
-      // Delete old image if it exists
-      if (blog.featuredImage) {
-        try {
-          await storage.deleteFile(featuredImageBucket, blog.featuredImage);
-        } catch {
-          // Ignore deletion errors
+      setImageUploading(true);
+      try {
+        // Delete old image if it exists
+        if (blog.featuredImage) {
+          try {
+            await storage.deleteFile(featuredImageBucket, blog.featuredImage);
+          } catch {
+            // Ignore deletion errors
+          }
         }
+
+        // Upload new image
+        const file = await storage.createFile(
+          featuredImageBucket,
+          ID.unique(),
+          formData.attachment
+        );
+
+        return file.$id;
+      } finally {
+        setImageUploading(false);
       }
-
-      // Upload new image
-      const file = await storage.createFile(
-        featuredImageBucket,
-        ID.unique(),
-        formData.attachment
-      );
-
-      return file.$id;
     })();
 
     const response = await databases.updateDocument(db, blogCollection, blog.$id, {
@@ -160,9 +172,22 @@ export default function BlogEditPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
-          <Button onClick={() => router.push('/dashboard/allblogs')}>
-            Back to Blogs
-          </Button>
+                  <Button 
+          onClick={() => {
+            setNavigating(true);
+            router.replace('/dashboard/allblogs', { scroll: false });
+          }}
+          disabled={navigating}
+        >
+          {navigating ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin"></div>
+              Loading...
+            </div>
+          ) : (
+            "Back to Blogs"
+          )}
+        </Button>
         </div>
       </div>
     );
@@ -174,11 +199,24 @@ export default function BlogEditPage() {
         <h1 className="text-2xl font-bold">Edit Blog</h1>
         <Button 
           variant="outline" 
-          onClick={() => router.push('/dashboard/allblogs')}
+          onClick={() => {
+            setNavigating(true);
+            router.replace('/dashboard/allblogs', { scroll: false });
+          }}
           className="flex items-center gap-2"
+          disabled={navigating || loading}
         >
-          <FaArrowLeft className="w-4 h-4" />
-          Back to Blogs
+          {navigating ? (
+            <>
+              <div className="w-4 h-4 border border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+              Loading...
+            </>
+          ) : (
+            <>
+              <FaArrowLeft className="w-4 h-4" />
+              Back to Blogs
+            </>
+          )}
         </Button>
       </div>
 
@@ -238,6 +276,7 @@ export default function BlogEditPage() {
                   }}
                   variant="outline"
                   size="sm"
+                  disabled={tagInput.length === 0}
                 >
                   <FaPlus className="w-4 h-4" />
                 </Button>
@@ -278,7 +317,14 @@ export default function BlogEditPage() {
                     attachment: files[0],
                   }));
                 }}
+                disabled={imageUploading}
               />
+              {imageUploading && (
+                <div className="flex items-center gap-2 text-sm text-blue-600">
+                  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  Uploading image...
+                </div>
+              )}
               {blog?.featuredImage && !formData.attachment && (
                 <div className="mt-2">
                   <p className="text-sm text-gray-600 mb-2">Current image:</p>
@@ -322,10 +368,20 @@ export default function BlogEditPage() {
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => router.push('/dashboard/allblogs')}
-                disabled={loading}
+                onClick={() => {
+                  setNavigating(true);
+                  router.replace('/dashboard/allblogs', { scroll: false });
+                }}
+                disabled={loading || navigating}
               >
-                Cancel
+                {navigating ? (
+                  <>
+                    <div className="w-4 h-4 border border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+                    Loading...
+                  </>
+                ) : (
+                  "Cancel"
+                )}
               </Button>
             </div>
           </form>

@@ -88,7 +88,7 @@ export default function Register() {
   };
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col md:flex-row items-center justify-center bg-gradient-to-br from-blue-100 via-white to-gold-100 relative">
+    <div className="h-screen overflow-hidden flex flex-col md:flex-row items-center justify-center bg-gradient-to-br from-pink-50 via-white to-pink-100 relative">
       <div className="register-main flex flex-col md:flex-row items-center justify-center w-full h-full max-w-6xl mx-auto gap-0 md:gap-20 px-2 md:px-8">
         {/* Left: Heading and subtext (desktop) */}
         <div className="register-left-col hidden md:flex flex-col justify-center items-start w-1/2 h-full pl-20 pr-8 z-10">

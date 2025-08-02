@@ -3,12 +3,12 @@ import { useEffect, useRef } from "react";
 import { useAuthStore } from "@/store/auth";
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { verfiySession } = useAuthStore();
+  const { verfiySession, hydrated } = useAuthStore();
   const hasInitialized = useRef(false);
 
   useEffect(() => {
-    // Defer session verification to avoid blocking initial render
-    if (!hasInitialized.current) {
+    // Only check auth state once when the app loads
+    if (!hasInitialized.current && hydrated) {
       hasInitialized.current = true;
       
       // Use requestIdleCallback for better performance, fallback to setTimeout
@@ -22,7 +22,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       
       scheduleVerification();
     }
-  }, [verfiySession]);
+  }, [verfiySession, hydrated]);
 
   return <>{children}</>;
 } 

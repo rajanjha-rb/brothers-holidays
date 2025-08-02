@@ -82,21 +82,21 @@ ValueCard.displayName = 'ValueCard';
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-white flex flex-col justify-between">
+    <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100 flex flex-col justify-between">
 
       <Navbar />
       
       {/* Hero Section - Shows immediately */}
-      <section className="w-full flex flex-col items-center justify-center text-center py-8 sm:py-12 md:py-16 px-4 bg-gradient-to-b from-yellow-200 via-yellow-50 to-white">
+      <section className="w-full flex flex-col items-center justify-center text-center py-8 sm:py-12 md:py-16 px-4 bg-gradient-to-b from-pink-200 via-pink-50 to-white">
         <FaGlobeAsia className="text-[#D72631] text-4xl sm:text-5xl mb-3 sm:mb-4" />
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-0 text-yellow-800 drop-shadow-lg px-2">About Brothers Holidays</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-0 text-pink-800 drop-shadow-lg px-2">About Brothers Holidays</h1>
       </section>
 
       <hr className="border-gray-200" />
 
       {/* Company Story & Mission - Shows immediately */}
       <section className="max-w-3xl mx-auto py-8 sm:py-10 md:py-12 px-4 sm:px-6">
-        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-blue-900">Our Story</h2>
+        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-pink-900">Our Story</h2>
         <p className="text-gray-700 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
           Brothers Holidays was founded with a passion for travel and a mission to make every journey extraordinary. With years of experience, our team brings you the best of Nepal and beyond, blending local expertise with global standards.
         </p>

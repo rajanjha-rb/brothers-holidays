@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import { ID } from "appwrite";
 import slugify from "@/app/utils/slugify";
 import RTE from "@/components/RTE";
 import { FaPlus, FaTimes, FaSpinner } from "react-icons/fa";
-import { useAuthStore } from "@/store/auth";
+import { useAuthState } from "@/store/auth";
 
 interface BlogFormData {
   title: string;
@@ -25,10 +25,12 @@ interface BlogFormData {
 
 export default function AddNewBlogPage() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user } = useAuthState();
   const [tagInput, setTagInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [imageUploading, setImageUploading] = useState(false);
+  const [navigating, setNavigating] = useState(false);
 
   const [formData, setFormData] = useState<BlogFormData>({
     title: "",
@@ -38,9 +40,16 @@ export default function AddNewBlogPage() {
     attachment: null,
   });
 
+  // Prefetch common routes for faster navigation
+  useEffect(() => {
+    router.prefetch('/dashboard/allblogs');
+    router.prefetch('/blogs');
+  }, [router]);
+
   const create = async () => {
     if (!formData.attachment) throw new Error("Please upload an image");
 
+    setImageUploading(true);
     try {
       const storageResponse = await storage.createFile(
         featuredImageBucket,
@@ -95,6 +104,8 @@ export default function AddNewBlogPage() {
         throw new Error(`Failed to create blog: ${error.message}`);
       }
       throw error;
+    } finally {
+      setImageUploading(false);
     }
   };
 
@@ -126,9 +137,20 @@ export default function AddNewBlogPage() {
         <h1 className="text-2xl font-bold">Add New Blog</h1>
         <Button 
           variant="outline" 
-          onClick={() => router.push('/dashboard/allblogs')}
+          onClick={() => {
+            setNavigating(true);
+            router.replace('/dashboard/allblogs', { scroll: false });
+          }}
+          disabled={navigating || loading}
         >
-          Back to Blogs
+          {navigating ? (
+            <>
+              <div className="w-4 h-4 border border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+              Loading...
+            </>
+          ) : (
+            "Back to Blogs"
+          )}
         </Button>
       </div>
 
@@ -188,6 +210,7 @@ export default function AddNewBlogPage() {
                   }}
                   variant="outline"
                   size="sm"
+                  disabled={tagInput.length === 0}
                 >
                   <FaPlus className="w-4 h-4" />
                 </Button>
@@ -228,7 +251,14 @@ export default function AddNewBlogPage() {
                     attachment: files[0],
                   }));
                 }}
+                disabled={imageUploading}
               />
+              {imageUploading && (
+                <div className="flex items-center gap-2 text-sm text-blue-600">
+                  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  Uploading image...
+                </div>
+              )}
             </div>
 
             {/* Content */}
@@ -263,10 +293,20 @@ export default function AddNewBlogPage() {
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => router.push('/dashboard/allblogs')}
-                disabled={loading}
+                onClick={() => {
+                  setNavigating(true);
+                  router.replace('/dashboard/allblogs', { scroll: false });
+                }}
+                disabled={loading || navigating}
               >
-                Cancel
+                {navigating ? (
+                  <>
+                    <div className="w-4 h-4 border border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+                    Loading...
+                  </>
+                ) : (
+                  "Cancel"
+                )}
               </Button>
             </div>
           </form>

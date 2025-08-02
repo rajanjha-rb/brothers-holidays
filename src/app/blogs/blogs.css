@@ -1,0 +1,211 @@
+/* Optimized animations for better scroll performance */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+/* Optimized blog card animations - reduced complexity */
+.blog-card {
+  animation: fadeInUp 0.4s ease-out;
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
+}
+
+.blog-card:nth-child(1) { animation-delay: 0.05s; }
+.blog-card:nth-child(2) { animation-delay: 0.1s; }
+.blog-card:nth-child(3) { animation-delay: 0.15s; }
+.blog-card:nth-child(4) { animation-delay: 0.2s; }
+.blog-card:nth-child(5) { animation-delay: 0.25s; }
+.blog-card:nth-child(6) { animation-delay: 0.3s; }
+
+/* Optimized hover effects - reduced transform complexity */
+.blog-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Search bar animations - simplified */
+.search-container {
+  animation: slideInFromLeft 0.6s ease-out;
+  will-change: transform;
+}
+
+.search-input:focus {
+  transform: scale(1.01);
+  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.1);
+}
+
+/* Stats cards animations - simplified */
+.stats-card {
+  animation: slideInFromRight 0.6s ease-out;
+  will-change: transform;
+}
+
+.stats-card:nth-child(1) { animation-delay: 0.1s; }
+.stats-card:nth-child(2) { animation-delay: 0.2s; }
+.stats-card:nth-child(3) { animation-delay: 0.3s; }
+
+/* Simplified tag hover effects */
+.tag-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.2);
+}
+
+/* Loading shimmer effect */
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Simplified gradient text animation */
+.gradient-text {
+  background: linear-gradient(-45deg, #ec4899, #8b5cf6, #ec4899, #8b5cf6);
+  background-size: 300% 300%;
+  animation: gradientShift 4s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Simplified floating animation */
+.float {
+  animation: float 8s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Simplified bounce animation */
+.bounce {
+  animation: bounce 3s infinite;
+  will-change: transform;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-6px);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Optimized transitions - reduced duration and complexity */
+* {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom scale utility for better performance */
+.scale-102 {
+  transform: scale(1.02);
+}
+
+/* Performance optimizations */
+.blog-card,
+.search-container,
+.stats-card,
+.tag-badge {
+  backface-visibility: hidden;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Custom scrollbar - simplified */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #ec4899, #8b5cf6);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #db2777, #7c3aed);
+} 

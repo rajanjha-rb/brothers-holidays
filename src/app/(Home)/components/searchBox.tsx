@@ -44,10 +44,10 @@ export default function SearchBox() {
 
   return (
     <div className="w-full px-0 md:px-4 flex justify-start md:justify-center font-sans relative mt-4 md:mt-0 -top-2 z-10 mb-6 md:mb-16 overflow-x-hidden">
-      <div className="w-full md:max-w-5xl px-2 sm:px-6 md:px-12 py-6 sm:py-8 md:py-10 flex flex-col gap-2 border border-yellow-300 shadow-2xl rounded-3xl bg-white/60 backdrop-blur-lg hover:shadow-2xl relative">
+      <div className="w-full md:max-w-5xl px-2 sm:px-6 md:px-12 py-6 sm:py-8 md:py-10 flex flex-col gap-2 border border-pink-300 shadow-2xl rounded-3xl bg-white/60 backdrop-blur-lg hover:shadow-2xl relative">
         {/* Packages Heading */}
         <div className="flex justify-center mb-4 mt-2">
-          <div className="flex items-center gap-2 px-3 py-2 sm:px-5 sm:py-3 md:px-7 md:py-3 bg-white/40 rounded-2xl shadow-lg font-extrabold text-base sm:text-xl md:text-3xl border border-yellow-300 relative">
+          <div className="flex items-center gap-2 px-3 py-2 sm:px-5 sm:py-3 md:px-7 md:py-3 bg-white/40 rounded-2xl shadow-lg font-extrabold text-base sm:text-xl md:text-3xl border border-pink-300 relative">
             <span className="text-[#D72631]">
               <svg width="22" height="22" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                 <rect x="7" y="7" width="10" height="10" rx="2" stroke="#D72631" strokeWidth="2" />
@@ -63,8 +63,8 @@ export default function SearchBox() {
           <div className="flex flex-col md:flex-row flex-wrap w-full gap-4 overflow-x-auto">
             {/* Destination */}
             <div className="flex-1 min-w-[120px] min-w-0 flex items-center">
-              <div className="flex items-center w-full bg-white/30 rounded-2xl px-3 py-2 sm:px-5 sm:py-3 border border-gray-200 focus-within:border-yellow-400 shadow-md transition-all duration-200 backdrop-blur-md">
-                <FaMapMarkerAlt className="h-6 w-6 text-pink-700 flex-shrink-0 mr-2" aria-hidden="true" />
+              <div className="flex items-center w-full bg-white/30 rounded-2xl px-3 py-2 sm:px-5 sm:py-3 border border-gray-200 focus-within:border-pink-400 shadow-md transition-all duration-200 backdrop-blur-md">
+                <FaMapMarkerAlt className="h-6 w-6 text-pink-600 flex-shrink-0 mr-2" aria-hidden="true" />
                 <input
                   type="text"
                   value={formData.destination}
@@ -78,8 +78,8 @@ export default function SearchBox() {
 
             {/* Nights */}
             <div className="flex-1 min-w-[120px] min-w-0 flex items-center">
-              <div className="flex items-center w-full bg-white/30 rounded-2xl px-3 py-2 sm:px-5 sm:py-3 border border-gray-200 focus-within:border-yellow-400 shadow-md transition-all duration-200 backdrop-blur-md">
-                <FaMoon className="h-6 w-6 text-blue-700 flex-shrink-0 mr-2" aria-hidden="true" />
+              <div className="flex items-center w-full bg-white/30 rounded-2xl px-3 py-2 sm:px-5 sm:py-3 border border-gray-200 focus-within:border-pink-400 shadow-md transition-all duration-200 backdrop-blur-md">
+                <FaMoon className="h-6 w-6 text-purple-600 flex-shrink-0 mr-2" aria-hidden="true" />
                 <input
                   type="number"
                   value={formData.nights}
@@ -94,8 +94,8 @@ export default function SearchBox() {
 
             {/* Budget */}
             <div className="flex-1 min-w-[120px] min-w-0 flex items-center">
-              <div className="flex items-center w-full bg-white/30 rounded-2xl px-3 py-2 sm:px-5 sm:py-3 border border-gray-200 focus-within:border-yellow-400 shadow-md transition-all duration-200 backdrop-blur-md">
-                <FaDollarSign className="h-6 w-6 text-green-700 flex-shrink-0 mr-2" aria-hidden="true" />
+              <div className="flex items-center w-full bg-white/30 rounded-2xl px-3 py-2 sm:px-5 sm:py-3 border border-gray-200 focus-within:border-pink-400 shadow-md transition-all duration-200 backdrop-blur-md">
+                <FaDollarSign className="h-6 w-6 text-pink-500 flex-shrink-0 mr-2" aria-hidden="true" />
                 <input
                   type="number"
                   value={formData.budget}
