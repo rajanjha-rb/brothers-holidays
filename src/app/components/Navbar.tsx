@@ -99,7 +99,7 @@ export default function Navbar() {
   }, [mobileMenuOpen]);
 
   return (
-    <header className={`w-full sticky top-0 z-50 transition-all duration-300 ${scrolled ? "shadow-lg" : ""}`}>
+    <header className={`w-full sticky top-0 z-40 transition-all duration-300 ${scrolled ? "shadow-lg" : ""}`}>
       {/* Top Bar */}
       <div
         className="bg-white border-b-2 relative overflow-hidden"

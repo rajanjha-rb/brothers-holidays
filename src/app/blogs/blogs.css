@@ -86,11 +86,25 @@
 .stats-card {
   animation: slideInFromRight 0.6s ease-out;
   will-change: transform;
+  transition: all 0.3s ease-in-out;
 }
 
 .stats-card:nth-child(1) { animation-delay: 0.1s; }
 .stats-card:nth-child(2) { animation-delay: 0.2s; }
 .stats-card:nth-child(3) { animation-delay: 0.3s; }
+
+/* Stats container transition */
+.stats-container {
+  transition: all 0.3s ease-in-out;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.stats-container.hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+}
 
 /* Simplified tag hover effects */
 .tag-badge:hover {
@@ -178,6 +192,19 @@
   backface-visibility: hidden;
   perspective: 1000px;
   transform-style: preserve-3d;
+}
+
+/* Ensure search suggestions appear on top */
+.search-suggestions {
+  position: absolute !important;
+  z-index: 9999999 !important;
+  background: white !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid #e5e7eb !important;
+  overflow: hidden !important;
+  pointer-events: auto !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 /* Reduce motion for users who prefer it */

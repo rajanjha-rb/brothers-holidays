@@ -157,7 +157,8 @@ export default function SearchBar({ onSearch, onClear, currentQuery }: SearchBar
   // Handle click outside to close suggestions
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (searchRef.current && !searchRef.current.contains(target)) {
         setShowSuggestions(false);
       }
     };
@@ -195,7 +196,7 @@ export default function SearchBar({ onSearch, onClear, currentQuery }: SearchBar
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4" ref={searchRef}>
+    <div className="w-full max-w-4xl mx-auto px-4" ref={searchRef} style={{ position: 'relative', zIndex: 9999 }}>
       {/* Enhanced Search Container */}
       <div className="relative">
         {/* Search Input with Gradient Border */}
@@ -255,7 +256,13 @@ export default function SearchBar({ onSearch, onClear, currentQuery }: SearchBar
 
         {/* Enhanced Suggestions Dropdown */}
         {showSuggestions && (suggestions.length > 0 || isLoading) && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
+          <div 
+            className="search-suggestions absolute top-full left-0 right-0 mt-2" 
+            style={{ 
+              position: 'absolute',
+              zIndex: 9999999
+            }}
+          >
             <div className="p-4">
               {isLoading ? (
                 <div className="flex items-center justify-center py-8">

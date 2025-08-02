@@ -162,7 +162,7 @@ export default function BlogsClient({ initialBlogs }: BlogsClientProps) {
             </div>
 
             {/* Enhanced Search Bar */}
-            <div className="mb-12 search-container">
+            <div className="mb-12 search-container" style={{ position: 'relative', zIndex: 9999 }}>
               <SearchBar 
                 onSearch={handleSearch} 
                 onClear={handleClearSearch} 
@@ -170,39 +170,39 @@ export default function BlogsClient({ initialBlogs }: BlogsClientProps) {
               />
             </div>
 
-            {/* Enhanced Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/20 stats-card">
-                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-pink-500 to-pink-600 rounded-lg mb-3 mx-auto">
-                  <FaNewspaper className="w-5 h-5 text-white" />
+            {/* Enhanced Stats - Hidden when searching */}
+            <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto stats-container ${searchQuery ? 'hidden' : ''}`} style={{ position: 'relative', zIndex: 1 }}>
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/20 stats-card">
+                  <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-pink-500 to-pink-600 rounded-lg mb-3 mx-auto">
+                    <FaNewspaper className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">{initialBlogs.length}</h3>
+                  <p className="text-gray-600 text-sm">Total Articles</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{initialBlogs.length}</h3>
-                <p className="text-gray-600 text-sm">Total Articles</p>
-              </div>
-              
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/20 stats-card">
-                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg mb-3 mx-auto">
-                  <FaTags className="w-5 h-5 text-white" />
+                
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/20 stats-card">
+                  <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg mb-3 mx-auto">
+                    <FaTags className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">
+                    {new Set(initialBlogs.flatMap(blog => blog.tags || [])).size}
+                  </h3>
+                  <p className="text-gray-600 text-sm">Unique Tags</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">
-                  {new Set(initialBlogs.flatMap(blog => blog.tags || [])).size}
-                </h3>
-                <p className="text-gray-600 text-sm">Unique Tags</p>
-              </div>
-              
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/20 stats-card">
-                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-pink-400 to-purple-500 rounded-lg mb-3 mx-auto">
-                  <FaCalendar className="w-5 h-5 text-white" />
+                
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/20 stats-card">
+                  <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-pink-400 to-purple-500 rounded-lg mb-3 mx-auto">
+                    <FaCalendar className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">
+                    {new Date().getFullYear()}
+                  </h3>
+                  <p className="text-gray-600 text-sm">Latest Updates</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">
-                  {new Date().getFullYear()}
-                </h3>
-                <p className="text-gray-600 text-sm">Latest Updates</p>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
       {/* Enhanced Search Results Info */}
       {searchQuery && (
