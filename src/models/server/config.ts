@@ -4,6 +4,12 @@ import { Avatars, Client, Databases, Storage, Users } from "node-appwrite";
 
 const client = new Client();
 
+console.log('🔍 Server config - Environment variables:', {
+  endpoint: env.appwrite.endpoint,
+  projectId: env.appwrite.projectId,
+  apiKeySet: !!env.appwrite.apikey
+});
+
 client
   .setEndpoint(env.appwrite.endpoint) // Your API Endpoint
   .setProject(env.appwrite.projectId) // Your project ID

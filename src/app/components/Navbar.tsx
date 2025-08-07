@@ -1,12 +1,12 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useAuthState, useAuthStore } from "@/store/auth";
+import { useAuthState, useAuthStore, debugAuthState } from "@/store/auth";
 import Logo from "./navbar/Logo";
-import NavLinks from "./navbar/NavLinks";
+import NavLinks, { NavLink } from "./navbar/NavLinks";
 import MobileDrawer from "./navbar/MobileDrawer";
 import MobileActionBar from "./navbar/MobileActionBar";
-import { FaHome, FaSuitcaseRolling, FaRegNewspaper, FaImages, FaEllipsisH, FaPhoneAlt, FaUser, FaSignOutAlt, FaEnvelope, FaCalendarAlt } from "react-icons/fa";
+import { FaHome, FaEllipsisH, FaPhoneAlt, FaUser, FaSignOutAlt, FaEnvelope, FaCalendarAlt, FaUmbrellaBeach, FaNewspaper } from "react-icons/fa";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -31,9 +31,14 @@ export default function Navbar() {
     try {
       await logout();
       router.push("/");
-            } catch {
-          // Logout failed silently
-        }
+    } catch {
+      // Logout failed silently
+    }
+  };
+
+  // Debug function for development
+  const handleDebugAuth = () => {
+    debugAuthState();
   };
 
   
@@ -45,14 +50,44 @@ export default function Navbar() {
   }, []);
 
   // Memoize navLinks to prevent unnecessary re-renders
-  const navLinks = useMemo(() => [
-    { name: "Home", href: "/", icon: <FaHome />, color: "#fff" },
-    { name: "Holidays", href: "/", dropdown: true, icon: <FaSuitcaseRolling />, color: "#FFD166" },
-    { name: "Blogs", href: "/blogs", icon: <FaRegNewspaper />, color: "#D72631" },
-    { name: "Gallery", href: "/", icon: <FaImages />, color: "#fff" },
-    ...(mounted && hydrated && !loading && user && isAdmin ? [{ name: "Dashboard", href: "/dashboard", icon: <FaUser />, color: "#fff" }] : []),
-    { name: "More", href: "#", dropdown: true, icon: <FaEllipsisH />, color: "#888" },
-  ], [mounted, hydrated, loading, user, isAdmin]);
+  const navLinks = useMemo(() => {
+    const baseLinks: NavLink[] = [
+      {
+        name: "Home",
+        href: "/",
+        icon: <FaHome />,
+        color: "#0057B7",
+      },
+      {
+        name: "Blogs",
+        href: "/blogs",
+        icon: <FaNewspaper />,
+        color: "#D72631",
+      },
+      {
+        name: "Holidays",
+        href: "#",
+        icon: <FaUmbrellaBeach />,
+        color: "#FFD166",
+        dropdown: true,
+      },
+      {
+        name: "More",
+        href: "#",
+        icon: <FaEllipsisH />,
+        color: "#888",
+        dropdown: true,
+      },
+    ];
+
+    // Only add dashboard link if user is admin and component is mounted
+    // Use cached auth status for better performance
+    if (mounted && hydrated && user && isAdmin) {
+      baseLinks.splice(4, 0, { name: "Dashboard", href: "/dashboard", icon: <FaUser />, color: "#fff" });
+    }
+
+    return baseLinks;
+  }, [mounted, hydrated, user, isAdmin]);
 
   // Handle scroll effect with throttling
   useEffect(() => {
@@ -199,6 +234,17 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
+            {/* Debug button for development */}
+            {process.env.NODE_ENV === 'development' && (
+              <button
+                onClick={handleDebugAuth}
+                className="px-2 py-1 text-xs bg-yellow-500 text-black rounded"
+                title="Debug Auth State"
+              >
+                Debug
+              </button>
+            )}
+            
             {/* User Avatar for logged-in users */}
             {mounted && hydrated && !loading && user && (
               <div className="flex items-center gap-3 ml-4">

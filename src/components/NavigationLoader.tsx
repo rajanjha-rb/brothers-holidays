@@ -56,25 +56,4 @@ export function NavigationLoader() {
   );
 }
 
-// Alternative: Full screen loading overlay for major navigation
-export function FullScreenNavigationLoader() {
-  const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, [pathname]);
-
-  if (!isLoading) return null;
-
-  return (
-    <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gray-600 text-lg">Loading...</p>
-      </div>
-    </div>
-  );
-} 
+ 

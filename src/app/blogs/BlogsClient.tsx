@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import OptimizedImage from "@/components/OptimizedImage";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,49 +32,83 @@ interface BlogsClientProps {
 export default function BlogsClient({ initialBlogs }: BlogsClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  
+  // Filter blogs to ensure they are valid blog entries (not trips)
+    const validBlogs = initialBlogs.filter(blog => {
+    // Prefer explicit type when present
+    const type = (blog as unknown as Record<string, unknown>).type as string | undefined;
+    if (type && type !== 'blog') return false;
+
+    // Minimum required fields
+    const hasRequiredBlogFields = !!(blog.title && blog.slug);
+
+    // Exclude obvious trips by trip-only fields
+    const hasTripCharacteristics = (blog as unknown as Record<string, unknown>).name || (blog as unknown as Record<string, unknown>).difficulty;
+
+    const isValidBlog = hasRequiredBlogFields && !hasTripCharacteristics;
+
+    if (!isValidBlog) {
+      console.log(`Client: Filtering out blog ${blog.$id}:`, {
+        type,
+        hasRequiredBlogFields,
+        hasTripCharacteristics,
+        title: blog.title,
+        name: (blog as unknown as Record<string, unknown>).name,
+      });
+    }
+
+    return isValidBlog;
+  });
+  
+  // Debug logging
+  console.log('BlogsClient received initialBlogs:', initialBlogs);
+  console.log('Number of blogs:', initialBlogs.length);
+  console.log('Valid blogs after filtering:', validBlogs.length);
+  console.log('Blogs data:', validBlogs);
+  
+
 
   // Preload critical resources on component mount
   useEffect(() => {
     // Preload the blog detail page component
     const preloadBlogDetail = () => {
       // Prefetch the blog detail page route
-      const links = initialBlogs.map(blog => 
+      const links = validBlogs.map(blog => 
         `/blogs/${blog.$id}/${blog.slug}`
       );
       
-      // Prefetch first few blog pages
-      links.slice(0, 3).forEach(link => {
+      // Prefetch first few blog pages with higher priority
+      links.slice(0, 5).forEach(link => {
         const linkElement = document.createElement('link');
         linkElement.rel = 'prefetch';
         linkElement.href = link;
+        linkElement.as = 'document';
         document.head.appendChild(linkElement);
       });
     };
 
     // Preload images for better perceived performance
     const preloadImages = () => {
-      initialBlogs.slice(0, 6).forEach(blog => {
+      validBlogs.slice(0, 8).forEach(blog => {
         if (blog.featuredImage) {
-          const img = new Image();
-          img.src = `/api/image-proxy?bucket=${blog.featuredImageBucket}&fileId=${blog.featuredImage}`;
+          const img = new window.Image();
+          img.src = `${process.env.NEXT_PUBLIC_APPWRITE_HOST_URL}/storage/buckets/${blog.featuredImageBucket}/files/${blog.featuredImage}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}&v=${blog.$updatedAt}`;
         }
       });
     };
 
-    // Execute preloading with a small delay to not block initial render
-    setTimeout(() => {
-      preloadBlogDetail();
-      preloadImages();
-    }, 100);
-  }, [initialBlogs]);
+    // Execute preloading immediately for better performance
+    preloadBlogDetail();
+    preloadImages();
+  }, [validBlogs]);
 
   // Filter blogs based on search query
   const filteredResults = useMemo(() => {
-    let results = initialBlogs;
+    let results = validBlogs;
     
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      results = initialBlogs.filter(blog => {
+      results = validBlogs.filter(blog => {
         // Search in title, description, tags, or content
         if (blog.title.toLowerCase().includes(query)) {
           return true;
@@ -95,7 +130,7 @@ export default function BlogsClient({ initialBlogs }: BlogsClientProps) {
     return results.sort((a, b) => 
       new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime()
     );
-  }, [initialBlogs, searchQuery]);
+  }, [validBlogs, searchQuery]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -113,13 +148,14 @@ export default function BlogsClient({ initialBlogs }: BlogsClientProps) {
       const linkElement = document.createElement('link');
       linkElement.rel = 'prefetch';
       linkElement.href = link;
+      linkElement.as = 'document';
       document.head.appendChild(linkElement);
     };
 
     const handleClick = (e: React.MouseEvent) => {
       e.preventDefault();
-      // Use router.push for faster navigation
-      router.push(`/blogs/${blog.$id}/${blog.slug}`);
+      // Use router.push for faster navigation with scroll restoration
+      router.push(`/blogs/${blog.$id}/${blog.slug}`, { scroll: true });
     };
 
     return (
@@ -129,11 +165,14 @@ export default function BlogsClient({ initialBlogs }: BlogsClientProps) {
         onClick={handleClick}
         prefetch={true}
         className="block"
+        scroll={true}
       >
         {children}
       </Link>
     );
   };
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100" style={{ transform: 'translateZ(0)' }}>
@@ -176,7 +215,7 @@ export default function BlogsClient({ initialBlogs }: BlogsClientProps) {
                   <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-pink-500 to-pink-600 rounded-lg mb-3 mx-auto">
                     <FaNewspaper className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">{initialBlogs.length}</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">{validBlogs.length}</h3>
                   <p className="text-gray-600 text-sm">Total Articles</p>
                 </div>
                 
@@ -185,7 +224,7 @@ export default function BlogsClient({ initialBlogs }: BlogsClientProps) {
                     <FaTags className="w-5 h-5 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-1">
-                    {new Set(initialBlogs.flatMap(blog => blog.tags || [])).size}
+                    {new Set(validBlogs.flatMap(blog => blog.tags || [])).size}
                   </h3>
                   <p className="text-gray-600 text-sm">Unique Tags</p>
                 </div>
@@ -268,11 +307,14 @@ export default function BlogsClient({ initialBlogs }: BlogsClientProps) {
                   {blog.featuredImage && (
                     <div className="relative h-40 overflow-hidden flex-shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10"></div>
-                      <img
-                        src={`/api/image-proxy?bucket=${blog.featuredImageBucket}&fileId=${blog.featuredImage}`}
+                      <OptimizedImage
+                        src={`${process.env.NEXT_PUBLIC_APPWRITE_HOST_URL}/storage/buckets/${blog.featuredImageBucket}/files/${blog.featuredImage}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}&v=${blog.$updatedAt}`}
                         alt={blog.title}
+                        width={400}
+                        height={160}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        priority={false}
                       />
                       {/* Enhanced Overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20"></div>

@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { databases, storage } from "@/models/client/config";
-import { db, blogCollection, featuredImageBucket } from "@/models/name";
+import { databases } from "@/models/client/config";
+import { db, blogCollection } from "@/models/name";
 import { FaArrowLeft, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { useAuthState, useAdminStatus } from "@/store/auth";
 import { revalidateBlogsList } from "@/lib/revalidate";
@@ -33,8 +33,13 @@ export default function AdminControls({ blog }: AdminControlsProps) {
   const [deleting, setDeleting] = useState(false);
   const [navigating, setNavigating] = useState(false);
 
+  // Use cached auth status - only show loading if not hydrated
+  if (!hydrated) {
+    return null;
+  }
+
   // Only show admin controls for logged-in admin users
-  if (!user || !hydrated || authLoading || adminLoading || !isAdmin) {
+  if (!user || !isAdmin || authLoading || adminLoading) {
     return null;
   }
 
@@ -115,12 +120,8 @@ export default function AdminControls({ blog }: AdminControlsProps) {
                     if (confirm("Are you sure you want to delete this blog?")) {
                       setDeleting(true);
                       try {
-                        // Handle delete logic here
-                        if (blog.featuredImage) {
-                          await storage.deleteFile(featuredImageBucket, blog.featuredImage).catch(() => {
-                            // Ignore image deletion errors
-                          });
-                        }
+                        // Handle delete logic here - DO NOT delete the featured image
+                        // Images should be reusable across multiple blogs and managed separately in media library
                         await databases.deleteDocument(db, blogCollection, blog.$id);
                         
                         // Trigger revalidation for blogs list

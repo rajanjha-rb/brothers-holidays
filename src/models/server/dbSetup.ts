@@ -1,5 +1,7 @@
 import { db } from "../name";
 import createBlogCollection from "./blog.collection";
+import createTripCollection from "./trip.collection";
+import createMediaCollection from "./media.collection";
 
 import { databases } from "./config";
 
@@ -18,8 +20,10 @@ export default async function getOrCreateDB() {
       }
   }
 
-  // Always check/create the collection
+  // Always check/create the collections
   await createBlogCollection();
+  await createTripCollection();
+  await createMediaCollection();
 
   return databases;
 }

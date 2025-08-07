@@ -15,6 +15,7 @@ import slugify from "@/app/utils/slugify";
 import RTE from "@/components/RTE";
 import { FaPlus, FaTimes, FaSpinner, FaArrowLeft } from "react-icons/fa";
 import { useAuthState } from "@/store/auth";
+import { revalidateBlog } from "@/lib/revalidate";
 
 interface BlogFormData {
   title: string;
@@ -33,6 +34,7 @@ interface Blog {
   tags: string[];
   featuredImage?: string;
   featuredImageBucket?: string;
+  $updatedAt: string;
 }
 
 export default function BlogEditPage() {
@@ -147,6 +149,15 @@ export default function BlogEditPage() {
 
     try {
       await update();
+      
+      // Trigger revalidation for the updated blog page
+      try {
+        await revalidateBlog(blogId, slugify(formData.title));
+        console.log('✅ Blog page revalidated successfully');
+      } catch (revalidationError) {
+        console.warn('⚠️ Revalidation failed, but blog was updated:', revalidationError);
+      }
+      
       alert('Blog updated successfully!');
       router.push(`/blogs/${blogId}/${slugify(formData.title)}`);
     } catch (error: unknown) {
@@ -329,7 +340,7 @@ export default function BlogEditPage() {
                 <div className="mt-2">
                   <p className="text-sm text-gray-600 mb-2">Current image:</p>
                   <Image 
-                    src={storage.getFileView(featuredImageBucket, blog.featuredImage).toString()}
+                    src={`${process.env.NEXT_PUBLIC_APPWRITE_HOST_URL}/storage/buckets/${blog.featuredImageBucket}/files/${blog.featuredImage}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}&v=${blog.$updatedAt}`}
                     alt="Current featured"
                     width={128}
                     height={128}

@@ -51,3 +51,57 @@ export async function revalidateBlogsList() {
     throw error;
   }
 } 
+
+// Utility function to trigger on-demand revalidation for trips
+export async function revalidateTrip(tripId: string, slug: string) {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/revalidate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        path: `/trips/${tripId}/${slug}`,
+        secret: process.env.REVALIDATION_SECRET || 'your-secret-key',
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Revalidation failed: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log('Trip revalidation successful:', result);
+    return result;
+  } catch (error) {
+    console.error('Trip revalidation error:', error);
+    throw error;
+  }
+}
+
+// Revalidate trips listing page
+export async function revalidateTripsList() {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/revalidate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        path: '/trips',
+        secret: process.env.REVALIDATION_SECRET || 'your-secret-key',
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Revalidation failed: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log('Trips list revalidation successful:', result);
+    return result;
+  } catch (error) {
+    console.error('Trips list revalidation error:', error);
+    throw error;
+  }
+} 

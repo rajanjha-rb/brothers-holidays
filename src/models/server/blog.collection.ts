@@ -61,6 +61,8 @@ export default async function createBlogCollection() {
         100,
         false
       ),
+      // New optional attribute to tag documents as blog
+      databases.createStringAttribute(db, blogCollection, "type", 20, false),
     ]);
     // Blog collection attributes created successfully
       } catch {
@@ -97,6 +99,10 @@ export default async function createBlogCollection() {
         IndexType.Key,
         ["$updatedAt"]
       ),
+      // Optional index for type if used
+      databases.createIndex(db, blogCollection, "type_index", IndexType.Key, [
+        "type",
+      ]),
     ]);
     // Blog collection indexes created successfully
       } catch {

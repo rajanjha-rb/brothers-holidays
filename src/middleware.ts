@@ -6,18 +6,15 @@ import getOrCreateStorage from "./models/server/storageSetup";
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
-  await Promise.all([getOrCreateDB(), getOrCreateStorage()]);
-
-  // Check if the request is for dashboard routes
   const { pathname } = request.nextUrl;
   
+  // Only run database setup for dashboard routes to improve performance
   if (pathname.startsWith('/dashboard')) {
-    // For dashboard routes, we'll let the client-side handle the admin check
-    // since we need to check user authentication and labels
-    // The dashboard layout will handle the redirect for non-admin users
+    await Promise.all([getOrCreateDB(), getOrCreateStorage()]);
     return NextResponse.next();
   }
 
+  // For public pages, skip database setup to improve performance
   return NextResponse.next();
 }
 

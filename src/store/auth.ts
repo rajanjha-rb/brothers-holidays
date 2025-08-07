@@ -16,15 +16,22 @@ interface IAuthStore {
   user: Models.User<UserPrefs> | null;
   hydrated: boolean;
   loading: boolean;
-  adminStatus: {
-    isAdmin: boolean;
-    checked: boolean;
-    loading: boolean;
-  };
+        adminStatus: {
+        isAdmin: boolean;
+        checked: boolean;
+        loading: boolean;
+        lastChecked: number; // Timestamp of last admin check
+        lastCheckedUserId?: string; // ID of user when last checked
+      };
+  lastAuthCheck: number; // Timestamp of last auth check
+  authCheckInterval: number; // How often to check auth (5 minutes)
+  adminCheckInterval: number; // How often to check admin status (30 minutes)
 
   setHydrated(): void;
   verfiySession(): Promise<void>;
   checkAdminStatus(): Promise<void>;
+  shouldCheckAuth(): boolean; // Check if we need to verify auth again
+  shouldCheckAdmin(): boolean; // Check if we need to verify admin status again
   login(
     email: string,
     password: string
@@ -68,16 +75,68 @@ export const useAuthStore = create<IAuthStore>()(
         isAdmin: false,
         checked: false,
         loading: false,
+        lastChecked: 0,
+        lastCheckedUserId: undefined,
       },
+      lastAuthCheck: 0,
+      authCheckInterval: 5 * 60 * 1000, // 5 minutes in milliseconds
+      adminCheckInterval: 30 * 60 * 1000, // 30 minutes in milliseconds
 
       setHydrated() {
         set({ hydrated: true });
       },
 
+      shouldCheckAuth() {
+        const { lastAuthCheck, authCheckInterval, user } = get();
+        const now = Date.now();
+        
+        // Always check auth if no user is loaded
+        if (!user) {
+          return true;
+        }
+        
+        // Check if enough time has passed since last check
+        return now - lastAuthCheck > authCheckInterval;
+      },
+
+      shouldCheckAdmin() {
+        const { adminStatus, adminCheckInterval, user } = get();
+        const now = Date.now();
+        
+        // Always check admin if no user is loaded
+        if (!user) {
+          return false;
+        }
+        
+        // If admin status was never checked, check it
+        if (!adminStatus.checked) {
+          return true;
+        }
+        
+        // Force check if user has changed (for debugging)
+        const currentUserId = user.$id;
+        const lastCheckedUserId = adminStatus.lastCheckedUserId;
+        if (currentUserId !== lastCheckedUserId) {
+          console.log('🔍 User changed, forcing admin check');
+          return true;
+        }
+        
+        // Check if enough time has passed since last admin check
+        return now - adminStatus.lastChecked > adminCheckInterval;
+      },
+
       async verfiySession() {
+        // Check if we need to verify auth again
+        if (!get().shouldCheckAuth()) {
+          console.log('🔍 Using cached auth status');
+          return; // Use cached auth status
+        }
+        
+        console.log('🔍 Performing fresh auth check');
+
         if (!isLocalStorageAvailable()) {
           alert('LocalStorage is not available. Please disable privacy mode or use a different browser to login.');
-          set({ session: null, user: null, loading: false });
+          set({ session: null, user: null, loading: false, lastAuthCheck: Date.now() });
           return;
         }
         set({ loading: true });
@@ -89,17 +148,17 @@ export const useAuthStore = create<IAuthStore>()(
           try {
             const user = await account.get<UserPrefs>();
             // User object retrieved successfully
-            set({ session, user });
+            set({ session, user, lastAuthCheck: Date.now() });
             
-            // Check admin status after user is loaded
+            // Always check admin status after user is loaded to ensure accuracy
             get().checkAdminStatus();
           } catch {
             // Error retrieving user object
-            set({ session, user: null });
+            set({ session, user: null, lastAuthCheck: Date.now() });
           }
         } catch {
           // Session verification failed
-          set({ session: null, user: null });
+          set({ session: null, user: null, lastAuthCheck: Date.now() });
         } finally {
           set({ loading: false });
         }
@@ -107,22 +166,35 @@ export const useAuthStore = create<IAuthStore>()(
 
       async checkAdminStatus() {
         const { user } = get();
+        
         if (!user) {
           set({ 
             adminStatus: { 
               isAdmin: false, 
               checked: true, 
-              loading: false 
+              loading: false,
+              lastChecked: Date.now(),
+              lastCheckedUserId: undefined
             } 
           });
           return;
         }
+        
+        // Check if we need to verify admin status again
+        if (!get().shouldCheckAdmin()) {
+          console.log('🔍 Using cached admin status');
+          return; // Use cached admin status
+        }
+        
+        console.log('🔍 Performing fresh admin check');
 
         set({ 
           adminStatus: { 
             isAdmin: false, 
             checked: false, 
-            loading: true 
+            loading: true,
+            lastChecked: 0,
+            lastCheckedUserId: undefined
           } 
         });
 
@@ -131,19 +203,49 @@ export const useAuthStore = create<IAuthStore>()(
           const labels = user.labels || [];
           const isAdmin = Array.isArray(labels) && labels.includes('admin');
           
+          // Also check for case variations and different formats
+          const hasAdminLabel = Array.isArray(labels) && (
+            labels.includes('admin') ||
+            labels.includes('Admin') ||
+            labels.includes('ADMIN') ||
+            labels.some(label => label.toLowerCase() === 'admin')
+          );
+          
+          console.log('🔍 Admin check:', { 
+            labels, 
+            isAdmin, 
+            hasAdminLabel,
+            userId: user.$id,
+            userEmail: user.email,
+            labelTypes: labels.map(label => typeof label),
+            labelLengths: labels.map(label => label?.length),
+            userObject: {
+              id: user.$id,
+              email: user.email,
+              name: user.name,
+              labels: user.labels,
+              prefs: user.prefs
+            }
+          });
+          
           set({ 
             adminStatus: { 
-              isAdmin, 
+              isAdmin: hasAdminLabel, 
               checked: true, 
-              loading: false 
+              loading: false,
+              lastChecked: Date.now(),
+              lastCheckedUserId: user.$id
             } 
           });
-        } catch {
+        } catch (error) {
+          console.error('❌ Error checking admin status:', error);
           set({ 
             adminStatus: { 
               isAdmin: false, 
               checked: true, 
-              loading: false 
+              loading: false,
+              lastChecked: Date.now(),
+              lastCheckedUserId: user?.$id
             } 
           });
         }
@@ -171,9 +273,9 @@ export const useAuthStore = create<IAuthStore>()(
               reputation: 0,
             });
 
-          set({ session, user, jwt });
+          set({ session, user, jwt, lastAuthCheck: Date.now() });
 
-          // Check admin status after login
+          // Always check admin status after login to ensure accuracy
           get().checkAdminStatus();
 
           return { success: true };
@@ -212,10 +314,12 @@ export const useAuthStore = create<IAuthStore>()(
             jwt: null, 
             user: null, 
             loading: false,
+            lastAuthCheck: Date.now(),
             adminStatus: {
               isAdmin: false,
               checked: true,
               loading: false,
+              lastChecked: Date.now(),
             }
           });
         } catch {
@@ -263,10 +367,13 @@ export const useAuthStore = create<IAuthStore>()(
             user: null, 
             hydrated: false, 
             loading: false,
+            lastAuthCheck: 0,
+            authCheckInterval: 5 * 60 * 1000,
             adminStatus: {
               isAdmin: false,
               checked: false,
               loading: false,
+              lastChecked: 0,
             }
           } as IAuthStore;
         }
@@ -293,6 +400,36 @@ export const clearAuthState = () => {
   }
 };
 
+// Force auth refresh when needed (e.g., after login/logout)
+export const forceAuthRefresh = () => {
+  const store = useAuthStore.getState();
+  store.lastAuthCheck = 0; // Reset auth check timestamp
+  store.verfiySession(); // Force new auth check
+};
+
+// Force admin status refresh when needed
+export const forceAdminRefresh = () => {
+  const store = useAuthStore.getState();
+  // Reset admin check timestamp to force fresh check
+  store.adminStatus.lastChecked = 0;
+  store.adminStatus.checked = false;
+  store.adminStatus.lastCheckedUserId = undefined;
+  store.checkAdminStatus(); // Force new admin check
+};
+
+// Debug function to check auth state
+export const debugAuthState = () => {
+  const state = useAuthStore.getState();
+  console.log('🔍 Auth Debug State:', {
+    user: state.user ? { id: state.user.$id, email: state.user.email, labels: state.user.labels } : null,
+    adminStatus: state.adminStatus,
+    hydrated: state.hydrated,
+    loading: state.loading,
+    lastAuthCheck: state.lastAuthCheck,
+    shouldCheckAuth: state.shouldCheckAuth()
+  });
+};
+
 // Optimized hook for auth state access - prevents multiple re-renders
 export const useAuthState = () => {
   const { user, hydrated, loading, adminStatus } = useAuthStore();
@@ -302,21 +439,24 @@ export const useAuthState = () => {
     return { 
       user: null, 
       hydrated: false, 
-      loading: true,
+      loading: false, // Don't show loading during hydration
       isAdmin: false,
       adminChecked: false,
       adminLoading: false
     };
   }
   
-  return { 
+  // Use cached auth status - only show loading if explicitly loading
+  const result = {
     user, 
     hydrated, 
-    loading,
+    loading: loading && !adminStatus.checked, // Only show loading if auth check is in progress
     isAdmin: adminStatus.isAdmin,
     adminChecked: adminStatus.checked,
     adminLoading: adminStatus.loading
   };
+  
+  return result;
 };
 
 // Utility function to check if user is admin

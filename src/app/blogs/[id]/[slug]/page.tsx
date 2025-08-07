@@ -1,4 +1,5 @@
 import React from "react";
+import OptimizedImage from "@/components/OptimizedImage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { databases } from "@/models/server/config";
@@ -6,9 +7,9 @@ import { db, blogCollection } from "@/models/name";
 import { MarkdownPreview } from "@/components/RTE";
 import { FaCalendar, FaTags } from "react-icons/fa";
 import Navbar from "@/app/components/Navbar";
-import AdminControls from "./AdminControls";
 import ScrollButton from "./ScrollButton";
 import RTEStyles from "./RTEStyles";
+import AdminControlsWrapper from "./AdminControlsWrapper";
 
 interface Blog {
   $id: string;
@@ -46,8 +47,8 @@ export async function generateStaticParams() {
   }
 }
 
-// On-demand revalidation - pages will be revalidated when content changes
-// No time-based revalidation to avoid unnecessary server load
+// Force revalidation on every request to ensure fresh data
+export const revalidate = 0;
 
 // Fetch blog data on the server side
 async function getBlog(blogId: string): Promise<Blog | null> {
@@ -67,7 +68,14 @@ const getOriginalContent = (content: string): string => {
 
 export default async function BlogViewPage({ params }: PageProps) {
   const { id: blogId } = await params;
-  const blog = await getBlog(blogId);
+  
+  // Fetch blog data with error handling
+  let blog: Blog | null = null;
+  try {
+    blog = await getBlog(blogId);
+  } catch (error) {
+    console.error('Error fetching blog:', error);
+  }
 
   if (!blog) {
     return (
@@ -92,8 +100,8 @@ export default async function BlogViewPage({ params }: PageProps) {
       {/* Show navbar for all users */}
       <Navbar />
 
-      {/* Admin Controls - Client component for interactive features */}
-      <AdminControls blog={blog} />
+      {/* Admin Controls - Loaded conditionally to improve performance */}
+      <AdminControlsWrapper blog={blog} />
 
       {/* RTE Styles - Client component for styling */}
       <RTEStyles />
@@ -104,13 +112,16 @@ export default async function BlogViewPage({ params }: PageProps) {
           
           {/* Background Image Container */}
           <div className="absolute inset-0 overflow-hidden z-0">
-            <img 
-              src={`/api/image-proxy?bucket=${blog.featuredImageBucket}&fileId=${blog.featuredImage}`}
+            <OptimizedImage 
+              src={`${process.env.NEXT_PUBLIC_APPWRITE_HOST_URL}/storage/buckets/${blog.featuredImageBucket}/files/${blog.featuredImage}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}&v=${blog.$updatedAt}`}
               alt={blog.title}
-              className="w-full h-full object-cover"
+              width={1920}
+              height={1080}
+              className="object-cover w-full h-full"
+              sizes="100vw"
+              priority
               style={{
-                minHeight: '100vh',
-                minWidth: '100vw'
+                objectPosition: 'center'
               }}
             />
           </div>

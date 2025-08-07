@@ -1,11 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import OptimizedImage from "@/components/OptimizedImage";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-import { databases, storage } from "@/models/client/config";
-import { db, blogCollection, featuredImageBucket } from "@/models/name";
+
 import { FaPlus } from "react-icons/fa";
 
 interface Blog {
@@ -13,6 +13,7 @@ interface Blog {
   title: string;
   slug: string;
   featuredImage?: string;
+  $updatedAt: string;
 }
 
 export default function AllBlogsPage() {
@@ -24,60 +25,80 @@ export default function AllBlogsPage() {
   const [navigatingBlog, setNavigatingBlog] = useState<string | null>(null);
   const router = useRouter();
 
-  const fetchBlogs = async () => {
+  const fetchBlogs = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await databases.listDocuments(db, blogCollection, []);
-      // Map documents to Blog type
-      const mappedBlogs: Blog[] = res.documents.map((doc: Record<string, unknown>) => ({
-        $id: doc.$id as string,
-        title: doc.title as string,
-        slug: doc.slug as string,
-        featuredImage: doc.featuredImage as string | undefined,
-      }));
-      setBlogs(mappedBlogs);
+      console.log('🔍 Fetching blogs from dashboard via API...');
       
-      // Initialize image loading state for blogs with featured images
-      const blogsWithImages = mappedBlogs.filter(blog => blog.featuredImage);
-      setImageLoading(new Set(blogsWithImages.map(blog => blog.$id)));
+      const response = await fetch('/api/blogs/list');
+      const data = await response.json();
       
-      // Prefetch blog routes for faster navigation
-      mappedBlogs.forEach(blog => {
-        router.prefetch(`/blogs/${blog.$id}/${blog.slug}`);
-        router.prefetch(`/blogs/${blog.$id}/edit`);
-      });
+      console.log('API Response:', data);
       
-      // Prefetch add new blog route
-      router.prefetch('/dashboard/addnewblog');
-    } catch {
+      if (data.success) {
+        const mappedBlogs: Blog[] = data.blogs.map((doc: Record<string, unknown>) => ({
+          $id: doc.$id,
+          title: doc.title,
+          slug: doc.slug,
+          featuredImage: doc.featuredImage,
+        }));
+        console.log('Mapped blogs:', mappedBlogs);
+        setBlogs(mappedBlogs);
+        
+        // Initialize image loading state for blogs with featured images
+        const blogsWithImages = mappedBlogs.filter(blog => blog.featuredImage);
+        setImageLoading(new Set(blogsWithImages.map(blog => blog.$id)));
+        
+        // Prefetch blog routes for faster navigation
+        mappedBlogs.forEach(blog => {
+          router.prefetch(`/blogs/${blog.$id}/${blog.slug}`);
+          router.prefetch(`/blogs/${blog.$id}/edit`);
+        });
+        
+        // Prefetch add new blog route
+        router.prefetch('/dashboard/addnewblog');
+      } else {
+        setError(data.error || "Failed to fetch blogs");
+      }
+    } catch (error) {
+      console.error('Error fetching blogs:', error);
       setError("Failed to fetch blogs");
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     fetchBlogs();
-  }, [router]);
+  }, [fetchBlogs]);
 
   // Delete logic with loading state
-  const handleDelete = async (id: string, featuredImageId?: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this blog?")) return;
     
     setDeletingBlogs(prev => new Set(prev).add(id));
     
     try {
-      if (featuredImageId) {
-        try {
-          await storage.deleteFile(featuredImageBucket, featuredImageId);
-        } catch {
-          // Ignore image deletion errors
-        }
+      const response = await fetch('/api/blogs/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('✅ Blog deleted successfully');
+        fetchBlogs(); // Refresh the list
+      } else {
+        console.error('❌ Failed to delete blog:', data.error);
+        alert("Failed to delete blog");
       }
-      await databases.deleteDocument(db, blogCollection, id);
-      fetchBlogs();
-    } catch {
+    } catch (error) {
+      console.error('❌ Error deleting blog:', error);
       alert("Failed to delete blog");
     } finally {
       setDeletingBlogs(prev => {
@@ -158,10 +179,13 @@ export default function AllBlogsPage() {
                         <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                       </div>
                     )}
-                    <img 
-                      src={storage.getFileView(featuredImageBucket, blog.featuredImage).toString()}
+                    <OptimizedImage 
+                      src={`${process.env.NEXT_PUBLIC_APPWRITE_HOST_URL}/storage/buckets/featuredImage/files/${blog.featuredImage}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}&v=${blog.$updatedAt}`}
                       alt={blog.title}
+                      width={400}
+                      height={192}
                       className="w-full h-full object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       onLoad={() => {
                         setImageLoading(prev => {
                           const newSet = new Set(prev);
@@ -169,13 +193,8 @@ export default function AllBlogsPage() {
                           return newSet;
                         });
                       }}
-                      onError={(e) => {
-                        console.error('❌ Blog image failed to load:', e.currentTarget.src);
-                        // Add a fallback background color if image fails
-                        e.currentTarget.style.display = 'none';
-                        if (e.currentTarget.parentElement) {
-                          e.currentTarget.parentElement.style.backgroundColor = '#f3f4f6';
-                        }
+                      onError={() => {
+                        console.error('❌ Blog image failed to load');
                         setImageLoading(prev => {
                           const newSet = new Set(prev);
                           newSet.delete(blog.$id);
@@ -230,7 +249,7 @@ export default function AllBlogsPage() {
                       size="sm" 
                       variant="outline" 
                       className="text-red-600 border-red-600 hover:bg-red-50"
-                      onClick={() => handleDelete(blog.$id, blog.featuredImage)}
+                      onClick={() => handleDelete(blog.$id)}
                       disabled={deletingBlogs.has(blog.$id)}
                     >
                       {deletingBlogs.has(blog.$id) ? (
