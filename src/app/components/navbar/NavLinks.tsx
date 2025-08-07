@@ -1,18 +1,49 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaFacebookSquare, FaInstagram, FaWhatsappSquare } from "react-icons/fa";
 import { SiViber } from "react-icons/si";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { FaInfoCircle, FaPhoneAlt } from "react-icons/fa";
+import { FaInfoCircle, FaPhoneAlt, FaNewspaper, FaUmbrellaBeach, FaMapMarkedAlt, FaHiking, FaMountain, FaCamera, FaSwimmer } from "react-icons/fa";
 import { FaChevronDown } from "react-icons/fa";
-import type { NavLink as NavLinkType } from './NavLinks';
+
+// NavLink type definition
+export interface NavLink {
+  name: string;
+  href: string;
+  icon?: React.ReactNode;
+  color?: string;
+  dropdown?: boolean;
+  special?: boolean;
+}
+
+// Enhanced holiday mega menu data
+const holidayMegaMenuData = {
+  trips: [
+    { name: "Adventure Tours", href: "/trips?category=adventure", icon: <FaHiking /> },
+    { name: "Cultural Heritage", href: "/trips?category=cultural", icon: <FaCamera /> },
+    { name: "Mountain Expeditions", href: "/trips?category=mountain", icon: <FaMountain /> },
+    { name: "Wildlife Safari", href: "/trips?category=wildlife", icon: <FaCamera /> },
+  ],
+  destinations: [
+    { name: "Kathmandu Valley", href: "/destinations/kathmandu", icon: <FaMapMarkedAlt /> },
+    { name: "Everest Region", href: "/destinations/everest", icon: <FaMountain /> },
+    { name: "Annapurna Circuit", href: "/destinations/annapurna", icon: <FaHiking /> },
+    { name: "Chitwan National Park", href: "/destinations/chitwan", icon: <FaCamera /> },
+  ],
+  activities: [
+    { name: "Trekking", href: "/activities/trekking", icon: <FaHiking /> },
+    { name: "Mountain Climbing", href: "/activities/climbing", icon: <FaMountain /> },
+    { name: "Photography Tours", href: "/activities/photography", icon: <FaCamera /> },
+    { name: "River Rafting", href: "/activities/rafting", icon: <FaSwimmer /> },
+  ]
+};
+
 // Export dropdownOptions and MoreModal for use in MobileDrawer
 export const dropdownOptions: {
   label: string;
   href: string;
-  icon: (navLinks: NavLinkType[]) => React.ReactNode;
+  icon: () => React.ReactNode;
   color: string;
 }[] = [
   {
@@ -29,21 +60,16 @@ export const dropdownOptions: {
   },
 ];
 
-export function MoreModal({ navLinks, setShowMore, onLinkClick }: { navLinks: NavLinkType[]; setShowMore: (v: boolean) => void; onLinkClick: () => void }) {
+export function MoreModal({ setShowMore, onLinkClick }: { setShowMore: (v: boolean) => void; onLinkClick: () => void }) {
   const router = useRouter();
   
   const handleModalNavigation = (href: string) => {
-    // For mobile modal, use the most aggressive optimization
     setShowMore(false);
     if (onLinkClick) onLinkClick();
     
-    // Use a more direct approach for mobile devices
-    // This ensures maximum speed on mobile
     try {
-      // Try Next.js router first for client-side navigation
       router.push(href);
     } catch {
-      // Fallback to direct navigation if router fails
       window.location.href = href;
     }
   };
@@ -63,7 +89,7 @@ export function MoreModal({ navLinks, setShowMore, onLinkClick }: { navLinks: Na
         tabIndex={0}
       >
         <span style={{ color: '#14B8A6', fontSize: 22, display: 'flex', alignItems: 'center' }}>
-          {navLinks.find(link => link.name === "Trips")?.icon}
+          <FaUmbrellaBeach />
         </span>
         <span className="text-gray-900 font-medium">Trips</span>
       </Link>
@@ -84,7 +110,7 @@ export function MoreModal({ navLinks, setShowMore, onLinkClick }: { navLinks: Na
         role="menuitem"
         tabIndex={0}
       >
-        <span style={{ color: opt.color, fontSize: 22, display: 'flex', alignItems: 'center' }}>{opt.icon(navLinks)}</span>
+        <span style={{ color: opt.color, fontSize: 22, display: 'flex', alignItems: 'center' }}>{opt.icon()}</span>
         <span className="text-gray-900 font-medium">{opt.label}</span>
       </Link>
       {idx < dropdownOptions.length - 1 && (
@@ -118,54 +144,296 @@ export function MoreModal({ navLinks, setShowMore, onLinkClick }: { navLinks: Na
   );
 }
 
-export interface NavLink {
-  name: string;
-  href: string;
-  icon?: React.ReactNode;
-  color?: string;
-  dropdown?: boolean;
-  special?: boolean;
-}
-
-interface NavLinksProps {
-  navLinks: NavLink[];
-  onLinkClick?: () => void;
-  variant?: "desktop" | "mobile";
-  setShowMore?: (v: boolean) => void;
-}
-
-export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", setShowMore }: NavLinksProps) {
+// Beautiful Mega Menu Component for Holidays
+function HolidayMegaMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const router = useRouter();
+  const menuRef = useRef<HTMLDivElement>(null);
+  
+  const handleNavigation = (href: string) => {
+    onClose();
+    router.push(href);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen, onClose]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div 
+      ref={menuRef}
+      className="fixed top-[150px] left-1/2 transform -translate-x-1/2 w-[1000px] max-w-[95vw] bg-white rounded-xl shadow-2xl border-2 border-[#FFD166] p-6 z-50"
+      style={{ 
+        boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(255,209,102,0.2)',
+        background: 'linear-gradient(135deg, #ffffff 0%, #fefefe 100%)'
+      }}
+    >
+      
+      {/* Header - More Compact */}
+      <div className="mb-6 text-center">
+        <h3 className="text-2xl font-bold text-[#0057B7] mb-2">Explore Nepal with Us</h3>
+        <p className="text-gray-600 text-sm">Discover amazing destinations, thrilling activities, and unforgettable experiences</p>
+      </div>
+      
+      {/* Grid Layout - Compact */}
+      <div className="grid grid-cols-3 gap-6">
+        
+        {/* Trips Section */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#14B8A6] to-[#0d9488] flex items-center justify-center">
+              <FaUmbrellaBeach className="text-white text-sm" />
+            </div>
+            <h4 className="font-bold text-[#0057B7] text-lg">Trips</h4>
+          </div>
+          {holidayMegaMenuData.trips.map((item, idx) => (
+            <Link
+              key={idx}
+              href={item.href}
+              className="flex items-center gap-3 p-2 rounded-lg transition-all duration-300 hover:bg-gradient-to-r hover:from-[#FFF7E0] hover:to-[#FEF3CD] hover:shadow-sm group"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavigation(item.href);
+              }}
+            >
+              <span className="text-[#14B8A6] group-hover:text-[#0d9488] transition-colors duration-300 text-base">
+                {item.icon}
+              </span>
+              <span className="text-gray-700 font-medium group-hover:text-[#0057B7] transition-colors duration-300 text-sm">
+                {item.name}
+              </span>
+            </Link>
+          ))}
+        </div>
+
+        {/* Destinations Section */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#D72631] to-[#b91c1c] flex items-center justify-center">
+              <FaMapMarkedAlt className="text-white text-sm" />
+            </div>
+            <h4 className="font-bold text-[#0057B7] text-lg">Destinations</h4>
+          </div>
+          {holidayMegaMenuData.destinations.map((item, idx) => (
+            <Link
+              key={idx}
+              href={item.href}
+              className="flex items-center gap-3 p-2 rounded-lg transition-all duration-300 hover:bg-gradient-to-r hover:from-[#FFF7E0] hover:to-[#FEF3CD] hover:shadow-sm group"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavigation(item.href);
+              }}
+            >
+              <span className="text-[#D72631] group-hover:text-[#b91c1c] transition-colors duration-300 text-base">
+                {item.icon}
+              </span>
+              <span className="text-gray-700 font-medium group-hover:text-[#0057B7] transition-colors duration-300 text-sm">
+                {item.name}
+              </span>
+            </Link>
+          ))}
+        </div>
+
+        {/* Activities Section */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#FFD166] to-[#f59e0b] flex items-center justify-center">
+              <FaHiking className="text-white text-sm" />
+            </div>
+            <h4 className="font-bold text-[#0057B7] text-lg">Activities</h4>
+          </div>
+          {holidayMegaMenuData.activities.map((item, idx) => (
+            <Link
+              key={idx}
+              href={item.href}
+              className="flex items-center gap-3 p-2 rounded-lg transition-all duration-300 hover:bg-gradient-to-r hover:from-[#FFF7E0] hover:to-[#FEF3CD] hover:shadow-sm group"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavigation(item.href);
+              }}
+            >
+              <span className="text-[#FFD166] group-hover:text-[#f59e0b] transition-colors duration-300 text-base">
+                {item.icon}
+              </span>
+              <span className="text-gray-700 font-medium group-hover:text-[#0057B7] transition-colors duration-300 text-sm">
+                {item.name}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer CTA - More Compact */}
+      <div className="mt-4 pt-4 border-t border-[#FFD166]/30 text-center">
+        <Link
+          href="/trips"
+          className="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-[#0057B7] to-[#003D82] text-white font-semibold text-sm rounded-lg hover:from-[#003D82] hover:to-[#0057B7] transition-all duration-300 hover:shadow-lg transform hover:scale-105"
+          onClick={(e) => {
+            e.preventDefault();
+            handleNavigation("/trips");
+          }}
+        >
+          <FaUmbrellaBeach className="text-sm" />
+          <span>View All Trips</span>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// Beautiful More Dropdown Component
+function MoreDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const router = useRouter();
+  const menuRef = useRef<HTMLDivElement>(null);
+  
+  const handleNavigation = (href: string) => {
+    onClose();
+    router.push(href);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen, onClose]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div 
+      ref={menuRef}
+      className="absolute top-full right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border-2 border-[#FFD166] p-4 z-50"
+      style={{ 
+        boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(255,209,102,0.2)',
+        background: 'linear-gradient(135deg, #ffffff 0%, #fefefe 100%)'
+      }}
+    >
+      
+      {/* Header */}
+      <div className="mb-4 pb-3 border-b border-[#FFD166]/30">
+        <h3 className="text-lg font-bold text-[#0057B7]">More Options</h3>
+        <p className="text-gray-600 text-xs">Explore more content and information</p>
+      </div>
+      
+      {/* Links */}
+      <div className="space-y-2">
+        {/* Blogs */}
+        <Link
+          href="/blogs"
+          className="flex items-center gap-3 p-3 rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-[#FFF0F0] hover:to-[#FFE5E5] hover:shadow-md group"
+          onClick={(e) => {
+            e.preventDefault();
+            handleNavigation("/blogs");
+          }}
+        >
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#D72631] to-[#b91c1c] flex items-center justify-center">
+            <FaNewspaper className="text-white text-sm" />
+          </div>
+          <div className="flex-1">
+            <span className="block text-gray-800 font-semibold group-hover:text-[#D72631] transition-colors duration-300">
+              Blogs
+            </span>
+            <span className="block text-gray-500 text-xs">Travel stories & tips</span>
+          </div>
+        </Link>
+
+        {/* About */}
+        <Link
+          href="/about"
+          className="flex items-center gap-3 p-3 rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-[#F0F7FF] hover:to-[#E5F1FF] hover:shadow-md group"
+          onClick={(e) => {
+            e.preventDefault();
+            handleNavigation("/about");
+          }}
+        >
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#0057B7] to-[#003D82] flex items-center justify-center">
+            <FaInfoCircle className="text-white text-sm" />
+          </div>
+          <div className="flex-1">
+            <span className="block text-gray-800 font-semibold group-hover:text-[#0057B7] transition-colors duration-300">
+              About Us
+            </span>
+            <span className="block text-gray-500 text-xs">Our story & mission</span>
+          </div>
+        </Link>
+
+        {/* Contact */}
+        <Link
+          href="/contact"
+          className="flex items-center gap-3 p-3 rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-[#FFFBF0] hover:to-[#FFF7E5] hover:shadow-md group"
+          onClick={(e) => {
+            e.preventDefault();
+            handleNavigation("/contact");
+          }}
+        >
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#FFD166] to-[#f59e0b] flex items-center justify-center">
+            <FaPhoneAlt className="text-white text-sm" />
+          </div>
+          <div className="flex-1">
+            <span className="block text-gray-800 font-semibold group-hover:text-[#FFD166] transition-colors duration-300">
+              Contact
+            </span>
+            <span className="block text-gray-500 text-xs">Get in touch with us</span>
+          </div>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", setShowMore }: { navLinks: NavLink[]; onLinkClick?: () => void; variant?: "desktop" | "mobile"; setShowMore?: (v: boolean) => void }) {
+  const router = useRouter();
+  const [holidaysOpen, setHolidaysOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const holidaysTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const moreTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   
   // Prefetch critical routes for instant navigation
   React.useEffect(() => {
-    const criticalRoutes = ['/about', '/contact', '/login', '/register', '/dashboard'];
+    const criticalRoutes = ['/about', '/contact', '/login', '/register', '/dashboard', '/trips', '/blogs'];
     
-    // Aggressive prefetching for all critical routes
     criticalRoutes.forEach(route => {
       router.prefetch(route);
     });
     
-    // Mobile-specific optimizations
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
     if (isMobile) {
-      // On mobile, prefetch routes more aggressively
       criticalRoutes.forEach(route => {
-        // Prefetch multiple times to ensure it's cached
         router.prefetch(route);
         setTimeout(() => router.prefetch(route), 100);
         setTimeout(() => router.prefetch(route), 500);
       });
     }
     
-    // Also prefetch on hover for even faster navigation (desktop)
     if (!isMobile) {
       const prefetchOnHover = (href: string) => {
         router.prefetch(href);
       };
       
-      // Add hover listeners for critical links
       const links = document.querySelectorAll('a[href^="/"]');
       links.forEach(link => {
         link.addEventListener('mouseenter', () => {
@@ -180,25 +448,66 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
 
   const handleNavigation = (href: string) => {
     if (onLinkClick) onLinkClick();
-    // Use Next.js router for instant client-side navigation
     router.push(href);
   };
 
   const handleMobileNavigation = (href: string) => {
-    // For mobile, use the most aggressive optimization
-    // Close drawer immediately and navigate instantly
     if (onLinkClick) onLinkClick();
     
-    // Use a more direct approach for mobile devices
-    // This ensures maximum speed on mobile
     try {
-      // Try Next.js router first for client-side navigation
       router.push(href);
     } catch {
-      // Fallback to direct navigation if router fails
       window.location.href = href;
     }
   };
+
+  // Holidays dropdown handlers
+  const handleHolidaysMouseEnter = () => {
+    if (holidaysTimeoutRef.current) {
+      clearTimeout(holidaysTimeoutRef.current);
+    }
+    setHolidaysOpen(true);
+  };
+
+  const handleHolidaysMouseLeave = () => {
+    holidaysTimeoutRef.current = setTimeout(() => {
+      setHolidaysOpen(false);
+    }, 150);
+  };
+
+  const handleHolidaysClick = () => {
+    setHolidaysOpen(!holidaysOpen);
+  };
+
+  // More dropdown handlers
+  const handleMoreMouseEnter = () => {
+    if (moreTimeoutRef.current) {
+      clearTimeout(moreTimeoutRef.current);
+    }
+    setMoreOpen(true);
+  };
+
+  const handleMoreMouseLeave = () => {
+    moreTimeoutRef.current = setTimeout(() => {
+      setMoreOpen(false);
+    }, 150);
+  };
+
+  const handleMoreClick = () => {
+    setMoreOpen(!moreOpen);
+  };
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (holidaysTimeoutRef.current) {
+        clearTimeout(holidaysTimeoutRef.current);
+      }
+      if (moreTimeoutRef.current) {
+        clearTimeout(moreTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (variant === "desktop") {
     return (
@@ -232,12 +541,14 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
               >
                 <span
                   style={{
-                    color: link.color || '#0057B7',
+                    color: link.color || (link.name === "Home" ? "#FFD166" : "#0057B7"),
                     fontSize: 22,
                     display: 'flex',
                     alignItems: 'center',
                     filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.10))',
                     marginRight: 8,
+                    minWidth: 22,
+                    minHeight: 22,
                   }}
                 >
                   {link.icon}
@@ -250,12 +561,19 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
               </Link>
             </li>
           ))}
-          {/* Holidays Dropdown */}
+          
+          {/* Holidays Mega Menu */}
           {navLinks.find(link => link.name === "Holidays") && (
-            <li key="Holidays" className="relative group holidays-nav-item">
-              <DropdownMenu modal={typeof window !== 'undefined' && window.innerWidth >= 768 ? false : true}>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2 lg:px-3 py-1 md:py-1.5 lg:py-2 font-semibold text-xs md:text-sm lg:text-base uppercase tracking-wide transition-all duration-300 rounded-xl text-white hover:bg-white/10">
+            <li 
+              key="Holidays" 
+              className="relative group holidays-nav-item"
+              onMouseEnter={handleHolidaysMouseEnter}
+              onMouseLeave={handleHolidaysMouseLeave}
+            >
+              <button 
+                className="flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2 lg:px-3 py-1 md:py-1.5 lg:py-2 font-semibold text-xs md:text-sm lg:text-base uppercase tracking-wide transition-all duration-300 rounded-xl text-white hover:bg-white/10"
+                onClick={handleHolidaysClick}
+              >
                     <span style={{ color: '#FFD166', fontSize: 22, display: 'flex', alignItems: 'center', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.10))', marginRight: 8 }}>
                       {navLinks.find(link => link.name === "Holidays")?.icon}
                     </span>
@@ -265,7 +583,7 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
                       height="12"
                       fill="none"
                       viewBox="0 0 20 20"
-                      className="ml-1 transition-transform duration-300 group-hover:rotate-180"
+                  className={`ml-1 transition-transform duration-300 ${holidaysOpen ? "rotate-180" : ""}`}
                     >
                       <path
                         d="M7 8l3 3 3-3"
@@ -276,32 +594,22 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
                       />
                     </svg>
                   </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end"
-                   className="bg-white border-2 border-[#FFD166] rounded-xl shadow-xl p-2 min-w-[180px]"
-                   style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
-                 >
-                  <DropdownMenuItem asChild className="rounded-lg transition-all duration-200 hover:bg-[#FFF7E0] hover:text-[#14B8A6] font-semibold text-base px-3 py-2">
-                    <Link href="/trips" className="flex items-center gap-2" onClick={(e) => {
-                      e.preventDefault();
-                      handleNavigation("/trips");
-                    }}>
-                      <span style={{ color: '#14B8A6', fontSize: 20, display: 'flex', alignItems: 'center' }}>
-                        {navLinks.find(link => link.name === "Trips")?.icon}
-                      </span>
-                      Trips
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <HolidayMegaMenu isOpen={holidaysOpen} onClose={() => setHolidaysOpen(false)} />
             </li>
           )}
+          
           {/* More Dropdown */}
           {navLinks.find(link => link.name === "More") && (
-            <li key="More" className="relative group more-nav-item">
-              <DropdownMenu modal={typeof window !== 'undefined' && window.innerWidth >= 768 ? false : true}>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2 lg:px-3 py-1 md:py-1.5 lg:py-2 font-semibold text-xs md:text-sm lg:text-base uppercase tracking-wide transition-all duration-300 rounded-xl text-white hover:bg-white/10">
+            <li 
+              key="More" 
+              className="relative group more-nav-item"
+              onMouseEnter={handleMoreMouseEnter}
+              onMouseLeave={handleMoreMouseLeave}
+            >
+              <button 
+                className="flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2 lg:px-3 py-1 md:py-1.5 lg:py-2 font-semibold text-xs md:text-sm lg:text-base uppercase tracking-wide transition-all duration-300 rounded-xl text-white hover:bg-white/10"
+                onClick={handleMoreClick}
+              >
                     <span style={{ color: '#888', fontSize: 22, display: 'flex', alignItems: 'center', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.10))', marginRight: 8 }}>
                       {navLinks.find(link => link.name === "More")?.icon}
                     </span>
@@ -311,7 +619,7 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
                       height="12"
                       fill="none"
                       viewBox="0 0 20 20"
-                      className="ml-1 transition-transform duration-300 group-hover:rotate-180"
+                  className={`ml-1 transition-transform duration-300 ${moreOpen ? "rotate-180" : ""}`}
                     >
                       <path
                         d="M7 8l3 3 3-3"
@@ -322,49 +630,11 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
                       />
                     </svg>
                   </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end"
-                   className="bg-white border-2 border-[#FFD166] rounded-xl shadow-xl p-2 min-w-[180px]"
-                   style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
-                 >
-                  <DropdownMenuItem asChild className="rounded-lg transition-all duration-200 hover:bg-[#FFF7E0] hover:text-[#D72631] font-semibold text-base px-3 py-2">
-                    <Link href="/blogs" className="flex items-center gap-2" onClick={(e) => {
-                      e.preventDefault();
-                      handleNavigation("/blogs");
-                    }}>
-                      <span style={{ color: '#D72631', fontSize: 20, display: 'flex', alignItems: 'center' }}>
-                        {navLinks.find(link => link.name === "Blogs")?.icon}
-                      </span>
-                      Blogs
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="rounded-lg transition-all duration-200 hover:bg-[#FFF7E0] hover:text-[#0057B7] font-semibold text-base px-3 py-2">
-                    <Link href="/about" className="flex items-center gap-2" onClick={(e) => {
-                      e.preventDefault();
-                      handleNavigation("/about");
-                    }}>
-                      <span style={{ color: '#0057B7', fontSize: 20, display: 'flex', alignItems: 'center' }}>
-                        <FaInfoCircle />
-                      </span>
-                      About
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="rounded-lg transition-all duration-200 hover:bg-[#FFF7E0] hover:text-[#FFD166] font-semibold text-base px-3 py-2">
-                    <Link href="/contact" className="flex items-center gap-2" onClick={(e) => {
-                      e.preventDefault();
-                      handleNavigation("/contact");
-                    }}>
-                      <span style={{ color: '#FFD166', fontSize: 20, display: 'flex', alignItems: 'center' }}>
-                        <FaPhoneAlt />
-                      </span>
-                      Contact
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <MoreDropdown isOpen={moreOpen} onClose={() => setMoreOpen(false)} />
             </li>
                     )}
         </div>
+        
         {/* Social Media Icons */}
         <div className="hidden md:flex items-center gap-2 ml-4">
           <a href="https://www.facebook.com/brothersholidaysadventure" target="_blank" rel="noopener noreferrer" className="transition-transform duration-200 hover:scale-110">
@@ -391,6 +661,7 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
       </ul>
     );
   }
+  
   // Mobile variant
   return (
     <div className="flex flex-col gap-2 w-full mb-6">
@@ -418,11 +689,24 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
             tabIndex={0}
             aria-label={link.name}
           >
-            <span className="text-xl">{link.icon}</span>
+            <span 
+              className="text-xl"
+              style={{ 
+                color: link.name === "Home" ? "#FFD166" : (link.color || "#333"),
+                minWidth: 24,
+                minHeight: 24,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              {link.icon}
+            </span>
             <span className="flex-1 font-bold">{link.name}</span>
           </Link>
         </div>
       ))}
+      
       {/* Holidays Dropdown for Mobile */}
       {navLinks.find(link => link.name === "Holidays") && (
         <div className="relative w-full">
@@ -441,6 +725,7 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
           </button>
         </div>
       )}
+      
       {/* More Dropdown for Mobile */}
       {navLinks.find(link => link.name === "More") && (
         <div className="relative w-full">

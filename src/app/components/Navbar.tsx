@@ -6,7 +6,7 @@ import Logo from "./navbar/Logo";
 import NavLinks, { NavLink } from "./navbar/NavLinks";
 import MobileDrawer from "./navbar/MobileDrawer";
 import MobileActionBar from "./navbar/MobileActionBar";
-import { FaHome, FaEllipsisH, FaPhoneAlt, FaUser, FaSignOutAlt, FaEnvelope, FaCalendarAlt, FaUmbrellaBeach, FaNewspaper } from "react-icons/fa";
+import { FaHome, FaEllipsisH, FaPhoneAlt, FaUser, FaSignOutAlt, FaEnvelope, FaCalendarAlt, FaUmbrellaBeach } from "react-icons/fa";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -56,13 +56,7 @@ export default function Navbar() {
         name: "Home",
         href: "/",
         icon: <FaHome />,
-        color: "#0057B7",
-      },
-      {
-        name: "Blogs",
-        href: "/blogs",
-        icon: <FaNewspaper />,
-        color: "#D72631",
+        color: "#FFD166", // Changed from blue to gold for better visibility
       },
       {
         name: "Holidays",
@@ -83,7 +77,7 @@ export default function Navbar() {
     // Only add dashboard link if user is admin and component is mounted
     // Use cached auth status for better performance
     if (mounted && hydrated && user && isAdmin) {
-      baseLinks.splice(4, 0, { name: "Dashboard", href: "/dashboard", icon: <FaUser />, color: "#fff" });
+      baseLinks.splice(3, 0, { name: "Dashboard", href: "/dashboard", icon: <FaUser />, color: "#fff" });
     }
 
     return baseLinks;
@@ -304,7 +298,7 @@ export default function Navbar() {
       {!mobileMenuOpen && <MobileActionBar />}
 
       {/* Bottom Navigation */}
-      <nav className="w-full shadow-lg relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${PALETTE.blue} 0%, ${PALETTE.darkBlue} 100%)` }}>
+      <nav className="w-full shadow-lg relative" style={{ background: `linear-gradient(135deg, ${PALETTE.blue} 0%, ${PALETTE.darkBlue} 100%)` }}>
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 left-1/4 w-32 h-32 bg-gold-400 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-24 h-24 bg-red-400 rounded-full blur-3xl" />

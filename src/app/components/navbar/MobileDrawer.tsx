@@ -289,7 +289,7 @@ export default function MobileDrawer({ open, setOpen, navLinks, user, hydrated =
       </nav>
       {/* Render More modal at the end so it overlays all drawer content */}
       {showMore && (
-        <MoreModal navLinks={navLinks} setShowMore={setShowMore} onLinkClick={() => setOpen(false)} />
+        <MoreModal setShowMore={setShowMore} onLinkClick={() => setOpen(false)} />
       )}
     </div>
   );
