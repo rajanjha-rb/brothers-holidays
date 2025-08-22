@@ -66,6 +66,12 @@ export default function Navbar() {
         dropdown: true,
       },
       {
+        name: "Packages",
+        href: "/packages",
+        icon: <FaUmbrellaBeach />,
+        color: "#14B8A6",
+      },
+      {
         name: "More",
         href: "#",
         icon: <FaEllipsisH />,

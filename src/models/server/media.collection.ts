@@ -13,9 +13,9 @@ export default async function createMediaCollection() {
       // Create collection if it does not exist
       await databases.createCollection(db, mediaCollection, mediaCollection, [
         Permission.read("any"),
-        Permission.create("users"),
-        Permission.update("users"),
-        Permission.delete("users"),
+        Permission.create("any"), // Allow any user to create
+        Permission.update("any"), // Allow any user to update
+        Permission.delete("any"), // Allow any user to delete
       ]);
     // Media collection created successfully
     } catch {

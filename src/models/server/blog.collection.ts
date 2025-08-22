@@ -14,10 +14,10 @@ export default async function createBlogCollection() {
       // Create collection if it does not exist
       await databases.createCollection(db, blogCollection, blogCollection, [
         Permission.read("any"),
-        Permission.create("users"),
-        Permission.update("users"),
-        Permission.delete("users"),
-      ]    );
+        Permission.create("any"), // Allow any user to create
+        Permission.update("any"), // Allow any user to update
+        Permission.delete("any"), // Allow any user to delete
+      ]);
     // Blog collection created successfully
     } catch {
       // Error creating blog collection silently

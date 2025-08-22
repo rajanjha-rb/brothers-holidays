@@ -1,0 +1,210 @@
+nohup: ignoring input
+
+> brothers-holidays@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.3.5
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.67:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 2.9s
+ ○ Compiling /api/health-check ...
+ ✓ Compiled /api/health-check in 1322ms (449 modules)
+🔍 Server config - Environment variables: {
+  endpoint: 'https://cloud.appwrite.io/v1',
+  projectId: '6891de420009dfe932a0',
+  apiKeySet: true,
+  apiKeyLength: 265
+}
+🏥 HEALTH CHECK: Starting comprehensive system health check...
+✅ Database connection: Healthy
+✅ Collection blogs: Healthy (4 documents)
+✅ Collection trips: Healthy (3 documents)
+✅ Collection activities: Healthy (1 documents)
+✅ Collection media: Healthy (2 documents)
+✅ Collection packages: Healthy (0 documents)
+✅ Storage: Healthy
+❌ Environment variables: Unhealthy
+🏥 HEALTH CHECK COMPLETE: Overall status: degraded (87.5%)
+ GET /api/health-check 200 in 14354ms
+ ○ Compiling /api/packages/test ...
+ ✓ Compiled /api/packages/test in 713ms (451 modules)
+🔍 Server config - Environment variables: {
+  endpoint: 'https://cloud.appwrite.io/v1',
+  projectId: '6891de420009dfe932a0',
+  apiKeySet: true,
+  apiKeyLength: 265
+}
+=== PACKAGE COLLECTION TEST START ===
+Package collection found: packages
+Can list documents: 0 found
+ GET /api/packages/test 200 in 2027ms
+ ✓ Compiled /api/packages/create in 504ms (455 modules)
+🔍 Server config - Environment variables: {
+  endpoint: 'https://cloud.appwrite.io/v1',
+  projectId: '6891de420009dfe932a0',
+  apiKeySet: true,
+  apiKeyLength: 265
+}
+=== PACKAGE CREATION DEBUG START ===
+1. Package creation request received
+2. Request object type: object
+3. Request method: POST
+4. Request headers: {
+  accept: '*/*',
+  'content-length': '300',
+  'content-type': 'application/json',
+  host: 'localhost:3000',
+  'user-agent': 'curl/8.5.0',
+  'x-forwarded-for': '::1',
+  'x-forwarded-host': 'localhost:3000',
+  'x-forwarded-port': '3000',
+  'x-forwarded-proto': 'http'
+}
+5. Package collection exists, proceeding...
+7. About to parse request.json()...
+8. Request body parsed successfully: {
+  name: 'Test Package',
+  overview: 'Test overview',
+  costInclude: [],
+  costExclude: [],
+  itinerary: [ { day: 1, title: 'Day 1', description: 'Test day' } ],
+  featuredImage: 'test',
+  featuredImageBucket: 'featuredImage',
+  galleryImages: [],
+  faq: [],
+  tags: [],
+  duration: '1 day',
+  location: 'Test',
+  price: '$100'
+}
+9. Request body type: object
+10. Request body keys: [
+  'name',
+  'overview',
+  'costInclude',
+  'costExclude',
+  'itinerary',
+  'featuredImage',
+  'featuredImageBucket',
+  'galleryImages',
+  'faq',
+  'tags',
+  'duration',
+  'location',
+  'price'
+]
+11. Extracted individual fields:
+   - name: Test Package | type: string | length: 12
+   - overview: Test overview | type: string | length: 13
+   - costInclude: [] | type: object | isArray: true
+   - costExclude: [] | type: object | isArray: true
+   - itinerary: [ { day: 1, title: 'Day 1', description: 'Test day' } ] | type: object | isArray: true
+   - featuredImage: test | type: string
+   - featuredImageBucket: featuredImage | type: string
+   - galleryImages: [] | type: object | isArray: true
+   - faq: [] | type: object | isArray: true
+   - tags: [] | type: object | isArray: true
+   - duration: 1 day | type: string
+   - location: Test | type: string
+   - price: $100 | type: string
+12. Starting validation...
+13. VALIDATION PASSED: Package name is present
+14. Preparing package data for database...
+15. Package data prepared successfully
+Package data prepared for database: {
+  name: 'Test Package',
+  overview: 'Test overview...',
+  costInclude: [],
+  costExclude: [],
+  itinerary: '[{"day":1,"title":"Day 1","description":"Test day"}]',
+  featuredImage: 'test',
+  featuredImageBucket: 'featuredImage',
+  galleryImages: [],
+  faq: '[]',
+  tags: [],
+  duration: '1 day',
+  location: 'Test',
+  price: '$100'
+}
+16. About to create document in database...
+17. Database ID: brothers-holidays
+18. Collection name: packages
+19. Package data to be inserted: {
+  "name": "Test Package",
+  "slug": "test-package",
+  "overview": "Test overview",
+  "costInclude": [],
+  "costExclude": [],
+  "itinerary": "[{\"day\":1,\"title\":\"Day 1\",\"description\":\"Test day\"}]",
+  "featuredImage": "test",
+  "featuredImageBucket": "featuredImage",
+  "galleryImages": [],
+  "faq": "[]",
+  "tags": [],
+  "duration": "1 day",
+  "location": "Test",
+  "price": "$100"
+}
+20. Calling databases.createDocument...
+21. Document created successfully!
+    - Result ID: 68a65448001fb27e0b2b
+    - Result type: object
+    - Result keys: [
+  'name',          'slug',
+  'overview',      'costInclude',
+  'costExclude',   'itinerary',
+  'featuredImage', 'featuredImageBucket',
+  'galleryImages', 'faq',
+  'tags',          'duration',
+  'location',      'price',
+  '$id',           '$permissions',
+  '$createdAt',    '$updatedAt',
+  '$sequence',     '$databaseId',
+  '$collectionId'
+]
+22. Preparing success response...
+23. Success response prepared: {
+  "success": true,
+  "message": "Package created successfully",
+  "package": {
+    "$id": "68a65448001fb27e0b2b",
+    "name": "Test Package",
+    "overview": "Test overview",
+    "costInclude": [],
+    "costExclude": [],
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Day 1",
+        "description": "Test day"
+      }
+    ],
+    "featuredImage": "test",
+    "featuredImageBucket": "featuredImage",
+    "galleryImages": [],
+    "faq": [],
+    "tags": [],
+    "duration": "1 day",
+    "location": "Test",
+    "price": "$100",
+    "$createdAt": "2025-08-20T23:03:36.699+00:00",
+    "$updatedAt": "2025-08-20T23:03:36.699+00:00"
+  }
+}
+24. === PACKAGE CREATION DEBUG END ===
+ POST /api/packages/create 200 in 1758ms
+=== PACKAGE COLLECTION TEST START ===
+Package collection found: packages
+Can list documents: 1 found
+ GET /api/packages/test 200 in 903ms
+ ✓ Compiled /api/packages/list in 297ms (457 modules)
+🔍 Server config - Environment variables: {
+  endpoint: 'https://cloud.appwrite.io/v1',
+  projectId: '6891de420009dfe932a0',
+  apiKeySet: true,
+  apiKeyLength: 265
+}
+ GET /api/packages/list 200 in 821ms

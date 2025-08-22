@@ -413,7 +413,7 @@ export default function NavLinks({ navLinks, onLinkClick, variant = "desktop", s
   
   // Prefetch critical routes for instant navigation
   React.useEffect(() => {
-    const criticalRoutes = ['/about', '/contact', '/login', '/register', '/dashboard', '/trips', '/blogs'];
+    const criticalRoutes = ['/about', '/contact', '/login', '/register', '/dashboard', '/trips', '/blogs', '/packages'];
     
     criticalRoutes.forEach(route => {
       router.prefetch(route);

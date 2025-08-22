@@ -14,9 +14,9 @@ export default async function createTripCollection() {
       // Create collection if it does not exist
       await databases.createCollection(db, tripCollection, tripCollection, [
         Permission.read("any"),
-        Permission.create("users"),
-        Permission.update("users"),
-        Permission.delete("users"),
+        Permission.create("any"), // Allow any user to create
+        Permission.update("any"), // Allow any user to update
+        Permission.delete("any"), // Allow any user to delete
       ]);
     // Trip collection created successfully
     } catch {

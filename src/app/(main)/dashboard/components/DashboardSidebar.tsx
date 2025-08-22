@@ -19,7 +19,8 @@ import {
   FaImages,
   FaBars,
   FaTimes,
-  FaChevronRight
+  FaChevronRight,
+  FaGlobe
 } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 
@@ -65,6 +66,48 @@ const menuItems = [
     bgColor: "hover:bg-cyan-50"
   },
   {
+    label: "All Destinations",
+    href: "/dashboard/alldestinations",
+    icon: FaGlobe,
+    color: "text-indigo-600",
+    bgColor: "hover:bg-indigo-50"
+  },
+  {
+    label: "Add New Destination",
+    href: "/dashboard/addnewdestination",
+    icon: FaMapMarkerAlt,
+    color: "text-violet-600",
+    bgColor: "hover:bg-violet-50"
+  },
+  {
+    label: "All Activities",
+    href: "/dashboard/allactivities",
+    icon: FaRoute,
+    color: "text-emerald-600",
+    bgColor: "hover:bg-emerald-50"
+  },
+  {
+    label: "Add New Activity",
+    href: "/dashboard/addnewactivity",
+    icon: FaMapMarkerAlt,
+    color: "text-amber-600",
+    bgColor: "hover:bg-amber-50"
+  },
+  {
+    label: "All Packages",
+    href: "/dashboard/allpackages",
+    icon: FaRoute,
+    color: "text-rose-600",
+    bgColor: "hover:bg-rose-50"
+  },
+  {
+    label: "Add New Package",
+    href: "/dashboard/addnewpackage",
+    icon: FaMapMarkerAlt,
+    color: "text-fuchsia-600",
+    bgColor: "hover:bg-fuchsia-50"
+  },
+  {
     label: "Admin Management",
     href: "/dashboard/admin-management",
     icon: FaUsers,
@@ -75,8 +118,8 @@ const menuItems = [
     label: "Media",
     href: "/dashboard/media",
     icon: FaImages,
-    color: "text-indigo-600",
-    bgColor: "hover:bg-indigo-50"
+    color: "text-pink-600",
+    bgColor: "hover:bg-pink-50"
   }
 ];
 
@@ -89,12 +132,6 @@ const settingsItem = {
 };
 
 const comingSoonItems = [
-  {
-    label: "Destinations",
-    href: "/dashboard/destinations",
-    icon: FaMapMarkerAlt,
-    disabled: true
-  },
   {
     label: "Tags",
     href: "/dashboard/tags",
@@ -235,7 +272,7 @@ export default function DashboardSidebar({ isOpen, onToggle }: DashboardSidebarP
                   Coming Soon
                 </p>
                                  <Badge variant="outline" className="ml-auto text-xs">
-                   4 Features
+                   3 Features
                  </Badge>
               </div>
               <div className="space-y-1">

@@ -28,7 +28,7 @@ interface IAuthStore {
   adminCheckInterval: number; // How often to check admin status (30 minutes)
 
   setHydrated(): void;
-  verfiySession(): Promise<void>;
+  verifySession(): Promise<void>;
   checkAdminStatus(): Promise<void>;
   shouldCheckAuth(): boolean; // Check if we need to verify auth again
   shouldCheckAdmin(): boolean; // Check if we need to verify admin status again
@@ -125,7 +125,7 @@ export const useAuthStore = create<IAuthStore>()(
         return now - adminStatus.lastChecked > adminCheckInterval;
       },
 
-      async verfiySession() {
+      async verifySession() {
         // Check if we need to verify auth again
         if (!get().shouldCheckAuth()) {
           console.log('🔍 Using cached auth status');
@@ -404,7 +404,7 @@ export const clearAuthState = () => {
 export const forceAuthRefresh = () => {
   const store = useAuthStore.getState();
   store.lastAuthCheck = 0; // Reset auth check timestamp
-  store.verfiySession(); // Force new auth check
+  store.verifySession(); // Force new auth check
 };
 
 // Force admin status refresh when needed

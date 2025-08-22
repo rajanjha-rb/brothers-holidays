@@ -1,262 +1,443 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useAuthState } from "@/store/auth";
-import { Card } from "@/components/ui/card";
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { FaUser, FaUserShield, FaPlus, FaTrash } from "react-icons/fa";
+import { FaDatabase, FaUsers, FaCog, FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";
+import { toast } from "react-hot-toast";
 
-interface User {
-  $id: string;
-  name: string;
-  email: string;
-  labels: string[];
-}
+export default function AdminManagementPage() {
+  const [initializing, setInitializing] = useState(false);
+  const [dbStatus, setDbStatus] = useState<'unknown' | 'healthy' | 'unhealthy'>('unknown');
+  const [testingCollections, setTestingCollections] = useState(false);
+  const [testResults, setTestResults] = useState<Record<string, CollectionTestResult> | null>(null);
+  const [healthCheck, setHealthCheck] = useState(false);
+  const [healthResults, setHealthResults] = useState<HealthCheckResult | null>(null);
 
-export default function AdminManagement() {
-  const { hydrated, loading, isAdmin, adminChecked } = useAuthState();
-  const [users, setUsers] = useState<User[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(true);
-  const [newUserEmail, setNewUserEmail] = useState("");
-  const [processing, setProcessing] = useState(false);
-  const [message, setMessage] = useState("");
+  interface CollectionTestResult {
+    success: boolean;
+    error?: string;
+    testDocumentCreated?: boolean;
+    totalDocuments?: number;
+  }
 
-  useEffect(() => {
-    if (hydrated && !loading && adminChecked && isAdmin) {
-      fetchUsers();
-    }
-  }, [isAdmin, adminChecked, loading, hydrated]);
+  interface HealthCheckResult {
+    timestamp: string;
+    overall: 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
+    checks: {
+      database?: {
+        status: 'healthy' | 'unhealthy';
+        id?: string;
+        name?: string;
+        error?: string;
+      };
+      collections?: Record<string, {
+        status: 'healthy' | 'unhealthy';
+        id?: string;
+        documentCount?: number;
+        accessible: boolean;
+        error?: string;
+      }>;
+      storage?: {
+        status: 'healthy' | 'unhealthy';
+        bucketCount?: number;
+        buckets?: Array<{ id: string; name: string }>;
+        error?: string;
+      };
+      environment?: {
+        status: 'healthy' | 'unhealthy';
+        variables: Record<string, boolean>;
+        allSet: boolean;
+      };
+    };
+    summary?: {
+      totalChecks: number;
+      healthyChecks: number;
+      unhealthyChecks: number;
+      healthPercentage: number;
+    };
+  }
 
-  const fetchUsers = async () => {
+  const initializeDatabase = async () => {
+    setInitializing(true);
     try {
-      setLoadingUsers(true);
-      // Note: This would require a backend API endpoint to fetch users
-      // For now, we'll show a placeholder
-      setUsers([
-        {
-          $id: "1",
-          name: "Admin User",
-          email: "admin@example.com",
-          labels: ["admin"]
+      const response = await fetch('/api/init-db', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        {
-          $id: "2", 
-          name: "Regular User",
-          email: "user@example.com",
-          labels: []
-        }
-      ]);
-    } catch {
-      // Error fetching users silently
-      setMessage("Error fetching users");
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Database initialized successfully!');
+        setDbStatus('healthy');
+      } else {
+        toast.error(data.message || 'Failed to initialize database');
+        setDbStatus('unhealthy');
+      }
+    } catch (error) {
+      console.error('Error initializing database:', error);
+      toast.error('Failed to initialize database');
+      setDbStatus('unhealthy');
     } finally {
-      setLoadingUsers(false);
+      setInitializing(false);
     }
   };
 
-  const assignAdminRole = async (userId: string) => {
+  const checkDatabaseStatus = async () => {
     try {
-      setProcessing(true);
-      setMessage("");
-      
-      // Note: This would require a backend API endpoint to update user labels
-      // For now, we'll show a placeholder
-      setUsers(prev => prev.map(u => 
-        u.$id === userId 
-          ? { ...u, labels: [...u.labels, "admin"] }
-          : u
-      ));
-      
-      setMessage("Admin role assigned successfully!");
-    } catch {
-      // Error assigning admin role silently
-      setMessage("Error assigning admin role");
-    } finally {
-      setProcessing(false);
+      const response = await fetch('/api/init-db');
+      const data = await response.json();
+
+      if (data.success) {
+        setDbStatus('healthy');
+        toast.success('Database is healthy!');
+      } else {
+        setDbStatus('unhealthy');
+        toast.error('Database has issues');
+      }
+    } catch (error) {
+      console.error('Error checking database status:', error);
+      setDbStatus('unhealthy');
+      toast.error('Failed to check database status');
     }
   };
 
-  const removeAdminRole = async (userId: string) => {
+  const testCollections = async () => {
+    setTestingCollections(true);
     try {
-      setProcessing(true);
-      setMessage("");
-      
-      // Note: This would require a backend API endpoint to update user labels
-      // For now, we'll show a placeholder
-      setUsers(prev => prev.map(u => 
-        u.$id === userId 
-          ? { ...u, labels: u.labels.filter(label => label !== "admin") }
-          : u
-      ));
-      
-      setMessage("Admin role removed successfully!");
-    } catch {
-      // Error removing admin role silently
-      setMessage("Error removing admin role");
+      const response = await fetch('/api/test-collections');
+      const data = await response.json();
+
+      if (data.success) {
+        setTestResults(data.results);
+        toast.success('Collection test completed! Check results below.');
+      } else {
+        toast.error(data.message || 'Failed to test collections');
+      }
+    } catch (error) {
+      console.error('Error testing collections:', error);
+      toast.error('Failed to test collections');
     } finally {
-      setProcessing(false);
+      setTestingCollections(false);
     }
   };
 
-  if (loading || !hydrated || !adminChecked) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking permissions...</p>
-        </div>
-      </div>
-    );
-  }
+  const runHealthCheck = async () => {
+    setHealthCheck(true);
+    try {
+      const response = await fetch('/api/health-check');
+      const data = await response.json();
 
-  if (!isAdmin) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">🚫</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600">You don&apos;t have permission to access this page.</p>
-        </div>
-      </div>
-    );
-  }
+      if (data.success) {
+        setHealthResults(data.health);
+        toast.success('Health check completed! Check results below.');
+      } else {
+        toast.error(data.message || 'Failed to run health check');
+      }
+    } catch (error) {
+      console.error('Error running health check:', error);
+      toast.error('Failed to run health check');
+    } finally {
+      setHealthCheck(false);
+    }
+  };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r flex flex-col">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-8">Brothers Holidays</h1>
-          <nav>
-            <ul className="space-y-2">
-              <li>
-                <a href="/dashboard" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">
-                  Dashboard
-                </a>
-              </li>
-              <li>
-                <a href="/dashboard/allblogs" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">
-                  Blogs
-                </a>
-              </li>
-              <li>
-                <a href="/dashboard/admin-management" className="block px-4 py-2 bg-blue-100 text-blue-700 rounded font-medium">
-                  Admin Management
-                </a>
-              </li>
-            </ul>
-          </nav>
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Admin Management</h1>
+          <p className="text-gray-600 mt-2">Manage system settings and database operations</p>
         </div>
-      </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Management</h1>
-            <p className="text-gray-600">Manage user roles and permissions</p>
-          </div>
-
-          {message && (
-            <div className={`mb-6 p-4 rounded-lg ${
-              message.includes("Error") 
-                ? "bg-red-50 border border-red-200 text-red-700" 
-                : "bg-green-50 border border-green-200 text-green-700"
-            }`}>
-              {message}
-            </div>
-          )}
-
-          <Card className="p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">User Management</h2>
-            
-            {loadingUsers ? (
-              <div className="text-center py-8">
-                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading users...</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Database Management */}
+          <Card className="bg-white/80 backdrop-blur-sm border-gray-200/60 hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Database Status</CardTitle>
+              <FaDatabase className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-2xl font-bold text-gray-900">
+                  {dbStatus === 'healthy' && <FaCheckCircle className="text-green-500 inline mr-2" />}
+                  {dbStatus === 'unhealthy' && <FaExclamationTriangle className="text-red-500 inline mr-2" />}
+                  {dbStatus === 'unknown' && <FaCog className="text-gray-500 inline mr-2" />}
+                  {dbStatus === 'healthy' ? 'Healthy' : dbStatus === 'unhealthy' ? 'Issues' : 'Unknown'}
+                </div>
+                <Badge 
+                  variant={dbStatus === 'healthy' ? 'default' : dbStatus === 'unhealthy' ? 'destructive' : 'secondary'}
+                  className="ml-2"
+                >
+                  {dbStatus === 'healthy' ? 'OK' : dbStatus === 'unhealthy' ? 'ERROR' : 'UNKNOWN'}
+                </Badge>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {users.map((user) => (
-                  <div key={user.$id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <Avatar>
-                        <AvatarFallback className="bg-gray-200 text-gray-700">
-                          {user.name.split(" ").map(n => n[0]).join("").toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="font-medium text-gray-900">{user.name}</h3>
-                        <p className="text-sm text-gray-600">{user.email}</p>
-                        <div className="flex gap-2 mt-1">
-                          {user.labels.includes("admin") ? (
-                            <Badge className="bg-blue-100 text-blue-800">
-                              <FaUserShield className="w-3 h-3 mr-1" />
-                              Admin
-                            </Badge>
+              <div className="space-y-2">
+                <Button 
+                  onClick={checkDatabaseStatus}
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full"
+                >
+                  Check Status
+                </Button>
+                <Button 
+                  onClick={initializeDatabase}
+                  disabled={initializing}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  {initializing ? 'Initializing...' : 'Initialize Database'}
+                </Button>
+                <Button 
+                  onClick={testCollections}
+                  disabled={testingCollections}
+                  variant="outline"
+                  size="sm" 
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {testingCollections ? 'Testing...' : 'Test Collections'}
+                </Button>
+                <Button 
+                  onClick={runHealthCheck}
+                  disabled={healthCheck}
+                  variant="outline"
+                  size="sm" 
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {healthCheck ? 'Checking...' : 'Health Check'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* User Management */}
+          <Card className="bg-white/80 backdrop-blur-sm border-gray-200/60 hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">User Management</CardTitle>
+              <FaUsers className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900 mb-2">Active Users</div>
+              <p className="text-xs text-gray-600 mb-4">Manage user accounts and permissions</p>
+              <Button variant="outline" size="sm" className="w-full">
+                View Users
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* System Settings */}
+          <Card className="bg-white/80 backdrop-blur-sm border-gray-200/60 hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">System Settings</CardTitle>
+              <FaCog className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900 mb-2">Configuration</div>
+              <p className="text-xs text-gray-600 mb-4">System configuration and preferences</p>
+              <Button variant="outline" size="sm" className="w-full">
+                Configure
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Database Issues Warning */}
+        {dbStatus === 'unhealthy' && (
+          <Card className="mt-6 bg-red-50 border-red-200">
+            <CardContent className="pt-6">
+              <div className="flex items-start space-x-3">
+                <FaExclamationTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-medium text-red-800">Database Issues Detected</h3>
+                  <p className="text-sm text-red-700 mt-1">
+                    Some collections may be missing or corrupted. Click &quot;Initialize Database&quot; above to attempt to fix these issues.
+                  </p>
+                  <div className="mt-3">
+                    <Button 
+                      onClick={initializeDatabase}
+                      disabled={initializing}
+                      size="sm"
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      {initializing ? 'Fixing...' : 'Fix Database Issues'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Test Results */}
+        {testResults && (
+          <Card className="mt-6 bg-blue-50 border-blue-200">
+            <CardContent className="pt-6">
+              <div className="flex items-start space-x-3">
+                <div className="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                  🧪
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-blue-800 mb-3">Collection Test Results</h3>
+                  <div className="space-y-2">
+                    {Object.entries(testResults).map(([collectionName, result]: [string, CollectionTestResult]) => (
+                      <div key={collectionName} className="flex items-center justify-between p-2 bg-white rounded border">
+                        <span className="text-sm font-medium capitalize">{collectionName}</span>
+                        <div className="flex items-center gap-2">
+                          {result.success ? (
+                            <>
+                              <span className="text-green-600 text-xs">✓ Working</span>
+                              <span className="text-xs text-gray-500">({result.totalDocuments || 0} docs)</span>
+                            </>
                           ) : (
-                            <Badge variant="secondary">
-                              <FaUser className="w-3 h-3 mr-1" />
-                              User
-                            </Badge>
+                            <>
+                              <span className="text-red-600 text-xs">✗ Failed</span>
+                              <span className="text-xs text-gray-500">{result.error}</span>
+                            </>
                           )}
                         </div>
                       </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Health Check Results */}
+        {healthResults && (
+          <Card className="mt-6 bg-purple-50 border-purple-200">
+            <CardContent className="pt-6">
+              <div className="flex items-start space-x-3">
+                <div className="w-5 h-5 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                  🏥
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-purple-800 mb-3">System Health Check Results</h3>
+                  
+                  {/* Overall Status */}
+                  <div className="mb-4 p-3 bg-white rounded border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Overall Status</span>
+                      <Badge 
+                        variant={healthResults.overall === 'healthy' ? 'default' : healthResults.overall === 'degraded' ? 'secondary' : 'destructive'}
+                      >
+                        {healthResults.overall.toUpperCase()}
+                      </Badge>
                     </div>
-                    <div className="flex gap-2">
-                      {user.labels.includes("admin") ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeAdminRole(user.$id)}
-                          disabled={processing}
-                          className="text-red-600 border-red-200 hover:bg-red-50"
-                        >
-                          <FaTrash className="w-4 h-4 mr-1" />
-                          Remove Admin
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => assignAdminRole(user.$id)}
-                          disabled={processing}
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          <FaUserShield className="w-4 h-4 mr-1" />
-                          Make Admin
-                        </Button>
-                      )}
+                    <div className="text-xs text-gray-600">
+                      {healthResults.summary?.healthyChecks} of {healthResults.summary?.totalChecks} checks passed 
+                      ({healthResults.summary?.healthPercentage}%)
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </Card>
 
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Add New User</h2>
-            <div className="flex gap-4">
-              <Input
-                type="email"
-                placeholder="Enter user email"
-                value={newUserEmail}
-                onChange={(e) => setNewUserEmail(e.target.value)}
-                className="flex-1"
-              />
-              <Button disabled={!newUserEmail || processing}>
-                <FaPlus className="w-4 h-4 mr-1" />
-                Add User
-              </Button>
-            </div>
-            <p className="text-sm text-gray-600 mt-2">
-              Note: This feature requires backend implementation to work properly.
-            </p>
+                  {/* Database Status */}
+                  {healthResults.checks?.database && (
+                    <div className="mb-3 p-2 bg-white rounded border">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Database</span>
+                        <Badge variant={healthResults.checks.database.status === 'healthy' ? 'default' : 'destructive'}>
+                          {healthResults.checks.database.status}
+                        </Badge>
+                      </div>
+                      {healthResults.checks.database.status === 'healthy' && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          {healthResults.checks.database.name} ({healthResults.checks.database.id})
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Collections Status */}
+                  {healthResults.checks?.collections && (
+                    <div className="mb-3 p-2 bg-white rounded border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">Collections</span>
+                        <span className="text-xs text-gray-500">
+                          {Object.values(healthResults.checks.collections).filter((c) => c.status === 'healthy').length} of {Object.keys(healthResults.checks.collections).length} healthy
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {healthResults.checks.collections && Object.entries(healthResults.checks.collections).map(([name, result]) => (
+                          <div key={name} className="flex items-center justify-between text-xs">
+                            <span className="capitalize">{name}</span>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={result.status === 'healthy' ? 'default' : 'destructive'} className="text-xs">
+                                {result.status}
+                              </Badge>
+                              {result.status === 'healthy' && result.documentCount !== undefined && (
+                                <span className="text-gray-500">({result.documentCount} docs)</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Storage Status */}
+                  {healthResults.checks?.storage && (
+                    <div className="mb-3 p-2 bg-white rounded border">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Storage</span>
+                        <Badge variant={healthResults.checks.storage.status === 'healthy' ? 'default' : 'destructive'}>
+                          {healthResults.checks.storage.status}
+                        </Badge>
+                      </div>
+                      {healthResults.checks.storage.status === 'healthy' && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          {healthResults.checks.storage.bucketCount} buckets available
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Environment Status */}
+                  {healthResults.checks?.environment && (
+                    <div className="mb-3 p-2 bg-white rounded border">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Environment</span>
+                        <Badge variant={healthResults.checks.environment.status === 'healthy' ? 'default' : 'destructive'}>
+                          {healthResults.checks.environment.status}
+                        </Badge>
+                      </div>
+                      {healthResults.checks.environment.status === 'unhealthy' && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          Missing environment variables
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
           </Card>
-        </div>
-      </main>
+        )}
+
+        {/* Instructions */}
+        <Card className="mt-6 bg-blue-50 border-blue-200">
+          <CardContent className="pt-6">
+            <div className="flex items-start space-x-3">
+              <FaCog className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-medium text-blue-800">Database Management Instructions</h3>
+                <div className="text-sm text-blue-700 mt-2 space-y-1">
+                  <p>• <strong>Check Status:</strong> Verify the current state of your database and collections</p>
+                  <p>• <strong>Initialize Database:</strong> Create missing collections and set up the database structure</p>
+                  <p>• <strong>Fix Issues:</strong> Automatically resolve common database problems</p>
+                  <p className="mt-2 text-xs">
+                    <strong>Note:</strong> If you&apos;re experiencing dashboard access issues, try initializing the database first.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 } 
