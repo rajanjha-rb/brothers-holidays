@@ -16,9 +16,12 @@ export async function PUT(request: NextRequest) {
       galleryImages,
       faq,
       tags,
-      duration,
+      days,
+      nights,
       location,
-      price
+      destinationId,
+      price,
+      bestMonths
     } = await request.json();
 
     if (!id || !name) {
@@ -41,9 +44,12 @@ export async function PUT(request: NextRequest) {
       // Store FAQ as JSON string since Appwrite doesn't support complex objects directly
       faq: Array.isArray(faq) ? JSON.stringify(faq) : "[]",
       tags: Array.isArray(tags) ? tags : [],
-      duration: duration || "",
+      days: days || null,
+      nights: nights || null,
       location: location || "",
-      price: price || ""
+      destinationId: destinationId || "",
+      price: price || "",
+      bestMonths: Array.isArray(bestMonths) ? bestMonths : []
     };
 
     const result = await databases.updateDocument(
@@ -70,9 +76,12 @@ export async function PUT(request: NextRequest) {
         // Parse FAQ back to array for frontend
         faq: typeof result.faq === 'string' ? JSON.parse(result.faq) : result.faq,
         tags: result.tags,
-        duration: result.duration,
+        days: result.days,
+        nights: result.nights,
         location: result.location,
+        destinationId: result.destinationId,
         price: result.price,
+        bestMonths: result.bestMonths || [],
         $createdAt: result.$createdAt,
         $updatedAt: result.$updatedAt
       }

@@ -24,8 +24,10 @@ export async function GET(_request: NextRequest) {
       // Parse FAQ from JSON string back to array
       faq: typeof doc.faq === 'string' ? JSON.parse(doc.faq) : (doc.faq || []),
       tags: doc.tags || [], // Already an array
-      duration: doc.duration,
+      days: doc.days,
+      nights: doc.nights,
       location: doc.location,
+      destinationId: doc.destinationId,
       price: doc.price,
       $createdAt: doc.$createdAt,
       $updatedAt: doc.$updatedAt

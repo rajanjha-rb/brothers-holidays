@@ -5,7 +5,7 @@ import Link from "next/link";
 import OptimizedImage from "@/components/OptimizedImage";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { FaCalendar, FaTags, FaArrowRight, FaSearch, FaRoute, FaMapMarkerAlt, FaClock, FaDollarSign, FaImage } from "react-icons/fa";
+import { FaCalendar, FaTags, FaArrowRight, FaSearch, FaRoute, FaMapMarkerAlt, FaDollarSign, FaImage } from "react-icons/fa";
 import SearchBar from "./SearchBar";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -23,8 +23,10 @@ interface Package {
   galleryImages: string[];
   faq: Array<{ question: string; answer: string }>;
   tags: string[];
-  duration: string;
+  days: number | null;
+  nights: number | null;
   location: string;
+  destinationId: string;
   price: string;
   $createdAt: string;
   $updatedAt: string;
@@ -47,7 +49,6 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
         pkg.name,
         pkg.overview,
         pkg.location,
-        pkg.duration,
         pkg.price,
         ...pkg.tags,
         ...pkg.costInclude,
@@ -334,12 +335,23 @@ export default function PackagesClient({ initialPackages }: PackagesClientProps)
                           <span className="font-medium">{pkg.location}</span>
                         </div>
                       )}
-                      {pkg.duration && (
+
+                      {(pkg.days || pkg.nights) && (
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                            <FaClock className="w-3 h-3 text-blue-500" />
+                          <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                            <FaCalendar className="w-3 h-3 text-purple-500" />
                           </div>
-                          <span className="font-medium">{pkg.duration}</span>
+                          <span className="font-medium">
+                            {pkg.days && pkg.nights ? `${pkg.days}d/${pkg.nights}n` : pkg.days ? `${pkg.days}d` : `${pkg.nights}n`}
+                          </span>
+                        </div>
+                      )}
+                      {pkg.destinationId && (
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
+                            <FaMapMarkerAlt className="w-3 h-3 text-indigo-500" />
+                          </div>
+                          <span className="font-medium">Dest: {pkg.destinationId}</span>
                         </div>
                       )}
                     </div>

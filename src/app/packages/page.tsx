@@ -15,8 +15,10 @@ interface Package {
   galleryImages: string[];
   faq: Array<{ question: string; answer: string }>;
   tags: string[];
-  duration: string;
+  days: number | null;
+  nights: number | null;
   location: string;
+  destinationId: string;
   price: string;
   $createdAt: string;
   $updatedAt: string;
@@ -59,8 +61,10 @@ async function getPackages(): Promise<Package[]> {
         }
       })(),
       tags: Array.isArray(pkg.tags) ? pkg.tags : [],
-      duration: pkg.duration || "",
+      days: pkg.days || null,
+      nights: pkg.nights || null,
       location: pkg.location || "",
+      destinationId: pkg.destinationId || "",
       price: pkg.price || "",
       $createdAt: pkg.$createdAt || "",
       $updatedAt: pkg.$updatedAt || ""

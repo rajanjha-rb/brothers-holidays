@@ -41,9 +41,12 @@ export async function POST(request: NextRequest) {
       galleryImages,
       faq,
       tags,
-      duration,
+      days,
+      nights,
       location,
-      price
+      destinationId,
+      price,
+      bestMonths
     } = requestBody;
 
     console.log("11. Extracted individual fields:");
@@ -57,9 +60,12 @@ export async function POST(request: NextRequest) {
     console.log("   - galleryImages:", galleryImages, "| type:", typeof galleryImages, "| isArray:", Array.isArray(galleryImages));
     console.log("   - faq:", faq, "| type:", typeof faq, "| isArray:", Array.isArray(faq));
     console.log("   - tags:", tags, "| type:", typeof tags, "| isArray:", Array.isArray(tags));
-    console.log("   - duration:", duration, "| type:", typeof duration);
+    console.log("   - days:", days, "| type:", typeof days);
+    console.log("   - nights:", nights, "| type:", typeof nights);
     console.log("   - location:", location, "| type:", typeof location);
+    console.log("   - destinationId:", destinationId, "| type:", typeof destinationId);
     console.log("   - price:", price, "| type:", typeof price);
+    console.log("   - bestMonths:", bestMonths, "| type:", typeof bestMonths, "| isArray:", Array.isArray(bestMonths));
 
     console.log("12. Starting validation...");
     if (!name) {
@@ -89,9 +95,12 @@ export async function POST(request: NextRequest) {
       // Store FAQ as JSON string since Appwrite doesn't support complex objects directly
       faq: Array.isArray(faq) ? JSON.stringify(faq) : "[]",
       tags: Array.isArray(tags) ? tags : [],
-      duration: duration || "",
+      days: days || null,
+      nights: nights || null,
       location: location || "",
-      price: price || ""
+      destinationId: destinationId || "",
+      price: price || "",
+      bestMonths: Array.isArray(bestMonths) ? bestMonths : []
     };
     console.log("15. Package data prepared successfully");
 
@@ -106,9 +115,12 @@ export async function POST(request: NextRequest) {
       galleryImages: packageData.galleryImages,
       faq: packageData.faq,
       tags: packageData.tags,
-      duration: packageData.duration,
+      days: packageData.days,
+      nights: packageData.nights,
       location: packageData.location,
-      price: packageData.price
+      destinationId: packageData.destinationId,
+      price: packageData.price,
+      bestMonths: packageData.bestMonths
     });
 
     console.log("16. About to create document in database...");
@@ -169,8 +181,12 @@ export async function POST(request: NextRequest) {
         faq: typeof result.faq === 'string' ? JSON.parse(result.faq) : result.faq,
         tags: result.tags,
         duration: result.duration,
+        days: result.days,
+        nights: result.nights,
         location: result.location,
+        destinationId: result.destinationId,
         price: result.price,
+        bestMonths: result.bestMonths,
         $createdAt: result.$createdAt,
         $updatedAt: result.$updatedAt
       }

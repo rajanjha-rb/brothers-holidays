@@ -55,9 +55,12 @@ export async function GET(
         }
       })(),
       tags: result.tags || [],
-      duration: result.duration,
+      days: result.days,
+      nights: result.nights,
       location: result.location,
+      destinationId: result.destinationId,
       price: result.price,
+      bestMonths: result.bestMonths || [],
       $createdAt: result.$createdAt,
       $updatedAt: result.$updatedAt
     };

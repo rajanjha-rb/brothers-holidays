@@ -13,7 +13,6 @@ import {
   FaTrash, 
   FaMapMarkerAlt, 
   FaSpinner, 
-  FaClock, 
   FaDollarSign, 
   FaArrowLeft, 
   FaImage, 
@@ -37,8 +36,10 @@ interface Package {
   galleryImages: string[];
   faq: Array<{ question: string; answer: string }>;
   tags: string[];
-  duration: string;
+  days: number | null;
+  nights: number | null;
   location: string;
+  destinationId: string;
   price: string;
   $createdAt: string;
   $updatedAt: string;
@@ -102,8 +103,10 @@ export default function ViewPackagePage() {
             }
           })(),
           tags: Array.isArray(pkg.tags) ? pkg.tags : [],
-          duration: pkg.duration || "",
+          days: pkg.days || null,
+          nights: pkg.nights || null,
           location: pkg.location || "",
+          destinationId: pkg.destinationId || "",
           price: pkg.price || "",
           $createdAt: pkg.$createdAt || "",
           $updatedAt: pkg.$updatedAt || ""
@@ -440,14 +443,41 @@ export default function ViewPackagePage() {
                     </div>
                   )}
 
-                  {packageData.duration && (
-                    <div className="flex items-center gap-4 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200/50">
-                      <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-                        <FaClock className="w-5 h-5 text-white" />
+
+
+                  {(packageData.days || packageData.nights) && (
+                    <div className="flex items-center gap-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200/50">
+                      <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
+                        <FaCalendar className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 font-medium">Duration</p>
-                        <p className="font-bold text-gray-900">{packageData.duration}</p>
+                        <p className="text-sm text-gray-500 font-medium">Trip Details</p>
+                        <div className="flex gap-4">
+                          {packageData.days && (
+                            <div>
+                              <p className="text-xs text-gray-500">Days</p>
+                              <p className="font-bold text-gray-900">{packageData.days}</p>
+                            </div>
+                          )}
+                          {packageData.nights && (
+                            <div>
+                              <p className="text-xs text-gray-500">Nights</p>
+                              <p className="font-bold text-gray-900">{packageData.nights}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {packageData.destinationId && (
+                    <div className="flex items-center gap-4 p-3 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200/50">
+                      <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center">
+                        <FaMapMarkerAlt className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 font-medium">Destination</p>
+                        <p className="font-bold text-gray-900">{packageData.destinationId}</p>
                       </div>
                     </div>
                   )}

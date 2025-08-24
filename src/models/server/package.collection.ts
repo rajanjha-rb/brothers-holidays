@@ -29,8 +29,11 @@ export default async function createPackageCollection() {
       await Promise.all([
         databases.createStringAttribute(db, packageCollection, "name", 255, true),
         databases.createStringAttribute(db, packageCollection, "slug", 255, true),
-        databases.createStringAttribute(db, packageCollection, "duration", 100, false),
+
+        databases.createIntegerAttribute(db, packageCollection, "days", false),
+        databases.createIntegerAttribute(db, packageCollection, "nights", false),
         databases.createStringAttribute(db, packageCollection, "location", 255, false),
+        databases.createStringAttribute(db, packageCollection, "destinationId", 255, false),
         databases.createStringAttribute(db, packageCollection, "price", 100, false),
         databases.createStringAttribute(db, packageCollection, "overview", 65535, false),
         databases.createStringAttribute(db, packageCollection, "costInclude", 500, false, undefined, true),
@@ -41,6 +44,7 @@ export default async function createPackageCollection() {
         databases.createStringAttribute(db, packageCollection, "galleryImages", 255, false, undefined, true),
         databases.createStringAttribute(db, packageCollection, "tags", 100, false, undefined, true),
         databases.createStringAttribute(db, packageCollection, "faq", 65535, false),
+        databases.createStringAttribute(db, packageCollection, "bestMonths", 100, false, undefined, true), // New field for best months
       ]);
       console.log("Package collection attributes created successfully");
     } catch {
@@ -70,6 +74,34 @@ export default async function createPackageCollection() {
           "tags_index",
           IndexType.Key,
           ["tags"]
+        ),
+        databases.createIndex(
+          db,
+          packageCollection,
+          "destinationId_index",
+          IndexType.Key,
+          ["destinationId"]
+        ),
+        databases.createIndex(
+          db,
+          packageCollection,
+          "days_index",
+          IndexType.Key,
+          ["days"]
+        ),
+        databases.createIndex(
+          db,
+          packageCollection,
+          "nights_index",
+          IndexType.Key,
+          ["nights"]
+        ),
+        databases.createIndex(
+          db,
+          packageCollection,
+          "bestMonths_index",
+          IndexType.Key,
+          ["bestMonths"]
         ),
         databases.createIndex(
           db,

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { FaPlus, FaSearch, FaImage, FaRoute, FaQuestion, FaMapMarkerAlt, FaClock } from "react-icons/fa";
+import { FaPlus, FaSearch, FaImage, FaRoute, FaQuestion, FaMapMarkerAlt, FaCalendar } from "react-icons/fa";
 import { useAuthState } from "@/store/auth";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
@@ -24,8 +24,10 @@ interface Package {
   galleryImages: string[];
   faq: Array<{ question: string; answer: string }>;
   tags: string[];
-  duration: string;
+  days: number | null;
+  nights: number | null;
   location: string;
+  destinationId: string;
   price: string;
   $createdAt: string;
   $updatedAt: string;
@@ -74,8 +76,10 @@ export default function AllPackagesPage() {
         }
       })(),
       tags: Array.isArray(pkg.tags) ? pkg.tags as string[] : [],
-      duration: pkg.duration as string || "",
+      days: pkg.days as number | null || null,
+      nights: pkg.nights as number | null || null,
       location: pkg.location as string || "",
+      destinationId: pkg.destinationId as string || "",
       price: pkg.price as string || "",
       $createdAt: pkg.$createdAt as string || "",
       $updatedAt: pkg.$updatedAt as string || ""
@@ -156,7 +160,6 @@ export default function AllPackagesPage() {
       const searchableText = [
         pkg.name,
         pkg.location,
-        pkg.duration,
         pkg.price,
         pkg.overview,
         ...pkg.tags
@@ -386,12 +389,23 @@ export default function AllPackagesPage() {
                           <span className="font-medium">{pkg.location}</span>
                         </div>
                       )}
-                      {pkg.duration && (
+
+                      {(pkg.days || pkg.nights) && (
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                            <FaClock className="w-3 h-3 text-blue-500" />
+                          <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                            <FaCalendar className="w-3 h-3 text-purple-500" />
                           </div>
-                          <span className="font-medium">{pkg.duration}</span>
+                          <span className="font-medium">
+                            {pkg.days && pkg.nights ? `${pkg.days}d/${pkg.nights}n` : pkg.days ? `${pkg.days}d` : `${pkg.nights}n`}
+                          </span>
+                        </div>
+                      )}
+                      {pkg.destinationId && (
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
+                            <FaMapMarkerAlt className="w-3 h-3 text-indigo-500" />
+                          </div>
+                          <span className="font-medium">Dest: {pkg.destinationId}</span>
                         </div>
                       )}
                     </div>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { databases } from "@/models/server/config";
 import { db, packageCollection } from "@/models/name";
-import { FaCalendar, FaTags, FaRoute, FaMapMarkerAlt, FaClock, FaDollarSign, FaImage, FaQuestion, FaCheck, FaTimes, FaArrowLeft } from "react-icons/fa";
+import { FaCalendar, FaTags, FaRoute, FaMapMarkerAlt, FaDollarSign, FaImage, FaQuestion, FaCheck, FaTimes, FaArrowLeft } from "react-icons/fa";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import Link from "next/link";
@@ -21,9 +21,12 @@ interface Package {
   galleryImages: string[];
   faq: Array<{ question: string; answer: string }>;
   tags: string[];
-  duration: string;
+  days: number | null;
+  nights: number | null;
   location: string;
+  destinationId: string;
   price: string;
+  bestMonths: string[]; // New field for best months to visit
   $createdAt: string;
   $updatedAt: string;
 }
@@ -58,7 +61,51 @@ export const revalidate = 0;
 async function getPackage(packageId: string): Promise<Package | null> {
   try {
     const doc = await databases.getDocument(db, packageCollection, packageId);
-    return doc as unknown as Package;
+    
+    // Parse JSON strings back to arrays for frontend consumption
+    const packageData = doc as unknown as Package;
+    
+    // Parse itinerary from JSON string to array
+    if (typeof packageData.itinerary === 'string') {
+      try {
+        packageData.itinerary = JSON.parse(packageData.itinerary);
+      } catch (parseError) {
+        console.error('Error parsing itinerary JSON:', parseError);
+        packageData.itinerary = [];
+      }
+    }
+    
+    // Parse FAQ from JSON string to array
+    if (typeof packageData.faq === 'string') {
+      try {
+        packageData.faq = JSON.parse(packageData.faq);
+      } catch (parseError) {
+        console.error('Error parsing FAQ JSON:', parseError);
+        packageData.faq = [];
+      }
+    }
+    
+    // Ensure arrays are properly initialized
+    if (!Array.isArray(packageData.itinerary)) {
+      packageData.itinerary = [];
+    }
+    if (!Array.isArray(packageData.faq)) {
+      packageData.faq = [];
+    }
+    if (!Array.isArray(packageData.costInclude)) {
+      packageData.costInclude = [];
+    }
+    if (!Array.isArray(packageData.costExclude)) {
+      packageData.costExclude = [];
+    }
+    if (!Array.isArray(packageData.galleryImages)) {
+      packageData.galleryImages = [];
+    }
+    if (!Array.isArray(packageData.tags)) {
+      packageData.tags = [];
+    }
+    
+    return packageData;
   } catch (error) {
     console.error('Error fetching package:', error);
     return null;
@@ -68,21 +115,32 @@ async function getPackage(packageId: string): Promise<Package | null> {
 export default async function PackageViewPage({ params }: PageProps) {
   const { id: packageId } = await params;
   
+  console.log('PackageViewPage: Attempting to fetch package with ID:', packageId);
+  
   // Fetch package data with error handling
   let packageData: Package | null = null;
   try {
     packageData = await getPackage(packageId);
+    console.log('PackageViewPage: Package data fetched successfully:', {
+      id: packageData?.$id,
+      name: packageData?.name,
+      hasItinerary: Array.isArray(packageData?.itinerary),
+      itineraryLength: packageData?.itinerary?.length,
+      hasFaq: Array.isArray(packageData?.faq),
+      faqLength: packageData?.faq?.length
+    });
   } catch (error) {
-    console.error('Error fetching package:', error);
+    console.error('PackageViewPage: Error fetching package:', error);
   }
 
   if (!packageData) {
+    console.log('PackageViewPage: Package not found, showing error page');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center max-w-md mx-auto px-4">
           <div className="text-red-500 text-6xl mb-4">📦</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Package Not Found</h1>
-          <p className="text-gray-600 mb-6">The travel package you&apos;re looking for doesn&apos;t exist.</p>
+          <p className="text-gray-600 mb-6">The travel package you&apos;re looking for doesn&apos;t exist or cannot be accessed.</p>
           <Button 
             onClick={() => window.location.href = '/packages'}
             className="bg-blue-600 hover:bg-blue-700"
@@ -93,6 +151,8 @@ export default async function PackageViewPage({ params }: PageProps) {
       </div>
     );
   }
+
+  console.log('PackageViewPage: Rendering package page for:', packageData.name);
 
   return (
     <div className="min-h-screen bg-white">
@@ -145,12 +205,25 @@ export default async function PackageViewPage({ params }: PageProps) {
                   </div>
                 )}
                 
-                {packageData.duration && (
+
+
+                {(packageData.days || packageData.nights) && (
                   <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
-                    <div className="w-8 h-8 bg-blue-500/80 rounded-full flex items-center justify-center">
-                      <FaClock className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 bg-purple-500/80 rounded-full flex items-center justify-center">
+                      <FaCalendar className="w-4 h-4 text-white" />
                     </div>
-                    <span className="font-semibold">{packageData.duration}</span>
+                    <span className="font-semibold">
+                      {packageData.days && packageData.nights ? `${packageData.days}d/${packageData.nights}n` : packageData.days ? `${packageData.days}d` : `${packageData.nights}n`}
+                    </span>
+                  </div>
+                )}
+
+                {packageData.destinationId && (
+                  <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
+                    <div className="w-8 h-8 bg-indigo-500/80 rounded-full flex items-center justify-center">
+                      <FaMapMarkerAlt className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="font-semibold">Dest: {packageData.destinationId}</span>
                   </div>
                 )}
                 
@@ -182,6 +255,31 @@ export default async function PackageViewPage({ params }: PageProps) {
                     </div>
                   </div>
                 )}
+
+                {/* Best Months to Visit */}
+                {packageData.bestMonths && packageData.bestMonths.length > 0 && (
+                  <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
+                    <div className="w-8 h-8 bg-indigo-500/80 rounded-full flex items-center justify-center">
+                      <FaCalendar className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-xs font-medium text-white">Best:</span>
+                      {packageData.bestMonths.slice(0, 4).map((month, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-white/30 text-white text-xs font-medium rounded-full border border-white/50"
+                        >
+                          {month}
+                        </span>
+                      ))}
+                      {packageData.bestMonths.length > 4 && (
+                        <span className="px-2 py-1 bg-white/30 text-white text-xs font-medium rounded-full border border-white/50">
+                          +{packageData.bestMonths.length - 4} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -208,14 +306,7 @@ export default async function PackageViewPage({ params }: PageProps) {
                   </div>
                 )}
                 
-                {packageData.duration && (
-                  <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 border border-blue-200 shadow-sm">
-                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                      <FaClock className="w-3 h-3 text-blue-500" />
-                    </div>
-                    <span className="font-semibold">{packageData.duration}</span>
-                  </div>
-                )}
+
                 
                 {packageData.price && (
                   <div className="flex items-center gap-3 bg-gradient-to-r from-emerald-100 to-green-100 rounded-full px-4 py-2 border border-emerald-200 shadow-sm">
@@ -377,17 +468,7 @@ export default async function PackageViewPage({ params }: PageProps) {
                     </div>
                   )}
 
-                  {packageData.duration && (
-                    <div className="flex items-center gap-4 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200/50">
-                      <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-                        <FaClock className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 font-medium">Duration</p>
-                        <p className="font-bold text-gray-900">{packageData.duration}</p>
-                      </div>
-                    </div>
-                  )}
+
 
                   {packageData.price && (
                     <div className="flex items-center gap-4 p-3 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200/50">
@@ -397,6 +478,28 @@ export default async function PackageViewPage({ params }: PageProps) {
                       <div>
                         <p className="text-sm text-gray-500 font-medium">Price</p>
                         <p className="font-bold text-2xl text-emerald-700">{packageData.price}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Best Months to Visit */}
+                  {packageData.bestMonths && packageData.bestMonths.length > 0 && (
+                    <div className="flex items-center gap-4 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200/50">
+                      <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
+                        <FaCalendar className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 font-medium">Best Months to Visit</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {packageData.bestMonths.map((month, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full border border-purple-200"
+                            >
+                              {month}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}

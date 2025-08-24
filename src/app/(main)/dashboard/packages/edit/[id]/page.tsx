@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { FaPlus, FaTrash, FaImage, FaTimes, FaQuestion, FaPlusCircle, FaRoute, FaSearch, FaSpinner } from "react-icons/fa";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FaPlus, FaTrash, FaImage, FaTimes, FaQuestion, FaPlusCircle, FaRoute, FaSearch, FaSpinner, FaMapMarkerAlt } from "react-icons/fa";
 import { useAuthState } from "@/store/auth";
 import { toast } from "react-hot-toast";
 import RTE from "@/components/RTE";
@@ -25,9 +26,23 @@ interface PackageFormData {
   galleryImages: string[];
   faq: Array<{ question: string; answer: string }>;
   tags: Set<string>;
-  duration: string;
+  days: number | null;
+  nights: number | null;
   location: string;
+  destinationId: string;
   price: string;
+  bestMonths: string[]; // Added missing field
+}
+
+interface Destination {
+  $id: string;
+  title: string;
+  slug: string;
+  metaDescription: string;
+  featuredImage: string;
+  tags: string[];
+  $createdAt: string;
+  $updatedAt: string;
 }
 
 interface MediaFile {
@@ -62,15 +77,20 @@ export default function EditPackagePage() {
     galleryImages: [],
     faq: [],
     tags: new Set(),
-    duration: "",
+    days: null,
+    nights: null,
     location: "",
-    price: ""
+    destinationId: "",
+    price: "",
+    bestMonths: [] // Initialize new field
   });
 
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingPackage, setLoadingPackage] = useState(true);
   const [loadingMedia, setLoadingMedia] = useState(false);
+  const [loadingDestinations, setLoadingDestinations] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredMedia, setFilteredMedia] = useState<MediaFile[]>([]);
   const [newTag, setNewTag] = useState("");
@@ -113,6 +133,26 @@ export default function EditPackagePage() {
     }
   };
 
+  // Fetch destinations function
+  const fetchDestinations = async () => {
+    try {
+      setLoadingDestinations(true);
+      const response = await fetch('/api/destinations/list');
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('Destinations received:', data.destinations);
+        setDestinations(data.destinations || []);
+      } else {
+        console.error('Failed to fetch destinations:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching destinations:', error);
+    } finally {
+      setLoadingDestinations(false);
+    }
+  };
+
   // Fetch package data
   const fetchPackageData = useCallback(async () => {
     try {
@@ -151,9 +191,12 @@ export default function EditPackagePage() {
             }
           })(),
           tags: new Set(packageData.tags || []),
-          duration: packageData.duration || "",
+          days: packageData.days || null,
+          nights: packageData.nights || null,
           location: packageData.location || "",
-          price: packageData.price || ""
+          destinationId: packageData.destinationId || "",
+          price: packageData.price || "",
+          bestMonths: Array.isArray(packageData.bestMonths) ? packageData.bestMonths : [] // Fetch new field
         });
       } else {
         toast.error('Failed to fetch package data');
@@ -172,6 +215,7 @@ export default function EditPackagePage() {
     if (packageId) {
       fetchPackageData();
       fetchMediaFiles();
+      fetchDestinations();
     }
   }, [packageId, fetchPackageData]);
 
@@ -200,7 +244,7 @@ export default function EditPackagePage() {
   }, [searchQuery, mediaFiles]);
 
   // Form handlers
-  const handleInputChange = (field: keyof PackageFormData, value: string) => {
+  const handleInputChange = (field: keyof PackageFormData, value: string | number | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -383,9 +427,12 @@ export default function EditPackagePage() {
       galleryImages: Array.isArray(formData.galleryImages) ? formData.galleryImages : [],
       faq: Array.isArray(formData.faq) ? formData.faq : [],
       tags: Array.from(formData.tags || []),
-      duration: formData.duration || "",
+      days: formData.days,
+      nights: formData.nights,
       location: formData.location || "",
-      price: formData.price || ""
+      destinationId: formData.destinationId || "",
+      price: formData.price || "",
+      bestMonths: Array.isArray(formData.bestMonths) ? formData.bestMonths : [] // Include new field
     };
 
     try {
@@ -453,7 +500,7 @@ export default function EditPackagePage() {
               <CardTitle className="text-xl">Basic Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name">Package Name *</Label>
                   <Input
@@ -465,12 +512,40 @@ export default function EditPackagePage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="duration">Duration</Label>
+                  <Label htmlFor="price">Price</Label>
                   <Input
-                    id="duration"
-                    value={formData.duration}
-                    onChange={(e) => handleInputChange('duration', e.target.value)}
-                    placeholder="e.g., 7 days, 2 weeks"
+                    id="price"
+                    value={formData.price}
+                    onChange={(e) => handleInputChange('price', e.target.value)}
+                    placeholder="e.g., $999, €799"
+                  />
+                </div>
+              </div>
+              
+              {/* Duration Section */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="days">Days *</Label>
+                  <Input
+                    id="days"
+                    type="number"
+                    min="1"
+                    value={formData.days || ''}
+                    onChange={(e) => handleInputChange('days', e.target.value ? parseInt(e.target.value) : null)}
+                    placeholder="e.g., 7"
+                    className="border-blue-200 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="nights">Nights *</Label>
+                  <Input
+                    id="nights"
+                    type="number"
+                    min="1"
+                    value={formData.nights || ''}
+                    onChange={(e) => handleInputChange('nights', e.target.value ? parseInt(e.target.value) : null)}
+                    placeholder="e.g., 6"
+                    className="border-blue-200 focus:border-blue-500"
                   />
                 </div>
                 <div>
@@ -483,14 +558,105 @@ export default function EditPackagePage() {
                   />
                 </div>
               </div>
+
+              {/* Destination Selection */}
               <div>
-                <Label htmlFor="price">Price</Label>
-                <Input
-                  id="price"
-                  value={formData.price}
-                  onChange={(e) => handleInputChange('price', e.target.value)}
-                  placeholder="e.g., $999, €799"
-                />
+                <Label htmlFor="destination">Destination *</Label>
+                <Select
+                  value={formData.destinationId}
+                  onValueChange={(value) => handleInputChange('destinationId', value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a destination" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {loadingDestinations ? (
+                      <SelectItem value="" disabled>
+                        Loading destinations...
+                      </SelectItem>
+                    ) : destinations.length === 0 ? (
+                      <SelectItem value="" disabled>
+                        No destinations available
+                      </SelectItem>
+                    ) : (
+                      destinations.map((destination) => (
+                        <SelectItem key={destination.$id} value={destination.$id}>
+                          <div className="flex items-center gap-2">
+                            <FaMapMarkerAlt className="w-4 h-4 text-blue-500" />
+                            <span>{destination.title}</span>
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {formData.destinationId && (
+                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-sm text-blue-700">
+                      <FaMapMarkerAlt className="w-4 h-4" />
+                      <span>
+                        Selected: {destinations.find(d => d.$id === formData.destinationId)?.title}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Best Months to Visit */}
+              <div>
+                <Label>Best Months to Visit</Label>
+                <p className="text-sm text-gray-600 mb-3">Select the best months for visiting this destination</p>
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                  {[
+                    { value: 'Jan', label: 'Jan' },
+                    { value: 'Feb', label: 'Feb' },
+                    { value: 'Mar', label: 'Mar' },
+                    { value: 'Apr', label: 'Apr' },
+                    { value: 'May', label: 'May' },
+                    { value: 'Jun', label: 'Jun' },
+                    { value: 'Jul', label: 'Jul' },
+                    { value: 'Aug', label: 'Aug' },
+                    { value: 'Sep', label: 'Sep' },
+                    { value: 'Oct', label: 'Oct' },
+                    { value: 'Nov', label: 'Nov' },
+                    { value: 'Dec', label: 'Dec' }
+                  ].map((month) => (
+                    <div key={month.value} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`month-${month.value}`}
+                        checked={formData.bestMonths.includes(month.value)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData(prev => ({
+                              ...prev,
+                              bestMonths: [...prev.bestMonths, month.value]
+                            }));
+                          } else {
+                            setFormData(prev => ({
+                              ...prev,
+                              bestMonths: prev.bestMonths.filter(m => m !== month.value)
+                            }));
+                          }
+                        }}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      <label
+                        htmlFor={`month-${month.value}`}
+                        className="ml-2 text-sm font-medium text-gray-700 cursor-pointer hover:text-blue-600"
+                      >
+                        {month.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                {formData.bestMonths.length > 0 && (
+                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="text-sm text-green-700">
+                      <span className="font-medium">Selected months:</span> {formData.bestMonths.join(', ')}
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -969,6 +1135,33 @@ export default function EditPackagePage() {
             >
               {loading ? 'Updating Package...' : 'Update Package'}
             </Button>
+          </div>
+
+          {/* Form Validation Summary */}
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="text-sm font-medium text-blue-800 mb-2">Form Requirements</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-blue-700">
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${formData.name.trim() ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                Package Name {formData.name.trim() ? '✓' : '✗'}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${formData.featuredImage ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                Featured Image {formData.featuredImage ? '✓' : '✗'}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${formData.itinerary.length > 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                At least 1 Itinerary Day {formData.itinerary.length > 0 ? '✓' : '✗'}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${formData.overview ? 'bg-green-500' : 'bg-blue-500'}`}></span>
+                Overview (recommended)
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${formData.bestMonths.length > 0 ? 'bg-green-500' : 'bg-blue-500'}`}></span>
+                Best Months to Visit (recommended)
+              </div>
+            </div>
           </div>
         </form>
       </div>
