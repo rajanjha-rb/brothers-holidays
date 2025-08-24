@@ -10,3 +10,24 @@
 
  ✓ Starting...
  ✓ Ready in 2.4s
+ �[?25h
+iling /api/health-check ...
+ ✓ Compiled /api/health-check in 2.1s (449 modules)
+🔍 Server config - Environment variables: {
+  endpoint: 'https://cloud.appwrite.io/v1',
+  projectId: '6891de420009dfe932a0',
+  apiKeySet: true,
+  apiKeyLength: 265
+}
+🏥 HEALTH CHECK: Starting comprehensive system health check...
+✅ Database connection: Healthy
+✅ Collection blogs: Healthy (4 documents)
+✅ Collection trips: Healthy (3 documents)
+✅ Collection activities: Healthy (1 documents)
+✅ Collection media: Healthy (2 documents)
+✅ Collection packages: Healthy (1 documents)
+✅ Storage: Healthy
+❌ Environment variables: Unhealthy
+🏥 HEALTH CHECK COMPLETE: Overall status: degraded (87.5%)
+ GET /api/health-check 200 in 8515ms
+[?25h

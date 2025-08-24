@@ -1,9 +1,9 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import OptimizedImage from "@/components/OptimizedImage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { databases } from "@/models/server/config";
-import { db, packageCollection } from "@/models/name";
 import { FaCalendar, FaTags, FaRoute, FaMapMarkerAlt, FaDollarSign, FaImage, FaQuestion, FaCheck, FaTimes, FaArrowLeft } from "react-icons/fa";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
@@ -26,115 +26,78 @@ interface Package {
   location: string;
   destinationId: string;
   price: string;
-  bestMonths: string[]; // New field for best months to visit
+  bestMonths: string[];
   $createdAt: string;
   $updatedAt: string;
 }
 
-interface PageProps {
-  params: Promise<{
-    id: string;
-    slug: string;
-  }>;
-}
-
-// This function runs at build time to generate static paths for all packages
-export async function generateStaticParams() {
-  try {
-    const response = await databases.listDocuments(db, packageCollection, []);
-    const packagesData = response.documents as unknown as Package[];
-    
-    return packagesData.map((pkg) => ({
-      id: pkg.$id,
-      slug: pkg.name.toLowerCase().replace(/\s+/g, '-'),
-    }));
-  } catch (error) {
-    console.error('Error generating static params:', error);
-    return [];
-  }
-}
-
-// Force revalidation on every request to ensure fresh data
-export const revalidate = 0;
-
-// Fetch package data on the server side
-async function getPackage(packageId: string): Promise<Package | null> {
-  try {
-    const doc = await databases.getDocument(db, packageCollection, packageId);
-    
-    // Parse JSON strings back to arrays for frontend consumption
-    const packageData = doc as unknown as Package;
-    
-    // Parse itinerary from JSON string to array
-    if (typeof packageData.itinerary === 'string') {
-      try {
-        packageData.itinerary = JSON.parse(packageData.itinerary);
-      } catch (parseError) {
-        console.error('Error parsing itinerary JSON:', parseError);
-        packageData.itinerary = [];
-      }
-    }
-    
-    // Parse FAQ from JSON string to array
-    if (typeof packageData.faq === 'string') {
-      try {
-        packageData.faq = JSON.parse(packageData.faq);
-      } catch (parseError) {
-        console.error('Error parsing FAQ JSON:', parseError);
-        packageData.faq = [];
-      }
-    }
-    
-    // Ensure arrays are properly initialized
-    if (!Array.isArray(packageData.itinerary)) {
-      packageData.itinerary = [];
-    }
-    if (!Array.isArray(packageData.faq)) {
-      packageData.faq = [];
-    }
-    if (!Array.isArray(packageData.costInclude)) {
-      packageData.costInclude = [];
-    }
-    if (!Array.isArray(packageData.costExclude)) {
-      packageData.costExclude = [];
-    }
-    if (!Array.isArray(packageData.galleryImages)) {
-      packageData.galleryImages = [];
-    }
-    if (!Array.isArray(packageData.tags)) {
-      packageData.tags = [];
-    }
-    
-    return packageData;
-  } catch (error) {
-    console.error('Error fetching package:', error);
-    return null;
-  }
-}
-
-export default async function PackageViewPage({ params }: PageProps) {
-  const { id: packageId } = await params;
+export default function PackageViewPage({ params }: { params: Promise<{ id: string; slug: string }> }) {
+  const [packageId, setPackageId] = useState<string>('');
   
-  console.log('PackageViewPage: Attempting to fetch package with ID:', packageId);
+  useEffect(() => {
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setPackageId(resolvedParams.id);
+    };
+    getParams();
+  }, [params]);
+  const [packageData, setPackageData] = useState<Package | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showFloatingBooking, setShowFloatingBooking] = useState(false);
   
-  // Fetch package data with error handling
-  let packageData: Package | null = null;
-  try {
-    packageData = await getPackage(packageId);
-    console.log('PackageViewPage: Package data fetched successfully:', {
-      id: packageData?.$id,
-      name: packageData?.name,
-      hasItinerary: Array.isArray(packageData?.itinerary),
-      itineraryLength: packageData?.itinerary?.length,
-      hasFaq: Array.isArray(packageData?.faq),
-      faqLength: packageData?.faq?.length
-    });
-  } catch (error) {
-    console.error('PackageViewPage: Error fetching package:', error);
+  // Fetch package data
+  useEffect(() => {
+    const fetchPackage = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/packages/${packageId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setPackageData(data.package);
+        } else {
+          console.error('Failed to fetch package:', data.message);
+        }
+      } catch (error) {
+        console.error('Error fetching package:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (packageId) {
+      fetchPackage();
+    }
+  }, [packageId]);
+
+  // Scroll detection for floating booking popup
+  useEffect(() => {
+    const handleScroll = () => {
+      const callToActionSection = document.getElementById('call-to-action-section');
+      if (callToActionSection) {
+        const rect = callToActionSection.getBoundingClientRect();
+        // Show floating booking when call-to-action section is out of view
+        setShowFloatingBooking(rect.bottom < 0);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Loading package...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!packageData) {
-    console.log('PackageViewPage: Package not found, showing error page');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center max-w-md mx-auto px-4">
@@ -151,8 +114,6 @@ export default async function PackageViewPage({ params }: PageProps) {
       </div>
     );
   }
-
-  console.log('PackageViewPage: Rendering package page for:', packageData.name);
 
   return (
     <div className="min-h-screen bg-white">
@@ -288,8 +249,10 @@ export default async function PackageViewPage({ params }: PageProps) {
 
       {/* Main Content */}
       <main className="bg-gradient-to-br from-slate-50 via-white to-blue-50">
+
+        
         {/* Content Container */}
-        <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="max-w-7xl mx-auto px-6 py-12">
           {/* Package Header (when no featured image) */}
           {!packageData.featuredImage && (
             <div className="text-center mb-16 bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 rounded-3xl p-12 border border-pink-200/50">
@@ -330,12 +293,12 @@ export default async function PackageViewPage({ params }: PageProps) {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content - Left Column */}
             <div className="lg:col-span-2 space-y-8">
               {/* Enhanced Package Overview */}
               {packageData.overview && (
-                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-pink-200/50 p-8 hover:shadow-2xl transition-all duration-500">
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-pink-200/50 p-6 hover:shadow-2xl transition-all duration-500">
                   <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl flex items-center justify-center">
                       <FaImage className="w-5 h-5 text-white" />
@@ -349,9 +312,46 @@ export default async function PackageViewPage({ params }: PageProps) {
                 </div>
               )}
 
+              {/* Call to Action Section */}
+              <div id="call-to-action-section" className="bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl shadow-2xl border border-emerald-400/50 p-6 text-center text-white">
+                <h2 className="text-3xl font-bold mb-4">Ready to Start Your Adventure?</h2>
+                <p className="text-emerald-100 text-lg mb-6 max-w-2xl mx-auto">
+                  Experience this incredible travel package with our professional service and support.
+                </p>
+                <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+                  <Button 
+                    className="bg-white text-emerald-600 hover:bg-emerald-50 border-0 px-8 py-4 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    onClick={() => {
+                      window.location.href = '/contact';
+                    }}
+                  >
+                    🚀 Book This Package
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="bg-transparent text-white border-2 border-white hover:bg-white hover:text-emerald-600 px-8 py-4 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    onClick={() => {
+                      window.location.href = '/contact?customize=true';
+                    }}
+                  >
+                    ✨ Customize Package
+                  </Button>
+                </div>
+                <div className="mt-6 flex justify-center gap-6 text-sm text-emerald-100">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 bg-green-400 rounded-full"></span>
+                    Professional Service
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 bg-green-400 rounded-full"></span>
+                    Full Support
+                  </div>
+                </div>
+              </div>
+
               {/* Enhanced Itinerary */}
               {packageData.itinerary && packageData.itinerary.length > 0 && (
-                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-200/50 p-8 hover:shadow-2xl transition-all duration-500">
+                <div className="mb-8">
                   <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
                       <FaRoute className="w-6 h-6 text-white" />
@@ -359,16 +359,75 @@ export default async function PackageViewPage({ params }: PageProps) {
                     Day-wise Itinerary
                   </h2>
                   <div className="space-y-6">
-                    {packageData.itinerary.map((day) => (
-                      <div key={day.day} className="border border-blue-200/50 rounded-2xl p-6 bg-gradient-to-br from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100 transition-all duration-300 hover:shadow-lg">
-                        <div className="flex items-start gap-6">
-                          <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-2xl flex items-center justify-center font-bold text-xl flex-shrink-0 shadow-lg">
-                            {day.day}
+                    {packageData.itinerary.map((day, index) => (
+                      <div key={day.day} className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                        {/* Collapsible Header */}
+                        <div 
+                          className="flex items-center justify-between p-4 bg-blue-50 cursor-pointer hover:bg-blue-100 transition-colors duration-200"
+                          onClick={() => {
+                            const content = document.getElementById(`itinerary-${index}`);
+                            const icon = document.getElementById(`icon-${index}`);
+                            if (content && icon) {
+                              content.classList.toggle('hidden');
+                              icon.classList.toggle('rotate-180');
+                            }
+                          }}
+                        >
+                          <h4 className="font-bold text-lg text-blue-900">Day {day.day}: {day.title}</h4>
+                          <svg 
+                            id={`icon-${index}`}
+                            className="w-5 h-5 text-blue-600 transition-transform duration-200" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                        
+                        {/* Collapsible Content */}
+                        <div id={`itinerary-${index}`} className="p-4">
+                          {/* Information Panels */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div className="flex items-center gap-3 p-3 bg-teal-50 rounded-lg border border-teal-200">
+                              <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-xs font-medium text-gray-500">Accommodation</p>
+                                <p className="font-semibold text-gray-900">Teahouse</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 p-3 bg-teal-50 rounded-lg border border-teal-200">
+                              <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-xs font-medium text-gray-500">Time Taken</p>
+                                <p className="font-semibold text-gray-900">8-9 hours</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 p-3 bg-teal-50 rounded-lg border border-teal-200">
+                              <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-xs font-medium text-gray-500">Max Altitude</p>
+                                <p className="font-semibold text-gray-900">2,800 m</p>
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <h4 className="font-bold text-xl text-blue-900 mb-3">{day.title}</h4>
-                            <p className="text-blue-800 text-lg leading-relaxed">{day.description}</p>
-                          </div>
+                          
+                          {/* Description */}
+                          <p className="text-gray-700 leading-relaxed">{day.description}</p>
                         </div>
                       </div>
                     ))}
@@ -378,39 +437,48 @@ export default async function PackageViewPage({ params }: PageProps) {
 
               {/* Enhanced Gallery Images */}
               {packageData.galleryImages && packageData.galleryImages.length > 0 && (
-                <div className="bg-white rounded-xl shadow-lg border border-green-200 p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <FaImage className="w-6 h-6 text-green-600" />
-                    Gallery Images ({packageData.galleryImages.length})
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-green-200/50 p-6 hover:shadow-2xl transition-all duration-500">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                      <FaImage className="w-6 h-6 text-white" />
+                    </div>
+                    Gallery
                   </h2>
                   
-                  {/* Debug Information - Remove this in production */}
-                  <div className="mb-4 p-3 bg-gray-100 rounded-lg text-xs text-gray-600">
-                    <div>Featured Image Bucket: {packageData.featuredImageBucket || 'Not set'}</div>
-                    <div>Gallery Images Count: {packageData.galleryImages.length}</div>
-                    <div>First Gallery Image ID: {packageData.galleryImages[0] || 'None'}</div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {packageData.galleryImages.map((imageId, index) => {
-                      // Try to determine the correct bucket for gallery images
-                      // First try the featured image bucket, then fallback to media bucket
-                      const imageBucket = packageData.featuredImageBucket || 'media';
+                      // Use the featured image bucket for gallery images
+                      const imageBucket = packageData.featuredImageBucket || 'featuredImage';
                       const imageSrc = `${process.env.NEXT_PUBLIC_APPWRITE_HOST_URL}/storage/buckets/${imageBucket}/files/${imageId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
                       
                       return (
-                        <div key={index} className="relative group">
-                          <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-100">
+                        <div key={index} className="relative group cursor-pointer">
+                          <div 
+                            className="w-full h-40 rounded-xl overflow-hidden bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-transparent hover:border-green-300"
+                            onClick={() => setSelectedImage(imageId)}
+                            title="Click to view full size"
+                          >
                             <OptimizedImage
                               src={imageSrc}
-                              alt={`Gallery image ${index + 1}`}
-                              width={200}
-                              height={150}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                              alt="Gallery image"
+                              width={300}
+                              height={200}
+                              className="w-full h-full object-cover"
                             />
-                          </div>
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end p-3">
-                            <span className="text-white text-sm font-semibold">View Image {index + 1}</span>
+                            
+                            {/* Hover Overlay with Click Indicator */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl flex items-center justify-center">
+                              <div className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg">
+                                <FaImage className="w-6 h-6 text-green-600" />
+                              </div>
+                            </div>
+                            
+                            {/* Click to View Text */}
+                            <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <div className="bg-black/70 text-white text-xs font-medium px-2 py-1 rounded text-center">
+                                Click to view
+                              </div>
+                            </div>
                           </div>
                         </div>
                       );
@@ -419,25 +487,170 @@ export default async function PackageViewPage({ params }: PageProps) {
                 </div>
               )}
 
+              {/* Enhanced Cost Include */}
+              {packageData.costInclude && packageData.costInclude.length > 0 && (
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-green-200/50 p-6 hover:shadow-2xl transition-all duration-500">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                      <FaCheck className="w-6 h-6 text-white" />
+                    </div>
+                    What&apos;s Included
+                  </h2>
+                  <div className="space-y-6">
+                    {packageData.costInclude.map((item, index) => (
+                      <div key={index} className="flex items-start gap-4">
+                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                          <FaCheck className="w-3 h-3 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-lg text-gray-900 mb-3">{item}</h4>
+                          <p className="text-gray-700 leading-relaxed">
+                            This service is included in your package to ensure a complete and enjoyable experience.
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Enhanced Cost Exclude */}
+              {packageData.costExclude && packageData.costExclude.length > 0 && (
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-red-200/50 p-6 hover:shadow-2xl transition-all duration-500">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center">
+                      <FaTimes className="w-6 h-6 text-white" />
+                    </div>
+                    What&apos;s Not Included
+                  </h2>
+                  <div className="space-y-6">
+                    {packageData.costExclude.map((item, index) => (
+                      <div key={index} className="flex items-start gap-4">
+                        <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                          <FaTimes className="w-3 h-3 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-lg text-gray-900 mb-3">{item}</h4>
+                          <p className="text-gray-700 leading-relaxed">
+                            This service is not included in your package and may require additional arrangements or costs.
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Client Testimonials Section */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-2xl shadow-xl border border-blue-200/50 p-6 hover:shadow-2xl transition-all duration-500">
+                <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
+                    <FaImage className="w-6 h-6 text-white" />
+                  </div>
+                  Client Testimonials
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200/50">
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-3">
+                        S
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900">Sarah M.</h4>
+                        <p className="text-sm text-gray-600">Adventure Traveler</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-700 italic">&ldquo;Absolutely incredible experience! The itinerary was perfectly planned and every detail was taken care of. Highly recommend!&rdquo;</p>
+                    <div className="flex text-yellow-400 mt-3">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i}>⭐</span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200/50">
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-3">
+                        M
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900">Michael R.</h4>
+                        <p className="text-sm text-gray-600">Cultural Explorer</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-700 italic">&ldquo;Professional service from start to finish. The guides were knowledgeable and the accommodations exceeded expectations.&rdquo;</p>
+                    <div className="flex text-yellow-400 mt-3">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i}>⭐</span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200/50 md:col-span-2 lg:col-span-1">
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-3">
+                        E
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900">Emma L.</h4>
+                        <p className="text-sm text-gray-600">Solo Traveler</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-700 italic">&ldquo;As a solo traveler, I felt completely safe and supported throughout the entire journey. Amazing memories created!&rdquo;</p>
+                    <div className="flex text-yellow-400 mt-3">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i}>⭐</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Enhanced FAQ */}
               {packageData.faq && packageData.faq.length > 0 && (
-                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-200/50 p-8 hover:shadow-2xl transition-all duration-500">
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-200/50 p-6 hover:shadow-2xl transition-all duration-500">
                   <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
                       <FaQuestion className="w-6 h-6 text-white" />
                     </div>
                     Frequently Asked Questions ({packageData.faq.length})
                   </h2>
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {packageData.faq.map((faq, index) => (
-                      <div key={index} className="border border-purple-200/50 rounded-2xl p-6 bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-all duration-300 hover:shadow-lg">
-                        <h4 className="font-bold text-xl text-purple-900 mb-3 flex items-center gap-3">
-                          <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                            <FaQuestion className="w-4 h-4 text-white" />
-                          </div>
-                          {faq.question}
-                        </h4>
-                        <p className="text-purple-800 text-lg leading-relaxed ml-11">{faq.answer}</p>
+                      <div key={index} className="border border-purple-200/50 rounded-xl overflow-hidden">
+                        {/* Clickable Question Header */}
+                        <div 
+                          className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 cursor-pointer hover:from-purple-100 hover:to-pink-100 transition-all duration-200"
+                          onClick={() => {
+                            const answer = document.getElementById(`faq-answer-${index}`);
+                            const icon = document.getElementById(`faq-icon-${index}`);
+                            if (answer && icon) {
+                              answer.classList.toggle('hidden');
+                              icon.classList.toggle('rotate-180');
+                            }
+                          }}
+                        >
+                          <h4 className="font-bold text-lg text-purple-900 flex items-center gap-3">
+                            <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                              <FaQuestion className="w-4 h-4 text-white" />
+                            </div>
+                            {faq.question}
+                          </h4>
+                          <svg 
+                            id={`faq-icon-${index}`}
+                            className="w-5 h-5 text-purple-600 transition-transform duration-200" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                        
+                        {/* Collapsible Answer */}
+                        <div id={`faq-answer-${index}`} className="hidden p-4 bg-white">
+                          <p className="text-purple-800 text-lg leading-relaxed">{faq.answer}</p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -455,6 +668,17 @@ export default async function PackageViewPage({ params }: PageProps) {
                   </div>
                   Package Information
                 </h3>
+                
+                {/* Package Information Header */}
+                <div className="mb-8 p-6 bg-gradient-to-r from-gray-50 to-slate-100 rounded-2xl text-center border border-gray-200/50">
+                  <h4 className="text-gray-800 text-xl font-bold mb-3">Package Details</h4>
+                  <p className="text-gray-600 mb-4 text-sm">Complete information about this travel package</p>
+                  <div className="flex items-center justify-center gap-2 text-gray-500">
+                    <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                    <span className="text-sm">All details listed below</span>
+                  </div>
+                </div>
+                
                 <div className="space-y-5">
                   {packageData.location && (
                     <div className="flex items-center gap-4 p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl border border-red-200/50">
@@ -522,72 +746,82 @@ export default async function PackageViewPage({ params }: PageProps) {
                 </div>
               </div>
 
-              {/* Enhanced Tags */}
-              {packageData.tags && packageData.tags.length > 0 && (
-                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-200/50 p-6 hover:shadow-2xl transition-all duration-500">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-                      <FaTags className="w-5 h-5 text-white" />
-                    </div>
-                    Tags ({packageData.tags.length})
-                  </h3>
-                  <div className="flex flex-wrap gap-3">
-                    {packageData.tags.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 border border-blue-200 px-3 py-2 text-sm font-semibold hover:from-blue-200 hover:to-purple-200 transition-all duration-300">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-              {/* Enhanced Cost Include */}
-              {packageData.costInclude && packageData.costInclude.length > 0 && (
-                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-green-200/50 p-6 hover:shadow-2xl transition-all duration-500">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                      <FaCheck className="w-5 h-5 text-white" />
-                    </div>
-                    What&apos;s Included ({packageData.costInclude.length})
-                  </h3>
-                  <div className="space-y-3">
-                    {packageData.costInclude.map((item, index) => (
-                      <div key={index} className="flex items-center gap-3 p-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200/50">
-                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                          <FaCheck className="w-3 h-3 text-white" />
-                        </div>
-                        <span className="text-sm font-medium text-green-800">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-              {/* Enhanced Cost Exclude */}
-              {packageData.costExclude && packageData.costExclude.length > 0 && (
-                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-red-200/50 p-6 hover:shadow-2xl transition-all duration-500">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center">
-                      <FaTimes className="w-5 h-5 text-white" />
-                    </div>
-                    What&apos;s Not Included ({packageData.costExclude.length})
-                  </h3>
-                  <div className="space-y-3">
-                    {packageData.costExclude.map((item, index) => (
-                      <div key={index} className="flex items-center gap-3 p-2 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200/50">
-                        <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-                          <FaTimes className="w-3 h-3 text-white" />
-                        </div>
-                        <span className="text-sm font-medium text-red-800">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+
+            </div>
+          </div>
+
+        </div>
+      </main>
+
+      {/* Floating Sidebar Booking Popup */}
+      {showFloatingBooking && (
+        <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-40">
+          <div className="bg-white rounded-2xl shadow-2xl border border-emerald-200/50 p-6 max-w-sm">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">Ready to Book?</h3>
+            <div className="space-y-3">
+              <Button 
+                className="w-full bg-emerald-500 text-white hover:bg-emerald-600 px-6 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                onClick={() => {
+                  window.location.href = '/contact';
+                }}
+              >
+                🚀 Book This Package
+              </Button>
+              <Button 
+                variant="outline"
+                className="w-full bg-transparent text-emerald-600 border-2 border-emerald-500 hover:bg-emerald-50 px-6 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                onClick={() => {
+                  window.location.href = '/contact?customize=true';
+                }}
+              >
+                ✨ Customize Package
+              </Button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-5xl max-h-[95vh] bg-white rounded-2xl overflow-hidden shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">Image Preview</h3>
+              <Button
+                onClick={() => setSelectedImage(null)}
+                variant="outline"
+                size="sm"
+                className="bg-white hover:bg-gray-100 border-gray-300"
+              >
+                ✕ Close
+              </Button>
+            </div>
+            
+            {/* Image Container */}
+            <div className="p-4">
+              <OptimizedImage
+                src={`${process.env.NEXT_PUBLIC_APPWRITE_HOST_URL}/storage/buckets/${packageData.featuredImageBucket || 'featuredImage'}/files/${selectedImage}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`}
+                alt="Full size image"
+                width={1200}
+                height={800}
+                className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              />
+            </div>
+            
+            {/* Click Outside to Close Hint */}
+            <div className="text-center pb-4 text-sm text-gray-500">
+              Click outside the image to close
             </div>
           </div>
         </div>
-      </main>
+      )}
 
       <Footer />
     </div>

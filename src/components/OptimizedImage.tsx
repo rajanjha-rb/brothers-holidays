@@ -32,9 +32,7 @@ export default function OptimizedImage({
   const [useFallback, setUseFallback] = useState(false);
 
   const handleError = (error: unknown) => {
-    console.error(' Image failed to load:', src, error);
     if (!useFallback) {
-      console.log(' Switching to fallback img tag...');
       setUseFallback(true);
     } else {
       setImageError(true);
@@ -43,7 +41,6 @@ export default function OptimizedImage({
   };
 
   const handleLoad = () => {
-    console.log(' Image loaded successfully:', src);
     setImageError(false);
     onLoad?.();
   };

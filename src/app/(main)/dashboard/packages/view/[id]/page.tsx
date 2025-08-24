@@ -261,6 +261,23 @@ export default function ViewPackagePage() {
           </div>
         </div>
 
+        {/* Floating Book Now Button - Always Visible */}
+        <div className="fixed bottom-8 right-8 z-50">
+          <div className="bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl shadow-2xl p-4 text-center transform hover:scale-110 transition-all duration-300">
+            <Button 
+              className="bg-white text-emerald-600 hover:bg-emerald-50 border-0 px-6 py-3 text-lg font-bold rounded-xl shadow-lg"
+              onClick={() => {
+                // You can integrate with your booking system here
+                // For now, we'll show a contact form or redirect
+                window.location.href = '/contact';
+              }}
+            >
+              🚀 Book Now
+            </Button>
+            <p className="text-white text-xs mt-2 font-medium">Secure Your Spot</p>
+          </div>
+        </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Main Content - Left Column */}
           <div className="lg:col-span-2 space-y-8">
@@ -317,6 +334,49 @@ export default function ViewPackagePage() {
               </Card>
             )}
 
+            {/* Call to Action Section */}
+            <Card className="bg-gradient-to-r from-emerald-500 to-green-600 border-0 shadow-2xl rounded-3xl overflow-hidden">
+              <CardContent className="p-8 text-center text-white">
+                <h2 className="text-3xl font-bold mb-4">Ready to Start Your Adventure?</h2>
+                                  <p className="text-emerald-100 text-lg mb-6 max-w-2xl mx-auto">
+                    Don&apos;t miss out on this incredible travel experience. Book now and create memories that will last a lifetime.
+                  </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <Button 
+                    className="bg-white text-emerald-600 hover:bg-emerald-50 border-0 px-8 py-4 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    onClick={() => {
+                      window.location.href = '/contact';
+                    }}
+                  >
+                    🚀 Book This Package
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="bg-transparent text-white border-white hover:bg-white hover:text-emerald-600 px-8 py-4 text-xl font-bold rounded-xl border-2 hover:shadow-xl transition-all duration-300"
+                    onClick={() => {
+                      router.push('/dashboard/allpackages');
+                    }}
+                  >
+                    📋 View More Packages
+                  </Button>
+                </div>
+                <div className="mt-6 flex flex-wrap justify-center gap-6 text-sm text-emerald-100">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 bg-green-400 rounded-full"></span>
+                    Instant Confirmation
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 bg-green-400 rounded-full"></span>
+                    Flexible Cancellation
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 bg-green-400 rounded-full"></span>
+                    24/7 Support
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Enhanced Itinerary */}
             {packageData.itinerary && packageData.itinerary.length > 0 && (
               <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden">
@@ -356,33 +416,34 @@ export default function ViewPackagePage() {
                     <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
                       <FaImage className="w-6 h-6 text-white" />
                     </div>
-                    Gallery Images ({packageData.galleryImages.length})
+                    Gallery
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-8">
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {packageData.galleryImages.map((imageId, index) => {
-                      // Try to determine the correct bucket for gallery images
-                      // First try the featured image bucket, then fallback to media bucket
-                      const imageBucket = packageData.featuredImageBucket || 'media';
+                      // Use the featured image bucket for gallery images
+                      const imageBucket = packageData.featuredImageBucket || 'featuredImage';
                       const imageSrc = `${process.env.NEXT_PUBLIC_APPWRITE_HOST_URL}/storage/buckets/${imageBucket}/files/${imageId}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
                       
                       return (
-                        <div key={index} className="relative group">
+                        <div key={index} className="relative group cursor-pointer">
                           <div 
-                            className="w-full h-32 rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
+                            className="w-full h-40 rounded-xl overflow-hidden bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                             onClick={() => setSelectedImage(imageId)}
                           >
                             <OptimizedImage
                               src={imageSrc}
-                              alt={`Gallery image ${index + 1}`}
-                              width={200}
-                              height={150}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              alt="Gallery image"
+                              width={300}
+                              height={200}
+                              className="w-full h-full object-cover"
                             />
                           </div>
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end p-3">
-                            <span className="text-white text-sm font-semibold">View Image {index + 1}</span>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl flex items-center justify-center">
+                            <div className="bg-white/90 backdrop-blur-sm rounded-full p-3">
+                              <FaImage className="w-6 h-6 text-green-600" />
+                            </div>
                           </div>
                         </div>
                       );
@@ -391,6 +452,127 @@ export default function ViewPackagePage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Enhanced Cost Include */}
+            {packageData.costInclude && packageData.costInclude.length > 0 && (
+              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200/50">
+                  <CardTitle className="text-2xl flex items-center gap-3 text-gray-900">
+                    <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                      <FaCheck className="w-6 h-6 text-white" />
+                    </div>
+                    What&apos;s Included ({packageData.costInclude.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <div className="space-y-3">
+                    {packageData.costInclude.map((item, index) => (
+                      <div key={index} className="flex items-center gap-3 p-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200/50">
+                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <FaCheck className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm font-medium text-green-800">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Enhanced Cost Exclude */}
+            {packageData.costExclude && packageData.costExclude.length > 0 && (
+              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 border-b border-red-200/50">
+                  <CardTitle className="text-2xl flex items-center gap-3 text-gray-900">
+                    <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center">
+                      <FaTimes className="w-5 h-5 text-white" />
+                    </div>
+                    What&apos;s Not Included ({packageData.costExclude.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <div className="space-y-3">
+                    {packageData.costExclude.map((item, index) => (
+                      <div key={index} className="flex items-center gap-3 p-2 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200/50">
+                        <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <FaTimes className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-sm font-medium text-red-800">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Client Testimonials Section */}
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200/50">
+                <CardTitle className="text-2xl flex items-center gap-3 text-gray-900">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
+                    <FaImage className="w-6 h-6 text-white" />
+                  </div>
+                  Client Testimonials
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200/50">
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-3">
+                        S
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900">Sarah M.</h4>
+                        <p className="text-sm text-gray-600">Adventure Traveler</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-700 italic">&ldquo;Absolutely incredible experience! The itinerary was perfectly planned and every detail was taken care of. Highly recommend!&rdquo;</p>
+                    <div className="flex text-yellow-400 mt-3">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i}>⭐</span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200/50">
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-3">
+                        M
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900">Michael R.</h4>
+                        <p className="text-sm text-gray-600">Cultural Explorer</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-700 italic">&ldquo;Professional service from start to finish. The guides were knowledgeable and the accommodations exceeded expectations.&rdquo;</p>
+                    <div className="flex text-yellow-400 mt-3">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i}>⭐</span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200/50 md:col-span-2 lg:col-span-1">
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-3">
+                        E
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900">Emma L.</h4>
+                        <p className="text-sm text-gray-600">Solo Traveler</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-700 italic">&ldquo;As a solo traveler, I felt completely safe and supported throughout the entire journey. Amazing memories created!&rdquo;</p>
+                    <div className="flex text-yellow-400 mt-3">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i}>⭐</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Enhanced FAQ */}
             {packageData.faq && packageData.faq.length > 0 && (
@@ -430,6 +612,16 @@ export default function ViewPackagePage() {
                 <CardTitle className="text-xl text-gray-900">Package Information</CardTitle>
               </CardHeader>
               <CardContent className="p-6">
+                {/* Package Information Display Only */}
+                <div className="mb-8 p-6 bg-gradient-to-r from-gray-50 to-slate-100 rounded-2xl text-center border border-gray-200/50">
+                  <h4 className="text-gray-800 text-xl font-bold mb-3">Package Details</h4>
+                  <p className="text-gray-600 mb-4 text-sm">View all the information about this travel package</p>
+                  <div className="flex items-center justify-center gap-2 text-gray-500">
+                    <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                    <span className="text-sm">Complete package information below</span>
+                  </div>
+                </div>
+                
                 <div className="space-y-5">
                   {packageData.location && (
                     <div className="flex items-center gap-4 p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl border border-red-200/50">
@@ -542,57 +734,9 @@ export default function ViewPackagePage() {
               </Card>
             )}
 
-            {/* Enhanced Cost Include */}
-            {packageData.costInclude && packageData.costInclude.length > 0 && (
-              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200/50">
-                  <CardTitle className="text-xl flex items-center gap-3 text-gray-900">
-                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                      <FaCheck className="w-5 h-5 text-white" />
-                    </div>
-                    What&apos;s Included ({packageData.costInclude.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="space-y-3">
-                    {packageData.costInclude.map((item, index) => (
-                      <div key={index} className="flex items-center gap-3 p-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200/50">
-                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                          <FaCheck className="w-3 h-3 text-white" />
-                        </div>
-                        <span className="text-sm font-medium text-green-800">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
-            {/* Enhanced Cost Exclude */}
-            {packageData.costExclude && packageData.costExclude.length > 0 && (
-              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 border-b border-red-200/50">
-                  <CardTitle className="text-xl flex items-center gap-3 text-gray-900">
-                    <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center">
-                      <FaTimes className="w-5 h-5 text-white" />
-                    </div>
-                    What&apos;s Not Included ({packageData.costExclude.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="space-y-3">
-                    {packageData.costExclude.map((item, index) => (
-                      <div key={index} className="flex items-center gap-3 p-2 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200/50">
-                        <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-                          <FaTimes className="w-3 h-3 text-white" />
-                        </div>
-                        <span className="text-sm font-medium text-red-800">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+
+
           </div>
         </div>
       </div>
