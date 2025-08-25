@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://brothers-holidays.vercel.app/sitemap.xml
+
+# Disallow admin and auth pages
+Disallow: /admin/
+Disallow: /(auth)/
+Disallow: /api/
+
+# Allow important pages
+Allow: /packages/
+Allow: /destinations/
+Allow: /blogs/
+Allow: /about/
+Allow: /contact/
+Allow: /team/
+Allow: /trips/
+
+# Crawl delay (optional)
+Crawl-delay: 1

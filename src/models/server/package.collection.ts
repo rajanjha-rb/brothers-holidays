@@ -29,6 +29,7 @@ export default async function createPackageCollection() {
       await Promise.all([
         databases.createStringAttribute(db, packageCollection, "name", 255, true),
         databases.createStringAttribute(db, packageCollection, "slug", 255, true),
+        databases.createStringAttribute(db, packageCollection, "metaDescription", 160, false), // SEO meta description
 
         databases.createIntegerAttribute(db, packageCollection, "days", false),
         databases.createIntegerAttribute(db, packageCollection, "nights", false),
@@ -67,6 +68,13 @@ export default async function createPackageCollection() {
           "slug_index",
           IndexType.Unique,
           ["slug"]
+        ),
+        databases.createIndex(
+          db,
+          packageCollection,
+          "metaDescription_index",
+          IndexType.Fulltext,
+          ["metaDescription"]
         ),
         databases.createIndex(
           db,

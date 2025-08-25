@@ -7,6 +7,7 @@ export async function PUT(request: NextRequest) {
     const {
       id,
       name,
+      metaDescription,
       overview,
       costInclude,
       costExclude,
@@ -33,6 +34,7 @@ export async function PUT(request: NextRequest) {
 
     const updateData = {
       name,
+      metaDescription: metaDescription || "",
       overview: overview || "",
       costInclude: Array.isArray(costInclude) ? costInclude : [],
       costExclude: Array.isArray(costExclude) ? costExclude : [],
@@ -65,6 +67,7 @@ export async function PUT(request: NextRequest) {
       package: {
         $id: result.$id,
         name: result.name,
+        metaDescription: result.metaDescription,
         overview: result.overview,
         costInclude: result.costInclude,
         costExclude: result.costExclude,

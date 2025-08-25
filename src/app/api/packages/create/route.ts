@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
     const {
       name,
       slug,
+      metaDescription,
       overview,
       costInclude,
       costExclude,
@@ -84,28 +85,30 @@ export async function POST(request: NextRequest) {
     const packageData = {
       name: name?.trim() || "",
       slug: slug || slugify(name?.trim() || ""),
+      metaDescription: metaDescription?.trim() || "",
       overview: overview || "",
-      costInclude: Array.isArray(costInclude) ? costInclude : [],
-      costExclude: Array.isArray(costExclude) ? costExclude : [],
+      costInclude: Array.isArray(costInclude) && costInclude.length > 0 ? costInclude : null,
+      costExclude: Array.isArray(costExclude) && costExclude.length > 0 ? costExclude : null,
       // Store itinerary as JSON string since Appwrite doesn't support complex objects directly
-      itinerary: Array.isArray(itinerary) ? JSON.stringify(itinerary) : "[]",
+      itinerary: Array.isArray(itinerary) && itinerary.length > 0 ? JSON.stringify(itinerary) : null,
       featuredImage: featuredImage || "",
       featuredImageBucket: featuredImageBucket || "featuredImage",
-      galleryImages: Array.isArray(galleryImages) ? galleryImages : [],
+      galleryImages: Array.isArray(galleryImages) && galleryImages.length > 0 ? galleryImages : null,
       // Store FAQ as JSON string since Appwrite doesn't support complex objects directly
-      faq: Array.isArray(faq) ? JSON.stringify(faq) : "[]",
-      tags: Array.isArray(tags) ? tags : [],
-      days: days || null,
-      nights: nights || null,
+      faq: Array.isArray(faq) && faq.length > 0 ? JSON.stringify(faq) : null,
+      tags: Array.isArray(tags) && tags.length > 0 ? tags : null,
+      days: days || 0,
+      nights: nights || 0,
       location: location || "",
       destinationId: destinationId || "",
       price: price || "",
-      bestMonths: Array.isArray(bestMonths) ? bestMonths : []
+      bestMonths: Array.isArray(bestMonths) && bestMonths.length > 0 ? bestMonths : null
     };
     console.log("15. Package data prepared successfully");
 
     console.log("Package data prepared for database:", {
       name: packageData.name,
+      metaDescription: packageData.metaDescription?.substring(0, 100) + "...",
       overview: packageData.overview?.substring(0, 100) + "...",
       costInclude: packageData.costInclude,
       costExclude: packageData.costExclude,
@@ -153,9 +156,11 @@ export async function POST(request: NextRequest) {
         if (createError.message.includes('collection')) {
           throw new Error('Package collection not found. Please initialize the database first.');
         } else if (createError.message.includes('attribute')) {
-          throw new Error('Invalid data format. Please check the form data.');
+          throw new Error(`Invalid data format: ${createError.message}. Please check the form data.`);
         } else if (createError.message.includes('permission')) {
           throw new Error('Permission denied. Please check your API key.');
+        } else {
+          throw new Error(`Database error: ${createError.message}`);
         }
       }
       
@@ -169,6 +174,7 @@ export async function POST(request: NextRequest) {
       package: {
         $id: result.$id,
         name: result.name,
+        metaDescription: result.metaDescription,
         overview: result.overview,
         costInclude: result.costInclude,
         costExclude: result.costExclude,

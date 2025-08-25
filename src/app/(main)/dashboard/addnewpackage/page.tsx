@@ -18,6 +18,7 @@ import slugify from "@/app/utils/slugify";
 
 interface PackageFormData {
   name: string;
+  metaDescription: string; // SEO meta description
   overview: string;
   costInclude: string[];
   costExclude: string[];
@@ -66,6 +67,7 @@ export default function AddNewPackagePage() {
   const { hydrated, isAdmin, adminChecked } = useAuthState();
   const [formData, setFormData] = useState<PackageFormData>({
     name: "",
+    metaDescription: "",
     overview: "",
     costInclude: [],
     costExclude: [],
@@ -473,6 +475,12 @@ export default function AddNewPackagePage() {
       validationErrors.push("Package name is required");
     }
 
+    if (!formData.metaDescription.trim()) {
+      validationErrors.push("Meta description is required for SEO");
+    } else if (formData.metaDescription.length > 160) {
+      validationErrors.push("Meta description must be 160 characters or less for optimal SEO");
+    }
+
     if (!formData.featuredImage) {
       validationErrors.push("Featured image is required");
     } else if (formData.featuredImage === "test" || formData.featuredImage.length < 10) {
@@ -494,6 +502,7 @@ export default function AddNewPackagePage() {
     const requestData = {
       name: formData.name.trim(),
       slug: slugify(formData.name.trim()),
+      metaDescription: formData.metaDescription.trim() || "",
       overview: formData.overview || "",
       costInclude: Array.isArray(formData.costInclude) ? formData.costInclude : [],
       costExclude: Array.isArray(formData.costExclude) ? formData.costExclude : [],
@@ -746,6 +755,44 @@ export default function AddNewPackagePage() {
                 </div>
               </div>
               
+              {/* Meta Description for SEO */}
+              <div>
+                <Label htmlFor="metaDescription">
+                  Meta Description * 
+                  <span className="text-sm font-normal text-gray-500 ml-2">
+                    (Max 160 characters for SEO)
+                  </span>
+                </Label>
+                <Textarea
+                  id="metaDescription"
+                  value={formData.metaDescription}
+                  onChange={(e) => handleInputChange('metaDescription', e.target.value)}
+                  placeholder="Enter a compelling description for search engines and social media sharing..."
+                  rows={3}
+                  maxLength={160}
+                  className="resize-none"
+                />
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-xs text-gray-500">
+                    {formData.metaDescription.length}/160 characters
+                  </span>
+                  <span className={`text-xs ${
+                    formData.metaDescription.length > 140 
+                      ? 'text-orange-500' 
+                      : formData.metaDescription.length > 160 
+                        ? 'text-red-500' 
+                        : 'text-green-500'
+                  }`}>
+                    {formData.metaDescription.length > 160 
+                      ? 'Too long!' 
+                      : formData.metaDescription.length > 140 
+                        ? 'Getting long' 
+                        : 'Good length'
+                    }
+                  </span>
+                </div>
+              </div>
+              
               {/* Duration Section */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -795,13 +842,13 @@ export default function AddNewPackagePage() {
                   </SelectTrigger>
                   <SelectContent>
                     {loadingDestinations ? (
-                      <SelectItem value="" disabled>
+                      <div className="px-2 py-1.5 text-sm text-gray-500">
                         Loading destinations...
-                      </SelectItem>
+                      </div>
                     ) : destinations.length === 0 ? (
-                      <SelectItem value="" disabled>
+                      <div className="px-2 py-1.5 text-sm text-gray-500">
                         No destinations available
-                      </SelectItem>
+                      </div>
                     ) : (
                       destinations.map((destination) => (
                         <SelectItem key={destination.$id} value={destination.$id}>
@@ -1382,6 +1429,10 @@ export default function AddNewPackagePage() {
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${formData.name.trim() ? 'bg-green-500' : 'bg-red-500'}`}></span>
                 Package Name {formData.name.trim() ? '✓' : '✗'}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${formData.metaDescription.trim() && formData.metaDescription.length <= 160 ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                Meta Description (≤160 chars) {formData.metaDescription.trim() && formData.metaDescription.length <= 160 ? '✓' : '✗'}
               </div>
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${formData.featuredImage ? 'bg-green-500' : 'bg-red-500'}`}></span>

@@ -17,6 +17,7 @@ import OptimizedImage from "@/components/OptimizedImage";
 
 interface PackageFormData {
   name: string;
+  metaDescription: string; // SEO meta description
   overview: string;
   costInclude: string[];
   costExclude: string[];
@@ -31,7 +32,7 @@ interface PackageFormData {
   location: string;
   destinationId: string;
   price: string;
-  bestMonths: string[]; // Added missing field
+  bestMonths: string[];
 }
 
 interface Destination {
@@ -68,6 +69,7 @@ export default function EditPackagePage() {
   const { hydrated, isAdmin, adminChecked } = useAuthState();
   const [formData, setFormData] = useState<PackageFormData>({
     name: "",
+    metaDescription: "",
     overview: "",
     costInclude: [],
     costExclude: [],
@@ -82,7 +84,7 @@ export default function EditPackagePage() {
     location: "",
     destinationId: "",
     price: "",
-    bestMonths: [] // Initialize new field
+    bestMonths: []
   });
 
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
@@ -106,11 +108,13 @@ export default function EditPackagePage() {
   const [showFeaturedImageSelector, setShowFeaturedImageSelector] = useState(false);
   const [showGalleryImageSelector, setShowGalleryImageSelector] = useState(false);
 
-  // Authentication check
+  // Authentication check - improved to prevent race conditions
   useEffect(() => {
-    if (hydrated && adminChecked && !isAdmin) {
-      toast.error("Access denied. Admin privileges required.");
-      router.push("/");
+    if (hydrated && adminChecked) {
+      if (!isAdmin) {
+        toast.error("Access denied. Admin privileges required.");
+        router.push("/");
+      }
     }
   }, [hydrated, adminChecked, isAdmin, router]);
 
@@ -153,8 +157,10 @@ export default function EditPackagePage() {
     }
   };
 
-  // Fetch package data
+  // Fetch package data - improved with better error handling
   const fetchPackageData = useCallback(async () => {
+    if (!packageId) return;
+    
     try {
       setLoadingPackage(true);
       const response = await fetch(`/api/packages/${packageId}`);
@@ -164,6 +170,7 @@ export default function EditPackagePage() {
         const packageData = data.package;
         setFormData({
           name: packageData.name || "",
+          metaDescription: packageData.metaDescription || "",
           overview: packageData.overview || "",
           costInclude: Array.isArray(packageData.costInclude) ? packageData.costInclude : [],
           costExclude: Array.isArray(packageData.costExclude) ? packageData.costExclude : [],
@@ -196,7 +203,7 @@ export default function EditPackagePage() {
           location: packageData.location || "",
           destinationId: packageData.destinationId || "",
           price: packageData.price || "",
-          bestMonths: Array.isArray(packageData.bestMonths) ? packageData.bestMonths : [] // Fetch new field
+          bestMonths: Array.isArray(packageData.bestMonths) ? packageData.bestMonths : []
         });
       } else {
         toast.error('Failed to fetch package data');
@@ -211,13 +218,14 @@ export default function EditPackagePage() {
     }
   }, [packageId, router]);
 
+  // Improved data fetching - only fetch when auth is ready and packageId exists
   useEffect(() => {
-    if (packageId) {
+    if (hydrated && adminChecked && isAdmin && packageId) {
       fetchPackageData();
       fetchMediaFiles();
       fetchDestinations();
     }
-  }, [packageId, fetchPackageData]);
+  }, [hydrated, adminChecked, isAdmin, packageId, fetchPackageData]);
 
   // Filter media files based on search
   useEffect(() => {
@@ -432,7 +440,7 @@ export default function EditPackagePage() {
       location: formData.location || "",
       destinationId: formData.destinationId || "",
       price: formData.price || "",
-      bestMonths: Array.isArray(formData.bestMonths) ? formData.bestMonths : [] // Include new field
+      bestMonths: Array.isArray(formData.bestMonths) ? formData.bestMonths : []
     };
 
     try {
@@ -463,12 +471,44 @@ export default function EditPackagePage() {
     }
   };
 
-  if (!hydrated || !adminChecked || !isAdmin) {
+  // Improved loading states to prevent blank screen
+  if (!hydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-white to-pink-100">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Initializing...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!adminChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-white to-pink-100">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg">Checking permissions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-white to-pink-100">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-red-600 text-2xl">⚠️</span>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">Admin privileges required to edit packages.</p>
+          <button 
+            onClick={() => router.push('/')} 
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+          >
+            Go Home
+          </button>
         </div>
       </div>
     );
@@ -522,6 +562,44 @@ export default function EditPackagePage() {
                 </div>
               </div>
               
+              {/* Meta Description for SEO */}
+              <div>
+                <Label htmlFor="metaDescription">
+                  Meta Description * 
+                  <span className="text-sm font-normal text-gray-500 ml-2">
+                    (Max 160 characters for SEO)
+                  </span>
+                </Label>
+                <Textarea
+                  id="metaDescription"
+                  value={formData.metaDescription}
+                  onChange={(e) => handleInputChange('metaDescription', e.target.value)}
+                  placeholder="Enter a compelling description for search engines and social media sharing..."
+                  rows={3}
+                  maxLength={160}
+                  className="resize-none"
+                />
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-xs text-gray-500">
+                    {formData.metaDescription.length}/160 characters
+                  </span>
+                  <span className={`text-xs ${
+                    formData.metaDescription.length > 140 
+                      ? 'text-orange-500' 
+                      : formData.metaDescription.length > 160 
+                        ? 'text-red-500' 
+                        : 'text-green-500'
+                  }`}>
+                    {formData.metaDescription.length > 160 
+                      ? 'Too long!' 
+                      : formData.metaDescription.length > 140 
+                        ? 'Getting long' 
+                        : 'Good length'
+                    }
+                  </span>
+                </div>
+              </div>
+              
               {/* Duration Section */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -571,13 +649,13 @@ export default function EditPackagePage() {
                   </SelectTrigger>
                   <SelectContent>
                     {loadingDestinations ? (
-                      <SelectItem value="" disabled>
+                      <div className="px-2 py-1.5 text-sm text-gray-500">
                         Loading destinations...
-                      </SelectItem>
+                      </div>
                     ) : destinations.length === 0 ? (
-                      <SelectItem value="" disabled>
+                      <div className="px-2 py-1.5 text-sm text-gray-500">
                         No destinations available
-                      </SelectItem>
+                      </div>
                     ) : (
                       destinations.map((destination) => (
                         <SelectItem key={destination.$id} value={destination.$id}>
