@@ -422,6 +422,11 @@ export default function EditPackagePage() {
       return;
     }
 
+    if (!formData.destinationId || formData.destinationId.trim() === "") {
+      toast.error("Destination selection is required");
+      return;
+    }
+
     setLoading(true);
     
     const requestData = {

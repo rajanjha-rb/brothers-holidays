@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { useAuthState } from "@/store/auth";
 import { toast } from "react-hot-toast";
 import OptimizedImage from "@/components/OptimizedImage";
@@ -18,7 +18,7 @@ import {
   FaImage, 
   FaRoute, 
   FaQuestion, 
-  FaTags, 
+ 
   FaCheck, 
   FaTimes,
   FaCalendar
@@ -45,6 +45,17 @@ interface Package {
   $updatedAt: string;
 }
 
+interface Destination {
+  $id: string;
+  title: string;
+  slug: string;
+  metaDescription: string;
+  featuredImage: string;
+  tags: string[];
+  $createdAt: string;
+  $updatedAt: string;
+}
+
 export default function ViewPackagePage() {
   const router = useRouter();
   const params = useParams();
@@ -55,6 +66,7 @@ export default function ViewPackagePage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [destinationData, setDestinationData] = useState<Destination | null>(null);
 
   // Authentication check
   useEffect(() => {
@@ -111,6 +123,19 @@ export default function ViewPackagePage() {
           $createdAt: pkg.$createdAt || "",
           $updatedAt: pkg.$updatedAt || ""
         });
+
+        // Fetch destination data if destinationId exists
+        if (pkg.destinationId && pkg.destinationId.trim() !== "") {
+          try {
+            const destResponse = await fetch(`/api/destinations/${pkg.destinationId}`);
+            const destData = await destResponse.json();
+            if (destData.success && destData.destination && destData.destination.title) {
+              setDestinationData(destData.destination);
+            }
+          } catch (error) {
+            console.error('Error fetching destination:', error);
+          }
+        }
       } else {
         toast.error('Failed to fetch package data');
         router.push('/dashboard/allpackages');
@@ -669,7 +694,9 @@ export default function ViewPackagePage() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 font-medium">Destination</p>
-                        <p className="font-bold text-gray-900">{packageData.destinationId}</p>
+                        <p className="font-bold text-gray-900">
+                          {destinationData && destinationData.title ? destinationData.title : packageData.destinationId}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -711,28 +738,7 @@ export default function ViewPackagePage() {
               </CardContent>
             </Card>
 
-            {/* Enhanced Tags */}
-            {packageData.tags && packageData.tags.length > 0 && (
-              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-blue-200/50">
-                  <CardTitle className="text-xl flex items-center gap-3 text-gray-900">
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-                      <FaTags className="w-5 h-5 text-white" />
-                    </div>
-                    Tags ({packageData.tags.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="flex flex-wrap gap-3">
-                    {packageData.tags.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 border border-blue-200 px-3 py-2 text-sm font-semibold hover:from-blue-200 hover:to-purple-200 transition-all duration-300">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+
 
 
 

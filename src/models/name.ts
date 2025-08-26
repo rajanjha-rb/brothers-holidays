@@ -5,4 +5,5 @@ export const mediaCollection = "media";
 export const destinationCollection = "destinations";
 export const activityCollection = "activities";
 export const packageCollection = "packages";
+export const packageTagCollection = "packageTags";
 export const featuredImageBucket = "featuredImage";

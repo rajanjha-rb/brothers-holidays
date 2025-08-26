@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { databases } from "@/models/server/config";
-import { db, packageCollection } from "@/models/name";
+import { db, packageCollection, packageTagCollection } from "@/models/name";
 import { ID } from "node-appwrite";
 import slugify from "@/app/utils/slugify";
 
@@ -131,6 +131,61 @@ export async function POST(request: NextRequest) {
     console.log("18. Collection name:", packageCollection);
     console.log("19. Package data to be inserted:", JSON.stringify(packageData, null, 2));
 
+    // Function to sync tags with packageTag collection
+    const syncTagsWithPackageTagCollection = async (tags: string[]) => {
+      try {
+        if (!Array.isArray(tags) || tags.length === 0) return;
+        
+        for (const tagName of tags) {
+          if (!tagName || typeof tagName !== 'string') continue;
+          
+          // Check if tag already exists
+          try {
+            const existingTags = await databases.listDocuments(db, packageTagCollection, [
+              `name = "${tagName.trim()}"`
+            ]);
+            
+            if (existingTags.documents.length > 0) {
+              // Tag exists, increment usage count
+              const existingTag = existingTags.documents[0];
+              await databases.updateDocument(
+                db,
+                packageTagCollection,
+                existingTag.$id,
+                {
+                  usageCount: (existingTag.usageCount || 0) + 1
+                }
+              );
+              console.log(`Tag "${tagName}" usage count updated`);
+            } else {
+              // Tag doesn't exist, create it
+              await databases.createDocument(
+                db,
+                packageTagCollection,
+                ID.unique(),
+                {
+                  name: tagName.trim(),
+                  slug: slugify(tagName.trim()),
+                  description: `Tag for ${tagName.trim()} packages`,
+                  usageCount: 1,
+                  category: "general",
+                  color: "#3B82F6",
+                  icon: "tag",
+                  isActive: true,
+                  createdBy: "system"
+                }
+              );
+              console.log(`New tag "${tagName}" created`);
+            }
+          } catch (tagError) {
+            console.error(`Error syncing tag "${tagName}":`, tagError);
+          }
+        }
+      } catch (error) {
+        console.error("Error in tag synchronization:", error);
+      }
+    };
+
     console.log("20. Calling databases.createDocument...");
     let result;
     try {
@@ -145,6 +200,13 @@ export async function POST(request: NextRequest) {
       console.log("    - Result ID:", result.$id);
       console.log("    - Result type:", typeof result);
       console.log("    - Result keys:", Object.keys(result));
+      
+      // Sync tags with packageTag collection
+      if (Array.isArray(tags) && tags.length > 0) {
+        console.log("22. Syncing tags with packageTag collection...");
+        await syncTagsWithPackageTagCollection(tags);
+        console.log("23. Tag synchronization completed");
+      }
     } catch (createError) {
       console.error("21. ERROR creating document:", createError);
       console.error("    - Error type:", typeof createError);

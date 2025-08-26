@@ -1,310 +1,37 @@
-/* Packages Page Styles - Premium Edition */
+/* Packages Page Styles - Professional Edition */
 
-/* Package Card Animations - Ultra Premium */
+/* Package Card Animations - Clean and Professional */
 .package-card {
-  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-}
-
-.package-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.7s;
-}
-
-.package-card:hover::before {
-  left: 100%;
 }
 
 .package-card:hover {
-  transform: translateY(-12px) scale(1.02);
-  box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(236, 72, 153, 0.1),
-    0 0 40px rgba(236, 72, 153, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
-/* Premium Glow Effect */
-.package-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 24px;
-  padding: 2px;
-  background: linear-gradient(45deg, #ec4899, #8b5cf6, #3b82f6);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.7s;
-}
 
-.package-card:hover::after {
-  opacity: 1;
-}
 
-/* Tag Badge Animations - Premium */
-.tag-badge {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.tag-badge::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.4s;
-}
-
-.tag-badge:hover::before {
-  left: 100%;
-}
-
-.tag-badge:hover {
-  transform: translateY(-3px) scale(1.08);
-  box-shadow: 
-    0 15px 35px -5px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(236, 72, 153, 0.2);
-}
-
-/* Stats Card Animations - Premium */
+/* Stats Card Animations - Subtle */
 .stats-card {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.stats-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-.stats-card:hover::before {
-  left: 100%;
+  transition: all 0.3s ease;
 }
 
 .stats-card:hover {
-  transform: translateY(-6px) scale(1.08);
-  box-shadow: 
-    0 25px 50px -10px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(139, 92, 246, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Search Container - Premium */
+/* Search Container */
 .search-container {
   position: relative;
-  z-index: 9999;
+  z-index: 10;
 }
 
-/* Stats Container - Premium */
+/* Stats Container */
 .stats-container {
   position: relative;
   z-index: 1;
-}
-
-/* Responsive Grid Adjustments - Premium */
-@media (max-width: 768px) {
-  .package-card {
-    margin-bottom: 1.5rem;
-  }
-  
-  .package-card:hover {
-    transform: translateY(-6px) scale(1.01);
-  }
-}
-
-/* Image Hover Effects - Premium */
-.package-card img {
-  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.package-card:hover img {
-  transform: scale(1.1);
-}
-
-/* Button Hover Effects - Premium */
-.package-card button {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.package-card button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.4s;
-}
-
-.package-card button:hover::before {
-  left: 100%;
-}
-
-.package-card button:hover {
-  transform: translateY(-3px);
-  box-shadow: 
-    0 15px 35px -5px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(236, 72, 153, 0.2);
-}
-
-/* Loading States - Premium */
-.package-card.loading {
-  opacity: 0.7;
-  pointer-events: none;
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.7;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-/* Focus States for Accessibility - Premium */
-.package-card:focus-within {
-  outline: 2px solid #ec4899;
-  outline-offset: 4px;
-  box-shadow: 
-    0 0 0 4px rgba(236, 72, 153, 0.1),
-    0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-/* Premium Hover Effects for Interactive Elements */
-.package-card .tag-badge,
-.package-card button,
-.package-card .stats-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.package-card .tag-badge::after,
-.package-card button::after,
-.package-card .stats-card::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-  transition: all 0.4s;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-}
-
-.package-card .tag-badge:hover::after,
-.package-card button:hover::after,
-.package-card .stats-card:hover::after {
-  width: 200%;
-  height: 200%;
-}
-
-/* Dark Mode Support - Premium */
-@media (prefers-color-scheme: dark) {
-  .package-card {
-    background-color: rgba(17, 24, 39, 0.95);
-    color: #f9fafb;
-  }
-  
-  .package-card::after {
-    background: linear-gradient(45deg, #ec4899, #8b5cf6, #3b82f6);
-  }
-  
-  .tag-badge {
-    background-color: rgba(156, 163, 175, 0.1);
-    color: #e5e7eb;
-    border-color: rgba(156, 163, 175, 0.2);
-  }
-  
-  .package-card:hover {
-    box-shadow: 
-      0 25px 50px -12px rgba(0, 0, 0, 0.4),
-      0 0 0 1px rgba(236, 72, 153, 0.2),
-      0 0 40px rgba(236, 72, 153, 0.2);
-  }
-}
-
-/* Premium Animation Keyframes */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(236, 72, 153, 0.6);
-  }
-}
-
-/* Premium Hover States for Cards */
-.package-card:hover .tag-badge {
-  animation: float 2s ease-in-out infinite;
-}
-
-.package-card:hover .stats-card {
-  animation: glow 2s ease-in-out infinite;
-}
-
-/* Enhanced Focus States */
-.package-card:focus-within .tag-badge,
-.package-card:focus-within .stats-card {
-  animation: glow 2s ease-in-out infinite;
-}
-
-/* Premium Scrollbar Styling */
-.package-card::-webkit-scrollbar {
-  width: 8px;
-}
-
-.package-card::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-}
-
-.package-card::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, #ec4899, #8b5cf6);
-  border-radius: 4px;
-}
-
-.package-card::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, #db2777, #7c3aed);
 }

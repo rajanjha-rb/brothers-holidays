@@ -386,29 +386,76 @@
 .w-md-editor {
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
+  background-color: #ffffff !important;
 }
 
 .w-md-editor-toolbar {
   border-bottom: 1px solid #e5e7eb;
-  background-color: white;
+  background-color: #f8fafc !important;
 }
 
 .w-md-editor-content {
-  background-color: white;
+  background-color: #ffffff !important;
 }
 
 .w-md-editor-text {
-  color: #374151;
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
 }
 
 .w-md-editor-text-pre,
 .w-md-editor-text-input {
-  color: #374151;
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+  caret-color: #3b82f6 !important;
 }
 
 .w-md-editor-preview {
-  background-color: white !important;
-  color: #374151 !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* RTE wrapper specific styles */
+.rte-wrapper .w-md-editor {
+  background-color: #ffffff !important;
+}
+
+.rte-wrapper .w-md-editor * {
+  color: #1f2937 !important;
+}
+
+.rte-wrapper .w-md-editor-text-input,
+.rte-wrapper .w-md-editor-text-pre {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+  caret-color: #3b82f6 !important;
+}
+
+/* Additional RTE wrapper overrides */
+.rte-wrapper .w-md-editor-content {
+  background-color: #ffffff !important;
+}
+
+.rte-wrapper .w-md-editor-text {
+  background-color: #ffffff !important;
+}
+
+.rte-wrapper .w-md-editor-toolbar {
+  background-color: #f8fafc !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Force all text elements in RTE to be visible */
+.rte-wrapper .w-md-editor-text-input,
+.rte-wrapper .w-md-editor-text-pre,
+.rte-wrapper .w-md-editor-text-input textarea,
+.rte-wrapper .w-md-editor-text-pre textarea {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+  caret-color: #3b82f6 !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
 }
 
 /* Force light mode for markdown preview in blog posts */
@@ -476,8 +523,319 @@
 .w-md-editor-preview table,
 .w-md-editor-preview th,
 .w-md-editor-preview td {
-  background-color: white !important;
-  color: #374151 !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* Force text input visibility */
+.w-md-editor-text-input,
+.w-md-editor-text-pre,
+.w-md-editor-text-input *,
+.w-md-editor-text-pre * {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+  caret-color: #3b82f6 !important;
+}
+
+/* Nuclear option: Override any remaining white text */
+.rte-wrapper .w-md-editor-text-input *,
+.rte-wrapper .w-md-editor-text-pre *,
+.rte-wrapper .w-md-editor-text-input textarea *,
+.rte-wrapper .w-md-editor-text-pre textarea * {
+  color: #1f2937 !important;
+}
+
+/* Target the specific text input containers */
+.w-md-editor-text-input,
+.w-md-editor-text-pre {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+/* Override any inline styles that might be set */
+.w-md-editor-text-input[style*="color: white"],
+.w-md-editor-text-input[style*="color:white"],
+.w-md-editor-text-pre[style*="color: white"],
+.w-md-editor-text-pre[style*="color:white"] {
+  color: #1f2937 !important;
+}
+
+/* Force all text in text input areas to be dark */
+.w-md-editor-text-input,
+.w-md-editor-text-pre,
+.w-md-editor-text-input textarea,
+.w-md-editor-text-pre textarea,
+.w-md-editor-text-input div,
+.w-md-editor-text-pre div {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+/* Target the actual text content inside the input areas */
+.w-md-editor-text-input span,
+.w-md-editor-text-pre span,
+.w-md-editor-text-input p,
+.w-md-editor-text-pre p,
+.w-md-editor-text-input div,
+.w-md-editor-text-pre div {
+  color: #1f2937 !important;
+}
+
+/* Override any remaining white text with maximum specificity */
+.w-md-editor-text-input *,
+.w-md-editor-text-pre * {
+  color: #1f2937 !important;
+}
+
+/* Force text color on any element that might be inheriting white */
+.w-md-editor-text-input,
+.w-md-editor-text-pre,
+.w-md-editor-text-input *,
+.w-md-editor-text-pre *,
+.w-md-editor-text-input textarea,
+.w-md-editor-text-pre textarea {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+/* Additional overrides for text input visibility */
+.w-md-editor-text-input,
+.w-md-editor-text-pre {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+/* Target the actual text content more aggressively */
+.w-md-editor-text-input *,
+.w-md-editor-text-pre *,
+.w-md-editor-text-input textarea *,
+.w-md-editor-text-pre textarea * {
+  color: #1f2937 !important;
+}
+
+/* Force text color on any remaining elements */
+.w-md-editor-text-input,
+.w-md-editor-text-pre,
+.w-md-editor-text-input textarea,
+.w-md-editor-text-pre textarea,
+.w-md-editor-text-input div,
+.w-md-editor-text-pre div,
+.w-md-editor-text-input span,
+.w-md-editor-text-pre span,
+.w-md-editor-text-input p,
+.w-md-editor-text-pre p {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+/* Override any inline styles that might be set by the RTE */
+.w-md-editor-text-input[style*="color"],
+.w-md-editor-text-pre[style*="color"] {
+  color: #1f2937 !important;
+}
+
+.w-md-editor-text-input[style*="background"],
+.w-md-editor-text-pre[style*="background"] {
+  background-color: #ffffff !important;
+}
+
+/* Ensure focus states are visible */
+.w-md-editor-text-input:focus,
+.w-md-editor-text-pre:focus,
+.w-md-editor-text-input textarea:focus,
+.w-md-editor-text-pre textarea:focus {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+}
+
+/* Force cursor visibility */
+.w-md-editor-text-input,
+.w-md-editor-text-pre,
+.w-md-editor-text-input textarea,
+.w-md-editor-text-pre textarea {
+  caret-color: #3b82f6 !important;
+}
+
+/* Additional specificity for text input areas */
+.w-md-editor-text-input,
+.w-md-editor-text-pre {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+  min-height: 200px !important;
+}
+
+/* Custom RTE Styles - This will definitely work! */
+.custom-rte-wrapper {
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.rte-toolbar {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.rte-toolbar-btn {
+  color: #475569;
+  transition: all 0.2s ease;
+}
+
+.rte-toolbar-btn:hover {
+  color: #1e293b;
+  background-color: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+.rte-editor {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+  font-family: 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.rte-editor:focus {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  outline: none !important;
+  border-color: #3b82f6 !important;
+}
+
+.rte-editor * {
+  color: inherit !important;
+}
+
+.rte-editor p {
+  margin: 0.5em 0;
+}
+
+.rte-editor ul, .rte-editor ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.rte-editor blockquote {
+  border-left: 4px solid #3b82f6;
+  margin: 1em 0;
+  padding-left: 1em;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.rte-editor pre {
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  padding: 1em;
+  margin: 1em 0;
+  overflow-x: auto;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.rte-editor a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.rte-editor a:hover {
+  color: #1d4ed8;
+}
+
+/* Force text visibility with maximum specificity */
+.w-md-editor-text-input,
+.w-md-editor-text-pre,
+.w-md-editor-text-input *,
+.w-md-editor-text-pre *,
+.w-md-editor-text-input textarea,
+.w-md-editor-text-pre textarea,
+.w-md-editor-text-input textarea *,
+.w-md-editor-text-pre textarea * {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+/* Override any inline styles that RTE might be setting */
+.w-md-editor-text-input[style*="color"],
+.w-md-editor-text-pre[style*="color"],
+.w-md-editor-text-input textarea[style*="color"],
+.w-md-editor-text-pre textarea[style*="color"] {
+  color: #1f2937 !important;
+}
+
+/* Force all text elements to be visible */
+.w-md-editor-text-input,
+.w-md-editor-text-pre,
+.w-md-editor-text-input textarea,
+.w-md-editor-text-pre textarea,
+.w-md-editor-text-input div,
+.w-md-editor-text-pre div,
+.w-md-editor-text-input span,
+.w-md-editor-text-pre span,
+.w-md-editor-text-input p,
+.w-md-editor-text-pre p {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+/* Nuclear option: Force typed text to be visible */
+.w-md-editor-text-input textarea,
+.w-md-editor-text-pre textarea {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+/* Target any text content that appears when typing */
+.w-md-editor-text-input textarea *,
+.w-md-editor-text-pre textarea *,
+.w-md-editor-text-input textarea span,
+.w-md-editor-text-pre textarea span,
+.w-md-editor-text-input textarea div,
+.w-md-editor-text-pre textarea div {
+  color: #1f2937 !important;
+}
+
+/* Override any white text that appears when typing */
+.w-md-editor-text-input textarea,
+.w-md-editor-text-pre textarea,
+.w-md-editor-text-input textarea *,
+.w-md-editor-text-pre textarea * {
+  color: #1f2937 !important;
+}
+
+/* Force all text in the textarea to be dark */
+.w-md-editor-text-input textarea,
+.w-md-editor-text-pre textarea {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+/* Ensure placeholder text is visible but doesn't affect typed text */
+.w-md-editor-text-input textarea::placeholder,
+.w-md-editor-text-pre textarea::placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+/* Force typed text to be dark regardless of placeholder */
+.w-md-editor-text-input textarea:not(:placeholder-shown),
+.w-md-editor-text-pre textarea:not(:placeholder-shown) {
+  color: #1f2937 !important;
+}
+
+/* Additional specificity for typed text */
+.w-md-editor-text-input textarea,
+.w-md-editor-text-pre textarea,
+.w-md-editor-text-input textarea *,
+.w-md-editor-text-pre textarea * {
+  color: #1f2937 !important;
 }
 
 /* Override RTE's CSS custom properties at the root level */
@@ -497,24 +855,115 @@
   --color-accent-emphasis: #1d4ed8 !important;
 }
 
+/* Nuclear option: Override ALL text colors in the entire RTE */
+.w-md-editor * {
+  color: #1f2937 !important;
+}
+
+/* Force text color on any element inside RTE with maximum specificity */
+.w-md-editor,
+.w-md-editor *,
+.w-md-editor textarea,
+.w-md-editor textarea *,
+.w-md-editor div,
+.w-md-editor div *,
+.w-md-editor span,
+.w-md-editor span *,
+.w-md-editor p,
+.w-md-editor p *,
+.w-md-editor input,
+.w-md-editor input * {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+/* Override any remaining white text with maximum specificity */
+.w-md-editor *[style*="color: white"],
+.w-md-editor *[style*="color:white"],
+.w-md-editor *[style*="color: #ffffff"],
+.w-md-editor *[style*="color:#ffffff"],
+.w-md-editor *[style*="color: #fff"],
+.w-md-editor *[style*="color:#fff"] {
+  color: #1f2937 !important;
+}
+
+/* Force all text elements to be visible */
+.w-md-editor * {
+  color: #1f2937 !important;
+}
+
+/* Additional specificity for text input areas */
+.w-md-editor-text-input,
+.w-md-editor-text-pre,
+.w-md-editor-text-input *,
+.w-md-editor-text-pre * {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+/* Force text color on any element inside RTE */
+.w-md-editor,
+.w-md-editor *,
+.w-md-editor textarea,
+.w-md-editor textarea *,
+.w-md-editor div,
+.w-md-editor div *,
+.w-md-editor span,
+.w-md-editor span *,
+.w-md-editor p,
+.w-md-editor p * {
+  color: #1f2937 !important;
+}
+
+/* Override any remaining white text with maximum specificity */
+.w-md-editor *[style*="color: white"],
+.w-md-editor *[style*="color:white"],
+.w-md-editor *[style*="color: #ffffff"],
+.w-md-editor *[style*="color:#ffffff"] {
+  color: #1f2937 !important;
+}
+
 /* Override any element that might be using these variables */
 * {
   --md-editor-bg-color: white !important;
   --md-editor-color: #374151 !important;
 }
 
+/* But allow specific elements to have their own colors */
+.w-md-editor-toolbar,
+.w-md-editor-toolbar * {
+  color: inherit !important;
+}
+
+/* Force ALL text in RTE to be dark */
+.w-md-editor,
+.w-md-editor *,
+.w-md-editor textarea,
+.w-md-editor textarea *,
+.w-md-editor div,
+.w-md-editor div *,
+.w-md-editor span,
+.w-md-editor span *,
+.w-md-editor p,
+.w-md-editor p *,
+.w-md-editor input,
+.w-md-editor input * {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
 /* Override any CSS custom properties that RTE might be using */
 .w-md-editor-preview {
-  --md-editor-bg-color: red !important;
-  --md-editor-color: white !important;
-  --color-canvas-default: red !important;
-  --color-canvas-subtle: red !important;
-  --color-canvas-inset: red !important;
-  --color-fg-default: white !important;
-  --color-fg-muted: white !important;
-  --color-fg-subtle: white !important;
-  background-color: red !important;
-  color: white !important;
+  --md-editor-bg-color: #ffffff !important;
+  --md-editor-color: #1f2937 !important;
+  --color-canvas-default: #ffffff !important;
+  --color-canvas-subtle: #ffffff !important;
+  --color-canvas-inset: #ffffff !important;
+  --color-fg-default: #1f2937 !important;
+  --color-fg-muted: #6b7280 !important;
+  --color-fg-subtle: #9ca3af !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
 }
 
 /* Force light mode for ALL markdown editor components */
@@ -529,8 +978,23 @@
 .w-md-editor-text-pre,
 .w-md-editor-text-input,
 .w-md-editor-text-input * {
-  background-color: #f8fafc !important;
-  color: #374151 !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* Specific override for text input areas */
+.w-md-editor-text-input,
+.w-md-editor-text-pre {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  caret-color: #3b82f6 !important;
+}
+
+/* Override any inline styles */
+.w-md-editor-text-input[style],
+.w-md-editor-text-pre[style] {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
 }
 
 /* Specific overrides for markdown preview in blog posts */
@@ -562,8 +1026,37 @@ main .prose * {
 *[class*="w-md-editor"],
 *[class*="markdown"],
 *[class*="prose"] {
-  background-color: #f8fafc !important;
-  color: #374151 !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* Force text input visibility with maximum specificity */
+div.w-md-editor-text-input,
+div.w-md-editor-text-pre,
+textarea.w-md-editor-text-input,
+textarea.w-md-editor-text-pre {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  caret-color: #3b82f6 !important;
+}
+
+/* Additional text input overrides for better specificity */
+.w-md-editor-text-input,
+.w-md-editor-text-pre,
+.w-md-editor-text-input *,
+.w-md-editor-text-pre * {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+/* Target the actual textarea elements inside the RTE */
+.w-md-editor-text-input textarea,
+.w-md-editor-text-pre textarea,
+.w-md-editor-text-input .w-md-editor-text-input,
+.w-md-editor-text-pre .w-md-editor-text-pre {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+  caret-color: #3b82f6 !important;
 }
 
 /* Override any CSS custom properties that might be causing dark mode */
@@ -625,7 +1118,27 @@ main > div {
 
 /* Force the markdown-content div to be light */
 .markdown-content {
-  background-color: #f8fafc !important;
+  background-color: #ffffff !important;
+}
+
+/* Additional RTE text input overrides */
+.w-md-editor-text-input textarea,
+.w-md-editor-text-pre textarea {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  caret-color: #3b82f6 !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+/* Override any remaining dark mode styles */
+[data-color-mode="dark"] .w-md-editor-text-input,
+[data-color-mode="dark"] .w-md-editor-text-pre,
+[data-color-mode="auto"] .w-md-editor-text-input,
+[data-color-mode="auto"] .w-md-editor-text-pre {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
 }
 
 /* Make the RTE content light too */

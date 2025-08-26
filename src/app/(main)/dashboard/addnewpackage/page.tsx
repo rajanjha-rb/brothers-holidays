@@ -491,6 +491,10 @@ export default function AddNewPackagePage() {
       validationErrors.push("At least one itinerary day is required");
     }
 
+    if (!formData.destinationId || formData.destinationId.trim() === "") {
+      validationErrors.push("Destination selection is required");
+    }
+
     if (validationErrors.length > 0) {
       validationErrors.forEach(error => toast.error(error));
       return;

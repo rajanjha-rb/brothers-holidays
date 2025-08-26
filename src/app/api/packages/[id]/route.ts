@@ -25,8 +25,8 @@ export async function GET(
     // Parse the package data to handle JSON strings properly
     const packageData = {
       $id: result.$id,
-      name: result.name,
-      overview: result.overview,
+      name: result.name || "",
+      overview: result.overview || "",
       costInclude: result.costInclude || [],
       costExclude: result.costExclude || [],
       // Parse itinerary from JSON string back to array
@@ -40,8 +40,8 @@ export async function GET(
           return [];
         }
       })(),
-      featuredImage: result.featuredImage,
-      featuredImageBucket: result.featuredImageBucket,
+      featuredImage: result.featuredImage || "",
+      featuredImageBucket: result.featuredImageBucket || "",
       galleryImages: result.galleryImages || [],
       // Parse FAQ from JSON string back to array
       faq: (() => {
@@ -55,14 +55,14 @@ export async function GET(
         }
       })(),
       tags: result.tags || [],
-      days: result.days,
-      nights: result.nights,
-      location: result.location,
-      destinationId: result.destinationId,
-      price: result.price,
+      days: result.days || null,
+      nights: result.nights || null,
+      location: result.location || "",
+      destinationId: result.destinationId || "",
+      price: result.price || "",
       bestMonths: result.bestMonths || [],
-      $createdAt: result.$createdAt,
-      $updatedAt: result.$updatedAt
+      $createdAt: result.$createdAt || "",
+      $updatedAt: result.$updatedAt || ""
     };
 
     return NextResponse.json({

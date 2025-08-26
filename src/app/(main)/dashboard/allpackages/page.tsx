@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { FaPlus, FaSearch, FaImage, FaRoute, FaQuestion, FaMapMarkerAlt, FaCalendar } from "react-icons/fa";
+import { FaPlus, FaSearch, FaImage, FaMapMarkerAlt, FaCalendar } from "react-icons/fa";
 import { useAuthState } from "@/store/auth";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
@@ -33,6 +33,17 @@ interface Package {
   $updatedAt: string;
 }
 
+interface Destination {
+  $id: string;
+  title: string;
+  slug: string;
+  metaDescription: string;
+  featuredImage: string;
+  tags: string[];
+  $createdAt: string;
+  $updatedAt: string;
+}
+
 export default function AllPackagesPage() {
   const router = useRouter();
   const { user, hydrated, isAdmin } = useAuthState();
@@ -42,6 +53,7 @@ export default function AllPackagesPage() {
   const [navigatingPackage, setNavigatingPackage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredPackages, setFilteredPackages] = useState<Package[]>([]);
+  const [destinations, setDestinations] = useState<Map<string, Destination>>(new Map());
 
   // Helper function to safely parse data and handle type mismatches
   const normalizePackageData = (pkg: Record<string, unknown>): Package => {
@@ -85,6 +97,24 @@ export default function AllPackagesPage() {
       $updatedAt: pkg.$updatedAt as string || ""
     };
   };
+
+  // Fetch destinations
+  const fetchDestinations = useCallback(async () => {
+    try {
+      const response = await fetch('/api/destinations/list');
+      const data = await response.json();
+      
+      if (data.success && data.destinations) {
+        const destinationsMap = new Map<string, Destination>();
+        data.destinations.forEach((dest: Destination) => {
+          destinationsMap.set(dest.$id, dest);
+        });
+        setDestinations(destinationsMap);
+      }
+    } catch (error) {
+      console.error('Error fetching destinations:', error);
+    }
+  }, []);
 
   // Fetch packages
   const fetchPackages = useCallback(async () => {
@@ -146,7 +176,8 @@ export default function AllPackagesPage() {
 
   useEffect(() => {
     fetchPackages();
-  }, [fetchPackages]);
+    fetchDestinations(); // Fetch destinations when packages are fetched
+  }, [fetchPackages, fetchDestinations]);
 
   // Filter packages based on search query
   useEffect(() => {
@@ -323,115 +354,89 @@ export default function AllPackagesPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPackages.map((pkg) => (
               <div key={pkg.$id} className="group">
-                <Card className="h-full bg-white/95 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-700 transform hover:-translate-y-3 rounded-3xl overflow-hidden group-hover:border-pink-200 package-card flex flex-col relative">
-                  {/* Premium Glow Effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-pink-100/20 via-transparent to-blue-100/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl"></div>
-                  
+                <Card className="h-full bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden">
                   {/* Package Image */}
-                  <div className="h-56 bg-gray-200 overflow-hidden relative">
+                  <div className="h-48 bg-gray-100 overflow-hidden relative">
                     {pkg.featuredImage ? (
                       <Image
                         src={`${process.env.NEXT_PUBLIC_APPWRITE_HOST_URL}/storage/buckets/${pkg.featuredImageBucket}/files/${pkg.featuredImage}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}&v=${pkg.$updatedAt}`}
                         alt={pkg.name}
                         width={400}
-                        height={224}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        height={192}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100">
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
                         <div className="text-center text-gray-400">
-                          <FaImage className="w-16 h-16 mx-auto mb-2 opacity-50" />
+                          <FaImage className="w-12 h-12 mx-auto mb-2 opacity-50" />
                           <p className="text-sm">No Image</p>
                         </div>
                       </div>
                     )}
                     
-                    {/* Enhanced Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
-                    
-                    {/* Premium Price Badge */}
+                    {/* Price Badge */}
                     {pkg.price && (
-                      <div className="absolute top-4 right-4 z-30">
-                        <Badge className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold px-4 py-2 shadow-2xl border-0 text-sm transform group-hover:scale-110 transition-all duration-300">
+                      <div className="absolute top-3 right-3">
+                        <Badge className="bg-white text-gray-900 font-semibold px-3 py-1 shadow-md border border-gray-200">
                           {pkg.price}
-                        </Badge>
-                      </div>
-                    )}
-                    
-                    {/* Premium Location Badge */}
-                    {pkg.location && (
-                      <div className="absolute bottom-4 left-4 z-30">
-                        <Badge className="bg-white/90 backdrop-blur-sm text-gray-800 font-semibold px-3 py-2 shadow-lg border-0 text-xs">
-                          <FaMapMarkerAlt className="w-3 h-3 text-red-500 mr-1" />
-                          {pkg.location}
                         </Badge>
                       </div>
                     )}
                   </div>
                   
                   {/* Package Content */}
-                  <div className="p-6 flex-1 flex flex-col relative z-10">
-                    <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-pink-600 transition-colors duration-500 leading-tight tracking-tight">
+                  <div className="p-5 flex-1 flex flex-col">
+                    {/* Title */}
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
                       {pkg.name}
                     </h3>
                     
-                    {/* Enhanced Location & Duration with Premium Icons */}
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                    {/* Essential Info */}
+                    <div className="space-y-2 mb-4 text-sm text-gray-600">
                       {pkg.location && (
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
-                            <FaMapMarkerAlt className="w-3 h-3 text-red-500" />
-                          </div>
-                          <span className="font-medium">{pkg.location}</span>
+                          <FaMapMarkerAlt className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <span>{pkg.location}</span>
                         </div>
                       )}
-
-                      {(pkg.days || pkg.nights) && (
+                      
+                      {pkg.destinationId && destinations.get(pkg.destinationId) && (
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
-                            <FaCalendar className="w-3 h-3 text-purple-500" />
-                          </div>
-                          <span className="font-medium">
-                            {pkg.days && pkg.nights ? `${pkg.days}d/${pkg.nights}n` : pkg.days ? `${pkg.days}d` : `${pkg.nights}n`}
+                          <FaMapMarkerAlt className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                          <span className="text-blue-600 font-medium">
+                            {destinations.get(pkg.destinationId)?.title}
                           </span>
                         </div>
                       )}
-                      {pkg.destinationId && (
+                      
+                      {(pkg.days || pkg.nights) && (
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
-                            <FaMapMarkerAlt className="w-3 h-3 text-indigo-500" />
-                          </div>
-                          <span className="font-medium">Dest: {pkg.destinationId}</span>
+                          <FaCalendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <span>
+                            {pkg.days && pkg.nights ? `${pkg.days} days, ${pkg.nights} nights` : pkg.days ? `${pkg.days} days` : `${pkg.nights} nights`}
+                          </span>
                         </div>
                       )}
                     </div>
 
-                    {/* Enhanced Package Stats with Premium Design */}
-                    <div className="grid grid-cols-3 gap-3 text-xs text-gray-500 mb-5">
-                      <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-2">
-                        <FaRoute className="w-4 h-4 text-blue-500 mx-auto mb-1" />
-                        <span className="font-semibold text-blue-700">{pkg.itinerary.length} days</span>
-                      </div>
-                      <div className="text-center bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-2">
-                        <FaImage className="w-4 h-4 text-green-500 mx-auto mb-1" />
-                        <span className="font-semibold text-green-700">{pkg.galleryImages.length} images</span>
-                      </div>
-                      <div className="text-center bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-2">
-                        <FaQuestion className="w-4 h-4 text-purple-500 mx-auto mb-1" />
-                        <span className="font-semibold text-purple-700">{pkg.faq.length} FAQs</span>
-                      </div>
-                    </div>
+                    {/* Overview */}
+                    {pkg.overview && (
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+                        {pkg.overview}
+                      </p>
+                    )}
                     
-                    <div className="flex items-center justify-between mt-auto">
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
                       <div className="flex gap-2">
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="text-blue-600 border-blue-600 hover:bg-blue-50 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 rounded-xl px-4 py-2"
+                          className="text-blue-600 border-blue-600 hover:bg-blue-50"
                           onClick={() => handleView(pkg.$id)}
                           disabled={navigatingPackage === pkg.$id || deletingPackages.has(pkg.$id)}
                         >
@@ -447,7 +452,7 @@ export default function AllPackagesPage() {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          className="bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 rounded-xl px-4 py-2 border-green-600 text-green-600 hover:bg-green-50"
+                          className="border-green-600 text-green-600 hover:bg-green-50"
                           onClick={() => handleEdit(pkg.$id)}
                           disabled={navigatingPackage === pkg.$id || deletingPackages.has(pkg.$id)}
                         >
@@ -464,7 +469,7 @@ export default function AllPackagesPage() {
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className="text-red-600 border-red-600 hover:bg-red-50 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 rounded-xl px-4 py-2"
+                        className="text-red-600 border-red-600 hover:bg-red-50"
                         onClick={() => handleDelete(pkg.$id)}
                         disabled={deletingPackages.has(pkg.$id)}
                       >
