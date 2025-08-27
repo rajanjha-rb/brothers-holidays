@@ -6,4 +6,7 @@ export const destinationCollection = "destinations";
 export const activityCollection = "activities";
 export const packageCollection = "packages";
 export const packageTagCollection = "packageTags";
+export const bookingCollection = "bookings";
+export const customerCollection = "customers";
+export const invoiceCollection = "invoices";
 export const featuredImageBucket = "featuredImage";

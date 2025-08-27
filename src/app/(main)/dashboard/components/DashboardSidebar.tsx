@@ -20,7 +20,8 @@ import {
   FaBars,
   FaTimes,
   FaChevronRight,
-  FaGlobe
+  FaGlobe,
+  FaFileInvoiceDollar
 } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 
@@ -120,6 +121,20 @@ const menuItems = [
     icon: FaImages,
     color: "text-pink-600",
     bgColor: "hover:bg-pink-50"
+  },
+  {
+    label: "Bookings",
+    href: "/dashboard/bookings",
+    icon: FaCalendarCheck,
+    color: "text-green-600",
+    bgColor: "hover:bg-green-50"
+  },
+  {
+    label: "Invoice Maker",
+    href: "/dashboard/invoices",
+    icon: FaFileInvoiceDollar,
+    color: "text-blue-600",
+    bgColor: "hover:bg-blue-50"
   }
 ];
 
@@ -136,12 +151,6 @@ const comingSoonItems = [
     label: "Tags",
     href: "/dashboard/tags",
     icon: FaTags,
-    disabled: true
-  },
-  {
-    label: "Bookings",
-    href: "/dashboard/bookings",
-    icon: FaCalendarCheck,
     disabled: true
   },
   {
@@ -271,8 +280,8 @@ export default function DashboardSidebar({ isOpen, onToggle }: DashboardSidebarP
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Coming Soon
                 </p>
-                                 <Badge variant="outline" className="ml-auto text-xs">
-                   3 Features
+                 <Badge variant="outline" className="ml-auto text-xs">
+                   2 Features
                  </Badge>
               </div>
               <div className="space-y-1">

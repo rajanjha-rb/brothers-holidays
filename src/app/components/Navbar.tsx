@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useAuthState, useAuthStore, debugAuthState } from "@/store/auth";
+import { useAuthState, useAuthStore } from "@/store/auth";
 import Logo from "./navbar/Logo";
 import NavLinks, { NavLink } from "./navbar/NavLinks";
 import MobileDrawer from "./navbar/MobileDrawer";
@@ -23,8 +23,12 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { user, hydrated, loading, isAdmin } = useAuthState();
   const router = useRouter();
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/login') && !pathname.startsWith('/register');
+  
+  // Load auth state on all pages to show user avatar when logged in
+  const { user, hydrated, loading, isAdmin } = useAuthState();
   const logout = useAuthStore(state => state.logout);
 
   const handleLogout = async () => {
@@ -36,10 +40,6 @@ export default function Navbar() {
     }
   };
 
-  // Debug function for development
-  const handleDebugAuth = () => {
-    debugAuthState();
-  };
 
   
           // User authentication status checked
@@ -81,13 +81,13 @@ export default function Navbar() {
     ];
 
     // Only add dashboard link if user is admin and component is mounted
-    // Use cached auth status for better performance
-    if (mounted && hydrated && user && isAdmin) {
+    // Skip auth checks for public pages to improve performance
+    if (!isPublicPage && mounted && hydrated && user && isAdmin) {
       baseLinks.splice(3, 0, { name: "Dashboard", href: "/dashboard", icon: <FaUser />, color: "#fff" });
     }
 
     return baseLinks;
-  }, [mounted, hydrated, user, isAdmin]);
+  }, [mounted, hydrated, user, isAdmin, isPublicPage]);
 
   // Handle scroll effect with throttling
   useEffect(() => {
@@ -203,8 +203,8 @@ export default function Navbar() {
                 <span className="lg:hidden transition-all duration-300 group-hover:translate-x-1">Email</span>
               </a>
             </div>
-            {/* Book Now Button - Hide for logged-in admin users */}
-            {!(mounted && hydrated && !loading && user && isAdmin) && (
+            {/* Book Now Button - Show for public pages or non-admin users */}
+            {(isPublicPage || !(mounted && hydrated && !loading && user && isAdmin)) && (
               <div className="flex items-center ml-4">
                 <Link
                   href="/booking"
@@ -234,18 +234,8 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
-            {/* Debug button for development */}
-            {process.env.NODE_ENV === 'development' && (
-              <button
-                onClick={handleDebugAuth}
-                className="px-2 py-1 text-xs bg-yellow-500 text-black rounded"
-                title="Debug Auth State"
-              >
-                Debug
-              </button>
-            )}
             
-            {/* User Avatar for logged-in users */}
+            {/* User Avatar for logged-in users - show on all pages when logged in */}
             {mounted && hydrated && !loading && user && (
               <div className="flex items-center gap-3 ml-4">
                 {isAdmin ? (

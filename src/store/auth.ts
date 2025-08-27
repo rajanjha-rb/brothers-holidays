@@ -79,8 +79,8 @@ export const useAuthStore = create<IAuthStore>()(
         lastCheckedUserId: undefined,
       },
       lastAuthCheck: 0,
-      authCheckInterval: 5 * 60 * 1000, // 5 minutes in milliseconds
-      adminCheckInterval: 30 * 60 * 1000, // 30 minutes in milliseconds
+      authCheckInterval: 30 * 60 * 1000, // 30 minutes in milliseconds (increased from 5 minutes)
+      adminCheckInterval: 2 * 60 * 60 * 1000, // 2 hours in milliseconds (increased from 30 minutes)
 
       setHydrated() {
         set({ hydrated: true });
@@ -135,7 +135,7 @@ export const useAuthStore = create<IAuthStore>()(
         console.log('🔍 Performing fresh auth check');
 
         if (!isLocalStorageAvailable()) {
-          alert('LocalStorage is not available. Please disable privacy mode or use a different browser to login.');
+          console.error('LocalStorage is not available. Please disable privacy mode or use a different browser to login.');
           set({ session: null, user: null, loading: false, lastAuthCheck: Date.now() });
           return;
         }
@@ -368,7 +368,7 @@ export const useAuthStore = create<IAuthStore>()(
             hydrated: false, 
             loading: false,
             lastAuthCheck: 0,
-            authCheckInterval: 5 * 60 * 1000,
+            authCheckInterval: 30 * 60 * 1000,
             adminStatus: {
               isAdmin: false,
               checked: false,
@@ -404,6 +404,15 @@ export const clearAuthState = () => {
 export const forceAuthRefresh = () => {
   const store = useAuthStore.getState();
   store.lastAuthCheck = 0; // Reset auth check timestamp
+  
+  // Also reset the global auth initialization state
+  if (typeof window !== 'undefined') {
+    // Dynamic import to avoid circular dependency
+    import('@/app/components/AuthProvider').then(({ resetAuthInitialization }) => {
+      resetAuthInitialization();
+    });
+  }
+  
   store.verifySession(); // Force new auth check
 };
 

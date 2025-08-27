@@ -4,6 +4,9 @@ import createTripCollection from "./trip.collection";
 import createMediaCollection from "./media.collection";
 import createDestinationCollection from "./destination.collection";
 import createPackageCollection from "./package.collection";
+import createBookingCollection from "./booking.collection";
+import createCustomerCollection from "./customer.collection";
+import createInvoiceCollection from "./invoice.collection";
 
 import { databases } from "./config";
 
@@ -53,6 +56,30 @@ export default async function getOrCreateDB() {
     await createPackageCollection();
   } catch (error) {
     console.error("Failed to create/update package collection:", error);
+  }
+  
+  // Create booking collection
+  try {
+    console.log("Checking booking collection status...");
+    await createBookingCollection();
+  } catch (error) {
+    console.error("Failed to create booking collection:", error);
+  }
+  
+  // Create customer collection
+  try {
+    console.log("Checking customer collection status...");
+    await createCustomerCollection();
+  } catch (error) {
+    console.error("Failed to create customer collection:", error);
+  }
+  
+  // Create invoice collection
+  try {
+    console.log("Checking invoice collection status...");
+    await createInvoiceCollection();
+  } catch (error) {
+    console.error("Failed to create invoice collection:", error);
   }
 
   return databases;

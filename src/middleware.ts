@@ -8,24 +8,24 @@ import getOrCreateStorage from "./models/server/storageSetup";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Only run database setup for dashboard routes to improve performance
-  if (pathname.startsWith('/dashboard')) {
+  // Only run database setup for API routes and dashboard routes that need it
+  if (pathname.startsWith('/dashboard') || (pathname.startsWith('/api') && !pathname.startsWith('/api/health'))) {
     await Promise.all([getOrCreateDB(), getOrCreateStorage()]);
     return NextResponse.next();
   }
 
-  // For public pages, skip database setup to improve performance
+  // For public pages, skip database setup entirely to improve performance
   return NextResponse.next();
 }
 
 // See "Matching Paths" below to learn more
 export const config = {
-  /* match all request paths except for the the ones that starts with:
-  - api
-  - _next/static
-  - _next/image
-  - favicon.com
-
+  /* match only specific paths that need database setup:
+  - dashboard routes
+  - API routes (excluding static/health)
   */
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/dashboard/:path*",
+    "/api/((?!health|_next/static|_next/image|favicon.ico).*)"
+  ],
 };

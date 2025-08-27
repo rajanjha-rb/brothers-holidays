@@ -69,30 +69,6 @@ export default function RootLayout({
         {/* Preload critical resources */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link rel="dns-prefetch" href="https://cloud.appwrite.io" />
-        
-        {/* Preload auth state for faster hydration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  const authData = localStorage.getItem('auth');
-                  if (authData) {
-                    const parsed = JSON.parse(authData);
-                    if (parsed.state && parsed.state.hydrated === false) {
-                      // Mark as hydrated immediately for faster rendering
-                      parsed.state.hydrated = true;
-                      localStorage.setItem('auth', JSON.stringify(parsed));
-                    }
-                  }
-                } catch (e) {
-                  // Ignore errors
-                }
-              })();
-            `,
-          }}
-        />
       </head>
       <body className={`${inter.className} bg-gradient-to-br from-pink-50 via-white to-pink-100 min-h-screen`}>
         <NavigationLoader />

@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import OptimizedImage from "@/components/OptimizedImage";
 import { Button } from "@/components/ui/button";
-
+import BookingForm from "@/components/BookingForm";
+import BookingConfirmation from "@/components/BookingConfirmation";
 import { FaCalendar, FaRoute, FaMapMarkerAlt, FaDollarSign, FaImage, FaQuestion, FaCheck, FaTimes, FaArrowLeft } from "react-icons/fa";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
@@ -59,6 +60,8 @@ export default function PackageViewPage({ params }: { params: Promise<{ id: stri
   const [destinationData, setDestinationData] = useState<Destination | null>(null);
   const [similarPackages, setSimilarPackages] = useState<Package[]>([]);
   const [loadingSimilar, setLoadingSimilar] = useState(false);
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [bookingConfirmed, setBookingConfirmed] = useState<string | null>(null);
   
   // Fetch similar packages based on tags
   const fetchSimilarPackages = async (currentPackage: Package) => {
@@ -395,9 +398,7 @@ export default function PackageViewPage({ params }: { params: Promise<{ id: stri
                 <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
                   <Button 
                     className="bg-white text-emerald-600 hover:bg-emerald-50 border-0 px-8 py-4 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                    onClick={() => {
-                      window.location.href = '/contact';
-                    }}
+                    onClick={() => setShowBookingForm(true)}
                   >
                     🚀 Book This Package
                   </Button>
@@ -1017,6 +1018,45 @@ export default function PackageViewPage({ params }: { params: Promise<{ id: stri
       )}
 
       <Footer />
+      
+      {/* Booking Form Modal */}
+      {showBookingForm && !bookingConfirmed && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="max-w-5xl w-full max-h-[95vh] overflow-y-auto">
+            <BookingForm
+              itemId={packageData.$id}
+              itemName={packageData.name}
+              itemType="package"
+              onSuccess={(bookingRef) => {
+                setBookingConfirmed(bookingRef);
+                setShowBookingForm(false);
+              }}
+              onCancel={() => setShowBookingForm(false)}
+            />
+          </div>
+        </div>
+      )}
+      
+      {/* Booking Confirmation Modal */}
+      {bookingConfirmed && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="max-w-3xl w-full max-h-[95vh] overflow-y-auto">
+            <BookingConfirmation
+              bookingReference={bookingConfirmed}
+              itemName={packageData.name}
+              itemType="package"
+              onContinue={() => {
+                setBookingConfirmed(null);
+                window.location.href = '/packages';
+              }}
+              onGoHome={() => {
+                setBookingConfirmed(null);
+                window.location.href = '/';
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
